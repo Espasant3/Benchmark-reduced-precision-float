@@ -17,6 +17,3 @@ Introducción a la programación de precisión mixta con CUDA 8, incluyendo ejem
 
 ### [Advanced SIMD (Neon) intrinsics Introduction](https://developer.arm.com/documentation/101028/0010/Advanced-SIMD--Neon--intrinsics)
 Guía sobre el uso de intrinsics SIMD avanzados (Neon) en la arquitectura Armv8.2-A.
-
-### [Kit de desarrollo JETSON AGX ORIN](https://developer.nvidia.com/jetson-agx-orin-developer-kit)
-Información sobre el procesador Arm Cortex-A78AE de la serie Jetson AGX Orin que implementa la arquitectura ARMv8.2-A.
