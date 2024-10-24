@@ -1,0 +1,17 @@
+# Ignorar archivos ejecutables sin extensión generados a partir de archivos .c
+*.out
+*.o
+
+# Ignorar todos los archivos sin extensión que se generan excepto el .gitignore
+*[!.gitignore]
+
+
+# No ignorar directorios
+!*/
+
+# No ignorar archivos .c
+!*.c
+
+# No ignora archivos .sh
+!*.sh
+
