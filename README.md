@@ -22,18 +22,23 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
     ```
 2. Compilar el código:
 
-  Inicialmente emplear los scripts de bash en cada uno de los directorios de código.
+    Inicialmente emplear los scripts de bash en cada uno de los directorios de código.
   Más adelante se empleará un script de compilación global.
     
 3. Ejecutar el programa:
     ```bash
-    ./nombre-del-programa
+    ./nombre-del-programa <tamaño del vector> [<semilla>]
+    ```
+    Opcionalmente se pueden comprobar fugas de memoria con:
+    ```bash
+    valgrind --leak-check=full ./nombre-del-programa <tamaño del vector> [<semilla>]
     ```
 
 ## Contacto
 
-Para cualquier duda o sugerencia, por favor contacta conmigo a través de [eloi.barcon@rai.usc.es].
+Para cualquier duda o sugerencia, por favor contacta conmigo a través de [eloi.barcon@rai.usc.es](mailto:eloi.barcon@rai.usc.es).
 
 ---
 
-Este trabajo es parte de mi TFG en [Universidade de Santiago de Compostela], supervisado por [Pablo Quesada Barriuso].
+Este trabajo es parte de mi TFG en [Universidade de Santiago de Compostela](https://www.usc.gal/gl), supervisado por [Pablo Quesada Barriuso](https://citius.gal/gl/team/pablo-quesada-barriuso/).
+

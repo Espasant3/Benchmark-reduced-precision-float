@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Obtener el directorio donde está ubicado el script
+script_dir="$(dirname "$0")"
+
+# Cambiar al directorio del script
+cd "$script_dir"
+
 # Array para almacenar los archivos con errores de compilación
 errores=()
 
@@ -30,3 +36,5 @@ then
 else
     echo "Todos los archivos compilados correctamente."
 fi
+
+echo ""

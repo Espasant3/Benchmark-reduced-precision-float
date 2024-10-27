@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
+
+#define N_SMALL 5
 
 // Función AXPY
 void axpy(int n, float a, float *x, float *y) {
@@ -11,12 +14,46 @@ void axpy(int n, float a, float *x, float *y) {
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        printf("Uso: %s <tamaño del vector> [<semilla>]\n", argv[0]);
+        printf("Uso: %s <tamaño del vector> [<seed>]\n", argv[0]);
         return 1;
-    }
+    }    
 
     int n = atoi(argv[1]);
     float a = 2.3752f;
+    float *x_small = (float *)malloc(N_SMALL * sizeof(float));
+    float *y_small = (float *)malloc(N_SMALL * sizeof(float));
+
+    // Se usa una semilla proporcionada como argumento o una por defecto
+    unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
+    srand(seed);
+
+    // Generar elementos aleatorios entre 0 y 10
+    for (int i = 0; i < N_SMALL; i++) {
+        x_small[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+        y_small[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+    }
+
+    printf("Array x_small: [ ");
+    for (int i = 0; i < N_SMALL; i++) {
+        printf("%f ", x_small[i]);
+    }
+    printf("]\nArray y_small: [ ");
+    for (int i = 0; i < N_SMALL; i++) {
+        printf("%f ", y_small[i]);
+    }
+
+    // Se ejecuta la operación AXPY
+    axpy(N_SMALL, a, x_small, y_small);
+
+    printf("]\nArray y_small despues de AXPY: [ ");
+    for (int i = 0; i < N_SMALL; i++) {
+        printf("%f ", y_small[i]);
+    }
+    printf("]\n");
+
+    free(x_small);
+    free(y_small);
+
     float *x = (float *)malloc(n * sizeof(float));
     float *y = (float *)malloc(n * sizeof(float));
 
@@ -25,37 +62,59 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Usar una semilla proporcionada como argumento o una por defecto
-    unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
-    srand(seed);
-
+    
     // Generar elementos aleatorios entre 0 y 10
     for (int i = 0; i < n; i++) {
         x[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
         y[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
     }
 
-    printf("Array x:\n");
+    /*
+    printf("Array x: ");
     for (int i = 0; i < n; i++) {
-        printf("x[%d] = %f\n", i, x[i]);
+        printf("%f ", x[i]);
     }
 
-    printf("\nArray y antes de AXPY:\n");
+    printf("\nArray y antes de AXPY: ");
     for (int i = 0; i < n; i++) {
-        printf("y[%d] = %f\n", i, y[i]);
+        printf("%f ", y[i]);
     }
 
     // Llamar a la función AXPY
     axpy(n, a, x, y);
 
-    printf("\nArray y después de AXPY:\n");
+    printf("\nArray y despues de AXPY: ");
     for (int i = 0; i < n; i++) {
-        printf("y[%d] = %f\n", i, y[i]);
+        printf("%f ", y[i]);
     }
+    printf("\n");
+    */
+    
+    //Para medir el tiempo de ejecución
+    
+    clock_t start, end;
+    double cpu_time_used;
+
+    start = clock();
+    
+    /* 
+        Código del programa cuyo tiempo quiero medir
+    */
+    axpy(n, a, x, y);
+
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+    printf("Tiempo de ejecucion: %f\n", cpu_time_used);
+
+    // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
+
+    printf("%f\n", y[n-1]);
 
     // Liberar memoria asignada
     free(x);
     free(y);
 
+    
     return 0;
 }
