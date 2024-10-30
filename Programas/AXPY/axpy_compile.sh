@@ -6,35 +6,12 @@ script_dir="$(dirname "$0")"
 # Cambiar al directorio del script
 cd "$script_dir"
 
-# Array para almacenar los archivos con errores de compilación
-errores=()
+gcc-14 -Wall -g axpy_FP32.c -o axpy_FP32
 
-# Compilar todos los archivos .c del directorio actual con gcc-14 y opciones -Wall y -g
-for file in *.c
-do
-    # Obtener el nombre del archivo sin la extensión .c
-    base_name=$(basename "$file" .c)
-    
-    # Compilar el archivo con las opciones necesarias para Valgrind
-    if ! gcc-14 -Wall -g "$file" -o "$base_name"
-    then
-        # Si hay un error, añadir el archivo al array de errores
-        errores+=("$file")
-    else
-        echo "Compilado $file a $base_name"
-    fi
-done
+# Compila para ARM de 32 bits, como distintivo el archivo tiene la extension .o
+arm-linux-gnueabihf-gcc axpy_FP32.c -o axpy_FP32.o -Wall
 
-# Verificar si hubo errores
-if [ ${#errores[@]} -ne 0 ]
-then
-    echo "Errores de compilación en los siguientes archivos:"
-    for error_file in "${errores[@]}"
-    do
-        echo "$error_file"
-    done
-else
-    echo "Todos los archivos compilados correctamente."
-fi
+# Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
+aarch64-linux-gnu-gcc axpy_FP32.c -o axpy_FP32.out -Wall
 
 echo ""

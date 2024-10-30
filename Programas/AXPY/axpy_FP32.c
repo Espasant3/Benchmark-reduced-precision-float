@@ -69,27 +69,7 @@ int main(int argc, char *argv[]) {
         y[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
     }
 
-    /*
-    printf("Array x: ");
-    for (int i = 0; i < n; i++) {
-        printf("%f ", x[i]);
-    }
 
-    printf("\nArray y antes de AXPY: ");
-    for (int i = 0; i < n; i++) {
-        printf("%f ", y[i]);
-    }
-
-    // Llamar a la función AXPY
-    axpy(n, a, x, y);
-
-    printf("\nArray y despues de AXPY: ");
-    for (int i = 0; i < n; i++) {
-        printf("%f ", y[i]);
-    }
-    printf("\n");
-    */
-    
     //Para medir el tiempo de ejecución
     
     clock_t start, end;

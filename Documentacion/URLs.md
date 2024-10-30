@@ -17,3 +17,10 @@ Introducción a la programación de precisión mixta con CUDA 8, incluyendo ejem
 
 ### [Advanced SIMD (Neon) intrinsics Introduction](https://developer.arm.com/documentation/101028/0010/Advanced-SIMD--Neon--intrinsics)
 Guía sobre el uso de intrinsics SIMD avanzados (Neon) en la arquitectura Armv8.2-A.
+
+### [Installing and Using GCC for ARM](https://learn.arm.com/install-guides/gcc/cross/)
+Guía detallada sobre cómo instalar y usar GCC para cross-compilar para arquitecturas ARM.
+
+### [How to Cross-Compile for ARM](https://askubuntu.com/questions/250696/how-to-cross-compile-for-arm)
+Instrucciones sobre cómo cross-compilar programas para arquitecturas ARM en Ubuntu.
+

@@ -21,9 +21,10 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
     git clone https://github.com/Espasant3/TFG.git
     ```
 2. Compilar el código:
-
-    Inicialmente emplear los scripts de bash en cada uno de los directorios de código.
-  Más adelante se empleará un script de compilación global.
+    ```bash
+    ./directorio-del-programa_compile.sh
+    ```
+    En el futuro es probable que se añada un script en el directorio raíz que permita compilar todos los archivos a la vez.
     
 3. Ejecutar el programa:
     ```bash
@@ -33,6 +34,28 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
     ```bash
     valgrind --leak-check=full ./nombre-del-programa <tamaño del vector> [<semilla>]
     ```
+4. Cross-compilar el código para ARM:
+   
+   Para ARM de 32 bits:
+   ```bash
+   arm-linux-gnueabihf-gcc nombre-del-programa.c -o nombre-del-programa.out -Wall
+   ```
+   Para ARM de 64 bits:
+   ```bash
+   aarch64-linux-gnu-gcc nombre-del-programa.c -o nombre-del-programa.out -Wall
+   ```
+5. Ejecutar el programa emulando ARM:
+
+   Para ARM de 32 bits:
+   ```bash
+   qemu-arm ./programa_arm32
+   ```
+   Para ARM de 64 bits:
+   ```bash
+   qemu-aarch64 ./programa_arm64
+   ```
+
+
 
 ## Contacto
 
@@ -40,5 +63,5 @@ Para cualquier duda o sugerencia, por favor contacta conmigo a través de [eloi.
 
 ---
 
-Este trabajo es parte de mi TFG en [Universidade de Santiago de Compostela](https://www.usc.gal/gl), supervisado por [Pablo Quesada Barriuso](https://citius.gal/gl/team/pablo-quesada-barriuso/).
+Este trabajo es parte de mi TFG en [Universidade de Santiago de Compostela](https://www.usc.gal/gl), supervisado por [Pablo Quesada Barriuso](https://citius.gal/gl/team/pablo-quesada-barriuso/), como tutor, y por [Javier López Fandiño](https://citius.gal/gl/team/javier-lopez-fandino/), como co-tutor.
 
