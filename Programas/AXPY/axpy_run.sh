@@ -24,10 +24,11 @@ for file in *; do
             echo "Ejecutando $file con N $tamanhoN y seed $seed"
             ./"$file" "$tamanhoN" "$seed"
         fi
+        echo ""
     fi
 done
 
-echo ""
+
 
 # Ejecutar todos los archivos con extensión .o en el directorio actual
 for file in *.o; do
@@ -39,10 +40,10 @@ for file in *.o; do
             echo "Ejecutando $file con N $tamanhoN y seed $seed"
             qemu-arm ./"$file" "$tamanhoN" "$seed"
         fi
+        echo ""
     fi
 done
 
-echo ""
 
 # Ejecutar todos los archivos con extensión .out en el directorio actual
 for file in *.out; do
