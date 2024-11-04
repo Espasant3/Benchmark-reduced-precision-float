@@ -13,6 +13,21 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 
 - **Compilador**: GCC 14.2 o superior
 - **Librerías**: [LibraryName] (opcional) (Aún por determinar)
+- **Librerías**: 
+  - `<time.h>`
+  - `<gsl/gsl_eigen.h>`
+  - `<math.h>`
+  - `<arm_fp16.h>` (para soporte del tipo de dato `__fp16`, float16, específico de ARM)
+  - `<arm_bf16.h>` (para soporte del tipo de dato `__bf16`, bfloat, específico de ARM)
+
+
+## Información relevante
+
+- **Extensión de los ejecutables**:
+  - **x86 (32/64 bits)**: sin extensión
+  - **ARM (32 bits)**: `.o`
+  - **ARM (64 bits)**: `.out`
+
 
 ## Uso
 
@@ -38,7 +53,7 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
    
    Para ARM de 32 bits:
    ```bash
-   arm-linux-gnueabihf-gcc nombre-del-programa.c -o nombre-del-programa.out -Wall
+   arm-linux-gnueabihf-gcc nombre-del-programa.c -o nombre-del-programa.o -Wall
    ```
    Para ARM de 64 bits:
    ```bash
@@ -55,6 +70,16 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
    qemu-aarch64 ./programa_arm64
    ```
 
+
+## Pruebas Python
+
+En el directorio Tests-Python se encuentran programas que se pueden emplear para comparar el funcionamiento de los programas originales (con los que comparten prefijo).
+
+Para gestionar el entorno virtual de python se pueden utilizar los siguientes ficheros:
+1. Script `setup-python.sh`: script encargado de crear el entorno virtual en el propio directorio en el que se encuentra y de instalar todos los paquetes de python necesarios.
+2. Fichero `requirements.txt`: fichero que tiene todos los paquetes que se emplean en los programas y que son instalados durante la ejecución del script anterior.
+
+**Aviso:** debido a las diferencias de precisión y lógica interna de C y Python los resultados pueden no ser iguales pese a tener la misma semilla y realizar las mismas operaciones.
 
 
 ## Contacto

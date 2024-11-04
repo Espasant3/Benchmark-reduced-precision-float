@@ -9,10 +9,14 @@
 !*.c
 !*.sh
 !.gitignore
+!requirements.txt
+!*.py
 
 # No ignorar directorios
 !*/
 
+# Ignorar el entorno virtual
+Tests-Python/entorno_TFG/
+
 # VS CODE
 .vscode/
-
