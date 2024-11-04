@@ -55,7 +55,8 @@ for file in *.out; do
             echo "Ejecutando $file con N $tamanhoN y seed $seed"
             qemu-aarch64 ./"$file" "$tamanhoN" "$seed"
         fi
+        echo ""
     fi
 done
 
-echo ""
+
