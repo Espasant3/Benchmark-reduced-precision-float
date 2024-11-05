@@ -1,4 +1,14 @@
 #!/bin/bash
+
+# Función para comprobar si qemu-aarch64 está instalado
+check_qemu() {
+    if command -v qemu-aarch64 >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Verificar si se proporcionaron al menos un parámetro
 if [ $# -lt 1 ]; then
     echo "Uso: $0 <tamanho N> [<seed>]"
@@ -45,18 +55,39 @@ for file in *.o; do
 done
 
 
-# Ejecutar todos los archivos con extensión .out en el directorio actual
-for file in *.out; do
-    if [ -f "$file" ] && [ -x "$file" ]; then
-        if [ -z "$seed" ]; then
-            echo "Ejecutando $file con N $tamanhoN"
-            qemu-aarch64 ./"$file" "$tamanhoN"
-        else
-            echo "Ejecutando $file con N $tamanhoN y seed $seed"
-            qemu-aarch64 ./"$file" "$tamanhoN" "$seed"
+# Comprobar si estamos en una arquitectura ARM de 64 bits
+if [ "$(uname -m)" = "aarch64" ]; then
+    echo "Arquitectura ARM de 64 bits detectada. Ejecutando nativamente."
+    for file in *.out; do
+        if [ -f "$file" ] && [ -x "$file" ]; then
+            if [ -z "$seed" ]; then
+                echo "Ejecutando $file con N $tamanhoN"
+                ./"$file" "$tamanhoN"
+            else
+                echo "Ejecutando $file con N $tamanhoN y seed $seed"
+                ./"$file" "$tamanhoN" "$seed"
+            fi
+            echo ""
         fi
-        echo ""
+    done
+else
+    echo "No es arquitectura ARM de 64 bits. Comprobando qemu-aarch64..."
+    if check_qemu; then
+        echo "qemu-aarch64 detectado. Ejecutando con emulación."
+        for file in *.out; do
+            if [ -f "$file" ] && [ -x "$file" ]; then
+                if [ -z "$seed" ]; then
+                    echo "Ejecutando $file con N $tamanhoN"
+                    qemu-aarch64 ./"$file" "$tamanhoN"
+                else
+                    echo "Ejecutando $file con N $tamanhoN y seed $seed"
+                    qemu-aarch64 ./"$file" "$tamanhoN" "$seed"
+                fi
+                echo ""
+            fi
+        done
+    else
+        echo "qemu-aarch64 no está instalado y no es una arquitectura ARM de 64 bits. No se pueden ejecutar los archivos."
     fi
-done
-
+fi
 
