@@ -91,7 +91,3 @@ else
     fi
 fi
 
-
-## Alternativamente para ejecutar los programas que tendrían que usar intrucciones avx512fp16 con el siguiente comando 
-
-# sde -spr -- ./axpy_FP16_native-base 5 1234
