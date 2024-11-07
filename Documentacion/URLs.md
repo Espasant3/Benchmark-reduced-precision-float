@@ -24,3 +24,11 @@ Guía detallada sobre cómo instalar y usar GCC para cross-compilar para arquite
 ### [How to Cross-Compile for ARM](https://askubuntu.com/questions/250696/how-to-cross-compile-for-arm)
 Instrucciones sobre cómo cross-compilar programas para arquitecturas ARM en Ubuntu.
 
+### [ROCm Precision Support](https://rocm.docs.amd.com/en/latest/reference/precision-support.html#floating-point-types)
+Documentación sobre el soporte de diferentes tipos de precisión en la plataforma ROCm de AMD, incluyendo float16 y bfloat16, así como su compatibilidad con diversas arquitecturas de hardware.
+
+### [AMD Zen 2 Microarchitecture Analysis: Ryzen 3000 and EPYC Rome](https://www.anandtech.com/show/14525/amd-zen-2-microarchitecture-analysis-ryzen-3000-and-epyc-rome/9)
+Análisis de la microarquitectura Zen 2 de AMD, que permite realizar operaciones nativas con floats de 16 bits gracias a la implementación completa de AVX2.
+
+### [LoongArch Documentation](https://github.com/loongson/LoongArch-Documentation/releases/latest/download/LoongArch-Vol1-v1.10-EN.pdf)
+Documentación oficial de LoongArch v1.10, detallando las especificaciones y soporte para, entre otras, instrucciones .H que operan con datos de 16 bits, enteros y floats (FP16).
