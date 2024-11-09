@@ -31,4 +31,4 @@ Documentación sobre el soporte de diferentes tipos de precisión en la platafor
 Análisis de la microarquitectura Zen 2 de AMD, que permite realizar operaciones nativas con floats de 16 bits gracias a la implementación completa de AVX2.
 
 ### [LoongArch Documentation](https://github.com/loongson/LoongArch-Documentation/releases/latest/download/LoongArch-Vol1-v1.10-EN.pdf)
-Documentación oficial de LoongArch v1.10, detallando las especificaciones y soporte para, entre otras, instrucciones .H que operan con datos de 16 bits, enteros y floats (FP16).
+Documentación oficial de LoongArch v1.1, detallando las especificaciones y soporte para, entre otras, instrucciones .H que operan con datos de 16 bits, enteros y floats (FP16).

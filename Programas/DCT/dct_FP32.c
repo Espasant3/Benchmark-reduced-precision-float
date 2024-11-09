@@ -11,7 +11,7 @@
 
 
 // Definir el tamaño de la señal
-#define N_SMALL 8
+#define N_SMALL 5
 
 void dct(float *input, float *output) {
     float alpha;
@@ -40,29 +40,52 @@ int main(int argc, char *argv[]) {
 
     int n = atoi(argv[1]);
 
-    float *input = (float *)malloc(N_SMALL * sizeof(float));
-    float *output = (float *)malloc(N_SMALL * sizeof(float));
+    float *input_small = (float *)malloc(N_SMALL * sizeof(float));
+    float *output_small = (float *)malloc(N_SMALL * sizeof(float));
 
-    //input[0]=1.0f; input[1]=2.0f; input[2]=3.0f; input[3]=4.0f; input[4]=4.0f; input[5]=3.0f; input[6]=2.0f; input[7]=1.0f;
-
-    /**/
+    // Se usa una semilla proporcionada como argumento o una por defecto
     unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
     srand(seed);
 
     for (int i = 0; i < N_SMALL; i++) {
+        input_small[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+    }
+
+    printf("Array input_small: [ ");
+    for (int i = 0; i < N_SMALL; i++) {
+        printf("%f ", input_small[i]);
+    }
+    printf("]\n");
+
+    dct(input_small, output_small);
+
+    printf("Resultado DCT_small: [");
+    for (int i = 0; i < N_SMALL; i++) {
+        printf("%f ", output_small[i]);
+    }
+    printf("]\n");
+
+    free(input_small);
+    free(output_small);
+
+
+    float *input = (float *)malloc(n * sizeof(float));
+    float *output = (float *)malloc(n * sizeof(float));
+
+    for (int i = 0; i < n; i++) {
         input[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
     }
 
     printf("Array input: [ ");
-    for (int i = 0; i < N_SMALL; i++) {
+    for (int i = 0; i < n; i++) {
         printf("%f ", input[i]);
     }
-    printf("\n");
+    printf("]\n");
 
     dct(input, output);
 
     printf("Resultado DCT: [");
-    for (int i = 0; i < N_SMALL; i++) {
+    for (int i = 0; i < n; i++) {
         printf("%f ", output[i]);
     }
     printf("]\n");
