@@ -8,27 +8,12 @@
 #include <math.h>
 #include <time.h>
 #include <ctype.h>
+#include <arm_bf16.h>
 
 
 // Definir el tamaño de la señal
 #define N_SMALL 5
 
-void dct(_Float16 *input, _Float16 *output) {
-    _Float16 alpha;
-    _Float16 sum;
-    for (int k = 0; k < N_SMALL; k++) {
-        if (k == 0) {
-            alpha = sqrt(1.0 / N_SMALL);
-        } else {
-            alpha = sqrt(2.0 / N_SMALL);
-        }
-        sum = 0.0;
-        for (int n = 0; n < N_SMALL; n++) {
-            sum += input[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * N_SMALL));
-        }
-        output[k] = alpha * sum;
-    }
-}
 
 int main(int argc, char *argv[]) {
 
@@ -40,8 +25,8 @@ int main(int argc, char *argv[]) {
 
     int N = atoi(argv[1]);
 
-    _Float16 *input_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
-    _Float16 *output_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
+    __bf16 *input_small = (__bf16 *)malloc(N_SMALL * sizeof(__bf16));
+    __bf16 *output_small = (__bf16 *)malloc(N_SMALL * sizeof(__bf16));
 
     // Se usa una semilla proporcionada como argumento o una por defecto
     unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
@@ -52,7 +37,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < N_SMALL; i++) {
 
         float input_temp = ((float)rand() / (float)(RAND_MAX)) * 10.0f;
-        input_small[i] = (_Float16)input_temp;
+        input_small[i] = (__bf16)input_temp;
 
     }
 
@@ -62,7 +47,24 @@ int main(int argc, char *argv[]) {
     }
     printf("]\n");
 
-    dct(input_small, output_small);
+    //dct(input_small, output_small);
+
+    // Operacion dct
+    __bf16 alpha;
+    __bf16 sum;
+    for (int k = 0; k < N_SMALL; k++) {
+        if (k == 0) {
+            alpha = sqrt(1.0 / N_SMALL);
+        } else {
+            alpha = sqrt(2.0 / N_SMALL);
+        }
+        sum = 0.0;
+        for (int n = 0; n < N_SMALL; n++) {
+            sum += input_small[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * N_SMALL));
+        }
+        output_small[k] = alpha * sum;
+    }
+
 
     printf("Resultado DCT_small: [");
     for (int i = 0; i < N_SMALL; i++) {
@@ -74,12 +76,12 @@ int main(int argc, char *argv[]) {
     free(output_small);
 
 
-    _Float16 *input = (_Float16 *)malloc(N * sizeof(_Float16));
-    _Float16 *output = (_Float16 *)malloc(N * sizeof(_Float16));
+    __bf16 *input = (__bf16 *)malloc(N * sizeof(__bf16));
+    __bf16 *output = (__bf16 *)malloc(N * sizeof(__bf16));
 
     for (int i = 0; i < N; i++) {
         float input_temp = ((float)rand() / (float)(RAND_MAX)) * 10.0f;
-        input[i] = (_Float16)input_temp;
+        input[i] = (__bf16)input_temp;
     }
 
     printf("Array input: [ ");
@@ -88,7 +90,6 @@ int main(int argc, char *argv[]) {
     }
     printf("]\n");
 
-   
 
     //Para medir el tiempo de ejecución
     
@@ -101,7 +102,19 @@ int main(int argc, char *argv[]) {
         Código del programa cuyo tiempo quiero medir
     */
 
-    dct(input, output);
+    for (int k = 0; k < N; k++) {
+        if (k == 0) {
+            alpha = sqrt(1.0 / N);
+        } else {
+            alpha = sqrt(2.0 / N);
+        }
+        sum = 0.0;
+        for (int n = 0; n < N; n++) {
+            sum += input[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * N));
+        }
+        output[k] = alpha * sum;
+    }
+
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -114,6 +127,7 @@ int main(int argc, char *argv[]) {
 
     free(input);
     free(output);
+
 
     return EXIT_SUCCESS;
 }

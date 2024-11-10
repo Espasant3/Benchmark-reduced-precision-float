@@ -32,7 +32,7 @@ void dct(float *input, float *output) {
 
 int main(int argc, char *argv[]) {
 
-    /**/
+    
     if (argc < 2) {
         printf("Uso: %s <tamaño del vector> [<seed>]\n", argv[0]);
         return EXIT_FAILURE;
