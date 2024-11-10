@@ -13,9 +13,9 @@
 // Definir el tamaño de la señal
 #define N_SMALL 5
 
-void dct(float *input, float *output) {
-    float alpha;
-    float sum;
+void dct(_Float16 *input, _Float16 *output) {
+    _Float16 alpha;
+    _Float16 sum;
     for (int k = 0; k < N_SMALL; k++) {
         if (k == 0) {
             alpha = sqrt(1.0 / N_SMALL);
@@ -40,20 +40,25 @@ int main(int argc, char *argv[]) {
 
     int n = atoi(argv[1]);
 
-    float *input_small = (float *)malloc(N_SMALL * sizeof(float));
-    float *output_small = (float *)malloc(N_SMALL * sizeof(float));
+    _Float16 *input_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
+    _Float16 *output_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
 
     // Se usa una semilla proporcionada como argumento o una por defecto
     unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
     srand(seed);
 
+
+    // Generar elementos aleatorios entre 0 y 10
     for (int i = 0; i < N_SMALL; i++) {
-        input_small[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+
+        float input_temp = ((float)rand() / (float)(RAND_MAX)) * 10.0f;
+        input_small[i] = (_Float16)input_temp;
+
     }
 
     printf("Array input_small: [ ");
     for (int i = 0; i < N_SMALL; i++) {
-        printf("%f ", input_small[i]);
+        printf("%f ", (float)input_small[i]);
     }
     printf("]\n");
 
@@ -61,7 +66,7 @@ int main(int argc, char *argv[]) {
 
     printf("Resultado DCT_small: [");
     for (int i = 0; i < N_SMALL; i++) {
-        printf("%f ", output_small[i]);
+        printf("%f ", (float)output_small[i]);
     }
     printf("]\n");
 
@@ -69,19 +74,21 @@ int main(int argc, char *argv[]) {
     free(output_small);
 
 
-    float *input = (float *)malloc(n * sizeof(float));
-    float *output = (float *)malloc(n * sizeof(float));
+    _Float16 *input = (_Float16 *)malloc(n * sizeof(_Float16));
+    _Float16 *output = (_Float16 *)malloc(n * sizeof(_Float16));
 
     for (int i = 0; i < n; i++) {
-        input[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+        float input_temp = ((float)rand() / (float)(RAND_MAX)) * 10.0f;
+        input[i] = (_Float16)input_temp;
     }
 
     printf("Array input: [ ");
     for (int i = 0; i < n; i++) {
-        printf("%f ", input[i]);
+        printf("%f ", (float)input[i]);
     }
     printf("]\n");
 
+   
 
     //Para medir el tiempo de ejecución
     
@@ -103,7 +110,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f\n", output[n-1]);
+    printf("%f\n", (float)output[n-1]);
 
     free(input);
     free(output);
