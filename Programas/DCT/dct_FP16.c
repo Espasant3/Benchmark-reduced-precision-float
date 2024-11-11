@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <ctype.h>
 
 
 // Definir el tamaño de la señal

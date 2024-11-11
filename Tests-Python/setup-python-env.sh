@@ -13,10 +13,7 @@ else
 fi
 
 # Activar el entorno virtual
-source entorno_TFG/bin/activate
+source "$(pwd)/entorno_TFG/bin/activate"
 
-# Instalar los paquetes
-pip install -r requirements.txt
-
-# Salir del entorno virtual (opcional)
-deactivate
+# Instalar los paquetes sin mostrar la salida estándar
+pip install -r requirements.txt > /dev/null 2>&1
