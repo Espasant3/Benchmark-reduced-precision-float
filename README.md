@@ -25,7 +25,7 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 
 ## Requisitos
 
-- **Compilador**: [GCC 14.2 o superior](https://gcc.gnu.org/)
+- **Compilador**: [GCC 14.2 ](https://gcc.gnu.org/onlinedocs/14.2.0/)
 - **Librerías**: 
   - `<time.h>`: [Documentación](https://www.cplusplus.com/reference/ctime/)
   - `<gsl/gsl_eigen.h>`: [Documentación](https://www.gnu.org/software/gsl/doc/html/eigen.html)
