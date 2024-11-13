@@ -6,6 +6,9 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 - [Contenido](#contenido)
 - [Requisitos](#requisitos)
 - [Información relevante](#información-relevante)
+  - [Extensión de los ejecutables](#extensión-de-los-ejecutables)
+  - [Nombres de los archivos](#nombres-de-los-archivos)
+  - [Arquitecturas y Vendors contemplados en los scripts compile_all.sh y run_all.sh](#arquitecturas-y-vendors-contemplados-en-los-scripts-compile_allsh-y-run_allsh)
 - [Preparación del entorno](#preparación-del-entorno)
   - [Requisitos Previos](#requisitos-previos)
   - [Instalación de Intel SDE](#instalación-de-intel-sde)
@@ -14,6 +17,7 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 - [Uso](#uso)
 - [Pruebas Python](#pruebas-python)
 - [Contacto](#contacto)
+
 
 
 ## Contenido
@@ -44,28 +48,71 @@ Los scripts están configurados para manejar exclusivamente las siguientes exten
 - **x86 (32/64 bits)**: sin extensión
 - **ARM (32 bits)**: `.o`
 - **ARM (64 bits)**: `.out`
-
+ 
+**Nota**: No existen scripts para la compilación para ARM de 32 bits, ya que los tipos de datos (`__fp16` y `__bf16`) no son compatibles de manera nativa. Sin embargo, se pueden encontrar instrucciones sobre compilación cruzada y cómo verificar la ejecución con QEMU para esta arquitectura en la [sección de uso](#uso).
 
 ### Nombres de los archivos
 
 Los programas tienen el siguiente formato de nombres, donde `<nombre>` corresponde al nombre del algoritmo específico (axpy, dct, dwt_1d o pca):
 
-| Nombre del archivo     | Descripción                                                                 |
-|------------------------|-----------------------------------------------------------------------------|
-| `<nombre>_FP32.c`      | Versión original del programa que usa floats de 32 bits.                    |
-| `<nombre>_FP16.c`      | Versión del programa que usa el tipo de dato `_Float16`.                    |
-| `<nombre>_FP16_ARM.c`  | Versión del programa que usa el tipo de dato `__fp16` específico de ARM.    |
-| `<nombre>_BF16.c`      | Versión del programa que usa el tipo de dato `__bf16` específico de ARM.    |
-| `<nombre>_compile.sh`  | Script para compilar los programas `<nombre>` en el mismo directorio.       |
-| `<nombre>_run.sh`      | Script para ejecutar todos los programas compilados en el directorio actual.|
-
-Todas las versiones del programa que no usan floats de 32 bits utilizan un tipo de float de 16 bits.
-
-**Nota**: Los archivos ejecutados con el script `<nombre>_run.sh` cumplen con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables).
+| Nombre del archivo     | Descripción                                                                                                             |
+|------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `<nombre>_FP32.c`      | Versión original del programa que utiliza floats de 32 bits.                                                            |
+| `<nombre>_FP16.c`      | Versión del programa que utiliza el tipo de dato `_Float16`.                                                            |
+| `<nombre>_FP16_ARM.c`  | Versión del programa que utiliza el tipo de dato `__fp16` específico de ARM.                                            |
+| `<nombre>_BF16.c`      | Versión del programa que utiliza el tipo de dato `__bf16` específico de ARM.                                            |
+| `<nombre>_compile_<arch>.sh`  | Script para compilar los programas `<nombre>` en el mismo directorio, para la arquitectura `<arch>`.             |
+| `<nombre>_run_<arch>.sh`      | Script para ejecutar todos los programas compilados en el directorio actual, para la arquitectura `<arch>`.      |
+| `compile_all.sh`       | Script general para compilar todos los programas, escogiendo los scripts de compilación adecuados para la arquitectura. |
+| `run_all.sh`           | Script general para ejecutar todos los programas, escogiendo los scripts de compilación adecuados para la arquitectura. |
 
 
+### Arquitecturas y Vendors contemplados en los scripts `compile_all.sh` y `run_all.sh`
 
-## Preparación del entorno
+#### x86_64 (Intel y AMD)
+- **Arquitectura**: x86_64
+- **Vendors**:
+  - **GenuineIntel**: Procesadores Intel de 64 bits.
+  - **AuthenticAMD**: Procesadores AMD de 64 bits.
+
+#### ARM aarch64 (Huawei y genérica)
+- **Arquitectura**: aarch64
+- **Vendor**: HiSilicon (identificado como "huawei" en el script)
+  - **Huawei Ascend**: Procesadores orientados a IA de Huawei.
+  - **HiSilicon Kunpeng**: Procesadores ARM de servidor de Huawei.
+  - Por el momento no hay soporte oficial para Huawei (tanto Huawei Ascend como HiSilicon Kunpeng).
+
+#### MIPS (Loongson y genérica)
+- **Arquitectura**: mips, mips64
+- **Vendors**:
+  - **Loongson**: Procesadores basados en la arquitectura MIPS.
+  - **MIPS**: Procesadores MIPS genéricos.
+  - No hay soporte oficial por el momento.
+
+#### RISC-V (Loongson y genérica)
+- **Arquitectura**: riscv, riscv64
+- **Vendors**:
+  - **Loongson**: Procesadores basados en la arquitectura RISC-V.
+  - **RISC-V**: Procesadores RISC-V genéricos.
+  - No hay soporte oficial por el momento.
+
+#### Power-ISA
+- **Arquitectura**: powerpc, ppc64, ppc64le
+- **Vendor**: Power-ISA
+  - No hay soporte oficial por el momento.
+
+#### LoongArch
+- **Arquitectura**: loongarch64
+- **Vendor**: LoongArch
+  - No hay soporte oficial por el momento.
+
+**Nota**: Para más información sobre los valores de `uname -m`, consultar la [Documentación del proyecto](./Documentacion/URLs.md#architecturespecificsmemo)
+
+**Nota**: Los archivos ejecutados por el script `<nombre>_run_<arch>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables).
+
+
+
+## Preparación del entorno para Intel x86
 
 ### Requisitos Previos
 
@@ -73,7 +120,7 @@ Antes de comenzar, asegúrate de tener instalados los siguientes paquetes en tu 
 
 - **GCC** (GNU Compiler Collection) versión 14 o superior
 - **Compiladores cruzados para ARM** (para compilar programas para ARM)
-- **QEMU** para emulación de ARM (opcional en caso de estar ya en ARM, para emular la arquitectura ARM)
+- **QEMU** para emulación de ARM (para emular la arquitectura ARM)
 - **Intel SDE** (opcional, para emular instrucciones AVX512FP16)
 
 Puedes instalar estos paquetes en sistemas basados en Debian/Ubuntu con el siguiente comando:

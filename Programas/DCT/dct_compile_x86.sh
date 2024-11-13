@@ -1,5 +1,7 @@
 #!/bin/bash
 
+### SCRIPT DE COMPILACION PARA ARQUITECTURA INTEL x86
+
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
