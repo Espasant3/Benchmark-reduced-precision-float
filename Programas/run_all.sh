@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Obtener el directorio donde está ubicado el script
+script_dir="$(dirname "$0")"
+
+# Cambiar al directorio del script
+cd "$script_dir"
+
 # This script checks the CPU architecture and vendor.
 # The values for `uname -m` can be found at: https://wiki.debian.org/ArchitectureSpecificsMemo
 
@@ -45,13 +51,13 @@ case "$ARCH" in
                 echo "Arquitectura: Intel de 64 bits"
                 # Instrucciones específicas para Intel de 64 bits
                 echo "Compilando AXPY"
-                ./AXPY/axpy_run_x86.sh
+                ./AXPY/axpy_run_Intel.sh
                 echo "Compilando DCT"
-                ./DCT/dct_run_x86.sh
+                ./DCT/dct_run_Intel.sh
                 #echo "Compilando DWT_1D"
-                #./DWT_1D/dwt_1d_run_x86.sh
+                #./DWT_1D/dwt_1d_run_Intel.sh
                 #echo "Compilando PCA"
-                #./PCA/pca_run_x86.sh
+                #./PCA/pca_run_Intel.sh
                 ;;
             amd)
                 echo "Arquitectura: AMD de 64 bits"
