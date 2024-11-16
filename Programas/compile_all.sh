@@ -1,5 +1,23 @@
 #!/bin/bash
 
+# Inicializar variables
+force_run=false
+
+# Verificar si el primer argumento es --force
+if [[ "$1" == "--force" ]]; then
+    force_run=true
+    shift
+else
+    # Procesar argumentos de entrada
+    for arg in "$@"; do
+        if [[ "$arg" == "--force" ]]; then
+            force_run=true
+            set -- "${@/--force/}"
+            break
+        fi
+    done
+fi
+
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
@@ -51,25 +69,25 @@ case "$ARCH" in
                 echo "Arquitectura: Intel de 64 bits"
                 # Instrucciones específicas para Intel de 64 bits
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_Intel.sh
+                ./AXPY/axpy_compile_Intel.sh ${force_run:+--force}
                 echo "Compilando DCT"
-                ./DCT/dct_compile_Intel.sh
-                #echo "Compilando DWT_1D"
-                #./DWT_1D/dwt_1d_compile_Intel.sh
-                #echo "Compilando PCA"
-                #./PCA/pca_compile_Intel.sh
+                ./DCT/dct_compile_Intel.sh ${force_run:+--force}
+                echo "Compilando DWT_1D"
+                #./DWT_1D/dwt_1d_compile_Intel.sh ${force_run:+--force}
+                echo "Compilando PCA"
+                #./PCA/pca_compile_Intel.sh ${force_run:+--force}
                 ;;
             amd)
                 echo "Arquitectura: AMD de 64 bits"
                 # Instrucciones específicas para AMD de 64 bits
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_AMD.sh
+                ./AXPY/axpy_compile_AMD.sh ${force_run:+--force}
                 echo "Compilando DCT"
-                ./DCT/dct_compile_AMD.sh
+                ./DCT/dct_compile_AMD.sh ${force_run:+--force}
                 echo "Compilando DWT_1D"
-                ./DWT_1D/dwt_1d_compile_AMD.sh
+                ./DWT_1D/dwt_1d_compile_AMD.sh ${force_run:+--force}
                 echo "Compilando PCA"
-                ./PCA/pca_compile_AMD.sh
+                ./PCA/pca_compile_AMD.sh ${force_run:+--force}
                 ;;
             *)
                 echo "Vendor desconocido para x86_64"
@@ -86,13 +104,13 @@ case "$ARCH" in
                 ;;
             *)
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_ARM.sh
+                ./AXPY/axpy_compile_ARM.sh ${force_run:+--force}
                 echo "Compilando DCT"
-                ./DCT/dct_compile_ARM.sh
+                ./DCT/dct_compile_ARM.sh ${force_run:+--force}
                 echo "Compilando DWT_1D"
-                ./DWT_1D/dwt_1d_compile_ARM.sh
+                ./DWT_1D/dwt_1d_compile_ARM.sh ${force_run:+--force}
                 echo "Compilando PCA"
-                ./PCA/pca_compile_ARM.sh
+                ./PCA/pca_compile_ARM.sh ${force_run:+--force}
                 ;;
         esac
         ;;
@@ -105,7 +123,7 @@ case "$ARCH" in
                 ;;
             mips)
                 echo "Arquitectura: MIPS genérica"
-                # Instrucciones específicas para MIPS
+                echo "No hay soporte oficial por el momento."
                 ;;
             *)
                 echo "Vendor desconocido para MIPS"
@@ -130,13 +148,15 @@ case "$ARCH" in
         ;;
     powerpc|ppc64|ppc64le)
         echo "Arquitectura: Power-ISA"
-        # No hay soporte oficial por el momento
+        echo "No hay soporte oficial por el momento."
         ;;
     loongarch64)
         echo "Arquitectura: LoongArch de 64 bits"
-        # No hay soporte oficial por el momento
+        echo "No hay soporte oficial por el momento."
         ;;
     *)
         echo "Arquitectura desconocida o no soportada: $ARCH"
         ;;
 esac
+
+exit 0
