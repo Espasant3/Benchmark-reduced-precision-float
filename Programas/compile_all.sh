@@ -56,6 +56,9 @@ case "$VENDOR" in
     power)
         CPU_VENDOR="power_isa"
         ;;
+    Nvidia)
+        CPU_VENDOR="nvidia"
+        ;;
     *)
         CPU_VENDOR="unknown"
         ;;
@@ -63,7 +66,7 @@ esac
 
 # Dependiendo de la combinación de arquitectura y proveedor, realizar diferentes acciones
 case "$ARCH" in
-    x86_64)
+    x86_64|amd64|x64)
         case "$CPU_VENDOR" in
             intel)
                 echo "Arquitectura: Intel de 64 bits"
@@ -94,12 +97,16 @@ case "$ARCH" in
                 ;;
         esac
         ;;
-    aarch64)
+    aarch64|arm64)
         echo "Arquitectura: ARM de 64 bits"
         case "$CPU_VENDOR" in
             huawei)
                 # Detecta por igual Huawei Ascend y HiSilicon Kunpeng
                 echo "Arquitectura: Huawei de 64 bits"
+                echo "No hay soporte oficial por el momento."
+                ;;
+            nvidia)
+                echo "Arquitectura: Nvidia"
                 echo "No hay soporte oficial por el momento."
                 ;;
             *)

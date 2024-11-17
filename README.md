@@ -8,6 +8,7 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 - [Información relevante](#información-relevante)
   - [Extensión de los ejecutables](#extensión-de-los-ejecutables)
   - [Nombres de los archivos](#nombres-de-los-archivos)
+    - [Parámetros de los scripts](#parámetros-de-los-scripts)
   - [Arquitecturas y Vendors contemplados en los scripts compile_all.sh y run_all.sh](#arquitecturas-y-vendors-contemplados-en-los-scripts-compile_allsh-y-run_allsh)
 - [Preparación del entorno](#preparación-del-entorno)
   - [Requisitos Previos](#requisitos-previos)
@@ -67,49 +68,90 @@ Los programas tienen el siguiente formato de nombres, donde `<nombre>` correspon
 | `run_all.sh`           | Script general para ejecutar todos los programas, escogiendo los scripts de compilación adecuados para la arquitectura. |
 
 
+**Nota**: `<arch>` no se refiere solo a la arquitectura sino que es una combinación de la arquitectura, obtenida mediante el comando `uname -m`, y el proveedor de la CPU, obtenido mediante el comando `grep -m 1 'vendor_id' /proc/cpuinfo | awk '{print $3}'`.
+
+#### Parámetros de los scripts
+
+Los scripts de compilación y ejecución aceptan los siguientes parámetros y flags:
+
+- **Parámetros**:
+  - `<tamanho N>`: Tamaño del vector a emplear. Debe ser un número positivo mayor que 0.
+  - `[<seed>]`: (Opcional) Semilla para la generación de números aleatorios. Debe ser un número positivo mayor que 0 si se proporciona.
+
+- **Flags**:
+  - `--force`: Permite la compilación cruzada y la ejecución de programas para una arquitecturas diferente a la actual (empleando Intel SDE y QEMU). En la compilación, este flag permite la cross-compilación de Intel/AMD a ARM. En la ejecución en Intel/AMD utiliza QEMU para ejecutar códigos ARM y en ARM emplea Intel SDE para ejecutar códigos Intel/AMD.
+
+- **Scripts de compilación**:
+  - `<nombre>_compile_<arch>.sh`: Compila los programas `<nombre>` para la arquitectura `<arch>`.
+    - Uso: `./<nombre>_compile_<arch>.sh [--force]`
+
+- **Scripts de ejecución**:
+  - `<nombre>_run_<arch>.sh`: Ejecuta todos los programas compilados en el directorio actual para la arquitectura `<arch>`.
+    - Uso: `./<nombre>_run_<arch>.sh <tamanho N> [<seed>] [--force]`
+
+- **Scripts generales**:
+  - `compile_all.sh`: Compila todos los programas, seleccionando los scripts de compilación adecuados para la arquitectura.
+    - Uso: `./compile_all.sh [--force]`
+  - `run_all.sh`: Ejecuta todos los programas, seleccionando los scripts de ejecución adecuados para la arquitectura.
+    - Uso: `./run_all.sh <tamanho N> [<seed>] [--force]`
+
+**Nota**: El flag `--force` en los scripts de compilación (excepto el de ARM) y ejecución fuerza la compilación cruzada y la ejecución de programas para arquitecturas ARM utilizando QEMU e Intel SDE.
+
+
 ### Arquitecturas y Vendors contemplados en los scripts `compile_all.sh` y `run_all.sh`
 
 #### x86_64 (Intel y AMD)
 - **Arquitectura**: x86_64
 - **Vendors**:
   - **GenuineIntel**: Procesadores Intel de 64 bits.
+    - `<arch>`: Intel 
   - **AuthenticAMD**: Procesadores AMD de 64 bits.
+      - `<arch>`: AMD 
 
-#### ARM aarch64 (Huawei y genérica)
+#### ARM aarch64 (genérica)
+- **Arquitectura**: aarch64
+- **Vendor**: Procesadores ARM de 64 bits genéricos, excluyendo aquellos fabricados por Nvidia y HiSilicon (Huawei).
+    - `<arch>`: ARM 
+
+#### Huawei aarch64
 - **Arquitectura**: aarch64
 - **Vendor**: HiSilicon (identificado como "huawei" en el script)
   - **Huawei Ascend**: Procesadores orientados a IA de Huawei.
   - **HiSilicon Kunpeng**: Procesadores ARM de servidor de Huawei.
-  - Por el momento no hay soporte oficial para Huawei (tanto Huawei Ascend como HiSilicon Kunpeng).
+- **Nota**: Por el momento no hay soporte oficial para Huawei (tanto Huawei Ascend como HiSilicon Kunpeng).
 
 #### MIPS (Loongson y genérica)
 - **Arquitectura**: mips, mips64
 - **Vendors**:
   - **Loongson**: Procesadores basados en la arquitectura MIPS.
   - **MIPS**: Procesadores MIPS genéricos.
-  - No hay soporte oficial por el momento.
+- **Nota**: No hay soporte oficial por el momento.
 
 #### RISC-V (Loongson y genérica)
 - **Arquitectura**: riscv, riscv64
 - **Vendors**:
   - **Loongson**: Procesadores basados en la arquitectura RISC-V.
   - **RISC-V**: Procesadores RISC-V genéricos.
-  - No hay soporte oficial por el momento.
+- **Nota**: No hay soporte oficial por el momento.
 
 #### Power-ISA
 - **Arquitectura**: powerpc, ppc64, ppc64le
 - **Vendor**: Power-ISA
-  - No hay soporte oficial por el momento.
+- **Nota**: No hay soporte oficial por el momento.
 
 #### LoongArch
 - **Arquitectura**: loongarch64
 - **Vendor**: LoongArch
-  - No hay soporte oficial por el momento.
+- **Nota**: No hay soporte oficial por el momento.
+
+#### Nvidia
+- **Arquitectura**: aarch64
+- **Vendor**: Nvidia
+- **Nota**: No hay soporte oficial por el momento.
 
 **Nota**: Para más información sobre los valores de `uname -m`, consultar la [Documentación del proyecto](./Documentacion/URLs.md#architecturespecificsmemo)
 
 **Nota**: Los archivos ejecutados por el script `<nombre>_run_<arch>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables).
-
 
 
 ## Preparación del entorno para Intel x86
@@ -172,9 +214,10 @@ Pasos para montar el contenedor:
     ```
 4. Arrancar el contenedor
     ```bash
-    docker run --rm -it tfg-benchmarck-dev-env
+    docker run -it --rm -v $(pwd):/workspace tfg-benchmark-dev-env
     ```
 
+**Nota**: Asegúrate de estar en el directorio raíz del proyecto para que se monte adecuadamente el contenedor Docker. 
 
 ## Uso
 
@@ -190,17 +233,17 @@ Pasos para montar el contenedor:
     
 3. Ejecutar el programa:
     ```bash
-    ./programa-compilado <tamanho del vector> [<semilla>]
+    ./programa-compilado <tamanho N> [<seed>] [--force]
     ```
     Opcionalmente se pueden comprobar fugas de memoria con:
     ```bash
-    valgrind --leak-check=full ./programa-compilado <tamanho del vector> [<semilla>]
+    valgrind --leak-check=full ./programa-compilado <tamanho N> [<seed>] [--force]
     ```
 4. Cross-compilar el código para ARM:
    
    Para ARM de 32 bits:
    ```bash
-   arm-linux-gnueabihf-gcc nombre-del-programa.c -o programa-compialdo.o -Wall
+   arm-linux-gnueabihf-gcc nombre-del-programa.c -o programa-compilado.o -Wall
    ```
    Para ARM de 64 bits:
    ```bash
