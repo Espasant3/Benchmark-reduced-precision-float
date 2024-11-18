@@ -61,8 +61,6 @@ if [ "$force_run" = true ]; then
     force_flag="--force"
 fi
 
-echo "Valor de force_flag: $force_flag"
-
 # Dependiendo del proveedor del CPU, realizar diferentes acciones
 case "$VENDOR" in
     GenuineIntel)
@@ -101,25 +99,25 @@ case "$ARCH" in
             intel)
                 echo "Arquitectura: Intel de 64 bits"
                 # Instrucciones específicas para Intel de 64 bits
-                echo "Compilando AXPY"
+                echo "Ejecutando AXPY"
                 ./AXPY/axpy_run_Intel.sh $tamanhoN $seed $force_flag
-                echo "Compilando DCT"
+                echo "Ejecutando DCT"
                 ./DCT/dct_run_Intel.sh $tamanhoN $seed $force_flag
-                echo "Compilando DWT_1D"
+                echo "Ejecutando DWT_1D"
                 #./DWT_1D/dwt_1d_run_Intel.sh $tamanhoN $seed $force_flag
-                echo "Compilando PCA"
+                echo "Ejecutando PCA"
                 #./PCA/pca_run_Intel.sh $tamanhoN $seed $force_flag
                 ;;
             amd)
                 echo "Arquitectura: AMD de 64 bits"
                 # Instrucciones específicas para AMD de 64 bits
-                echo "Compilando AXPY"
+                echo "Ejecutando AXPY"
                 ./AXPY/axpy_run_AMD.sh $tamanhoN $seed $force_flag
-                echo "Compilando DCT"
+                echo "Ejecutando DCT"
                 ./DCT/dct_run_AMD.sh $tamanhoN $seed $force_flag
-                echo "Compilando DWT_1D"
+                echo "Ejecutando DWT_1D"
                 ./DWT_1D/dwt_1d_run_AMD.sh $tamanhoN $seed $force_flag
-                echo "Compilando PCA"
+                echo "Ejecutando PCA"
                 ./PCA/pca_run_AMD.sh $tamanhoN $seed $force_flag
                 ;;
             *)
@@ -140,13 +138,13 @@ case "$ARCH" in
                 echo "No hay soporte oficial por el momento."
                 ;;
             *)
-                echo "Compilando AXPY"
+                echo "Ejecutando AXPY"
                 ./AXPY/axpy_run_ARM.sh $tamanhoN $seed $force_flag
-                echo "Compilando DCT"
+                echo "Ejecutando DCT"
                 ./DCT/dct_run_ARM.sh $tamanhoN $seed $force_flag
-                echo "Compilando DWT_1D"
+                echo "Ejecutando DWT_1D"
                 ./DWT_1D/dwt_1d_run_ARM.sh $tamanhoN $seed $force_flag
-                echo "Compilando PCA"
+                echo "Ejecutando PCA"
                 ./PCA/pca_run_ARM.sh $tamanhoN $seed $force_flag
                 ;;
         esac

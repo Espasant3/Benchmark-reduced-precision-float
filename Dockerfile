@@ -1,49 +1,52 @@
-# Use una imagen base de Python 3.12 con soporte para gcc (para compilar los programas en C)
-FROM python:3.12-slim
+# Use Ubuntu 24.04 as base image
+FROM ubuntu:24.04
 
-# Instale gcc y otras herramientas necesarias
-RUN apt-get update && apt-get install -y \
+# Install dependencies for building and compiling
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
     gcc-14 \
-    make \
-    aarch64-linux-gnu-gcc \
+    g++-14 \
+    valgrind \
     qemu-user \
-    gcc-arm-none-eabi \
-    gcc-arm-linux-gnueabihf \
-    && rm -rf /var/lib/apt/lists/*
+    python3 \
+    python3-pip \
+    python3-venv \
+    libgsl-dev \
+    wget \
+    cmake && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Cree los directorios necesarios
-RUN mkdir -p /Programas/AXPY /Programas/DCT /Programas/PCA /Programas/DWT_1D /Tests-Python /Metricas
+# Set up GCC 14 as default compiler
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
 
-# Copie los programas C y Python al contenedor
-COPY /Programas/ /Programas/
-COPY /Tests-Python/ /Tests-Python/
-COPY /Metricas/ /Metricas/
+# Install ARM toolchain conditionally based on architecture
+RUN if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ]; then \
+        apt-get update && \
+        apt-get install -y --no-install-recommends \
+        gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*; \
+    else \
+        echo "Not installing ARM cross-compiler as the architecture is not x86_64 or amd64"; \
+    fi
 
-# Establezca el directorio de trabajo
-WORKDIR /Programas/AXPY
+# Copy the requirements file and the script from the host to the container
+COPY ./Tests-Python/requirements.txt /tmp/requirements.txt
+# Empleamos el script setup-python-env.sh para crear un entorno virtual porque falla al instalar las dependencias en el entorno global
+COPY ./Tests-Python/setup-python-env.sh /tmp/setup-python-env.sh
 
-# Copie los scripts de compilación y ejecución
-COPY /scripts/compile_axpy.sh /Programas/AXPY/
-COPY /scripts/run_axpy.sh /Programas/AXPY/
-RUN chmod +x /Programas/AXPY/compile_axpy.sh /Programas/AXPY/run_axpy.sh
+# Give execution permission to the script
+RUN chmod +x /tmp/setup-python-env.sh
 
-COPY /scripts/compile_dct.sh /Programas/DCT/
-COPY /scripts/run_dct.sh /Programas/DCT/
-RUN chmod +x /Programas/DCT/compile_dct.sh /Programas/DCT/run_dct.sh
+# Run the script to create the virtual environment and install packages
+RUN /tmp/setup-python-env.sh
 
-# Compile los programas en C usando el script de compilación
-RUN ./compile_axpy.sh
-RUN ./compile_dct.sh
+# Set the default working directory
+WORKDIR /workspace
 
-# Monte el entorno virtual de Python y instale las dependencias
-WORKDIR /Tests-Python
-RUN python3 -m venv entorno_TFG && \
-    ./entorno_TFG/bin/pip install --upgrade pip && \
-    ./entorno_TFG/bin/pip install -r requirements.txt
-
-# Copie el script de entorno virtual y hágalo ejecutable
-COPY ./setup_env.sh /Tests-Python/
-RUN chmod +x setup_env.sh
-
-# Comando por defecto para activar el entorno y ejecutar los scripts necesarios
-CMD ["bash", "-c", "source ./setup-python-env.sh && python3 run_tests.py"]
+# Set entrypoint to bash
+CMD ["/bin/bash"]

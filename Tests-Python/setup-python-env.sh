@@ -17,3 +17,5 @@ source "$(pwd)/entorno_TFG/bin/activate"
 
 # Instalar los paquetes sin mostrar la salida estándar
 pip install -r requirements.txt > /dev/null 2>&1
+
+deactivate

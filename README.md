@@ -169,7 +169,7 @@ Puedes instalar estos paquetes en sistemas basados en Debian/Ubuntu con el sigui
 
 ```bash
 sudo apt update
-sudo apt install gcc-14 qemu-user gcc-arm-none-eabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu -y
+sudo apt install gcc-14 qemu-user gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu -y
 ```
 
 ### Instalación de Intel SDE
@@ -214,7 +214,7 @@ Pasos para montar el contenedor:
     ```
 4. Arrancar el contenedor
     ```bash
-    docker run -it --rm -v $(pwd):/workspace tfg-benchmark-dev-env
+    docker run -it --rm -v $(pwd):/workspace tfg-benchmarck-dev-env
     ```
 
 **Nota**: Asegúrate de estar en el directorio raíz del proyecto para que se monte adecuadamente el contenedor Docker. 
