@@ -149,7 +149,7 @@ Los scripts de compilación y ejecución aceptan los siguientes parámetros y fl
 - **Vendor**: Nvidia
 - **Nota**: No hay soporte oficial por el momento.
 
-**Nota**: Para más información sobre los valores de `uname -m`, consultar la [Documentación del proyecto](./Documentacion/URLs.md#architecturespecificsmemo)
+**Nota**: Para más información sobre los valores de `uname -m`, consultar la [Documentación del proyecto](./Bibliografia/URLs.md#architecturespecificsmemo)
 
 **Nota**: Los archivos ejecutados por el script `<nombre>_run_<arch>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables).
 
