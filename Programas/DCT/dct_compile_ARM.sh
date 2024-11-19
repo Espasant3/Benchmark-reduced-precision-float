@@ -8,24 +8,24 @@ script_dir="$(dirname "$0")"
 # Cambiar al directorio del script
 cd "$script_dir"
 
-
 ### COMPILACION DEL PROGRAMA BASE
 
+# Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
+gcc-14 -Wall dct_FP32.c -o dct_FP32.out -lm
+
+### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA x86 (USA EL TIPO DE DATO _Float16)
 
 # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-aarch64-linux-gnu-gcc -Wall dct_FP32.c -o dct_FP32.out
-
-# Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-aarch64-linux-gnu-gcc -Wall dct_FP16.c -o dct_FP16.out
-
+gcc-14 -Wall dct_FP16.c -o dct_FP16.out -lm
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (USA EL TIPO DE DATO __fp16)
 
 # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-aarch64-linux-gnu-gcc -Wall dct_FP16_ARM.c -o dct_FP16_ARM.out
-
+gcc-14 -Wall dct_FP16_ARM.c -o dct_FP16_ARM.out -lm
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (USA EL TIPO DE DATO __bf16)
 
 # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-aarch64-linux-gnu-gcc -Wall dct_BF16.c -o dct_BF16.out
+gcc-14 -Wall dct_BF16.c -o dct_BF16.out -lm
+
+exit 0
