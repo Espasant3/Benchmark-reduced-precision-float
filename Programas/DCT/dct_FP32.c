@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
     }
     printf("]\n");
 
+    // Se ejecuta la operación DCT
     dct(input_small, output_small, N_SMALL);
 
     printf("Resultado DCT_small: [");
@@ -78,16 +79,17 @@ int main(int argc, char *argv[]) {
 
 
     //Para medir el tiempo de ejecución
-    
+
     clock_t start, end;
     double cpu_time_used;
 
     start = clock();
-    
+
     /* 
         Código del programa cuyo tiempo quiero medir
     */
 
+    // Se ejecuta la operación DCT
     dct(input, output, n);
 
     end = clock();

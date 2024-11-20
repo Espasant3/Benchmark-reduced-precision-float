@@ -5,6 +5,14 @@
 
 #define N_SMALL 5
 
+// Función AXPY
+void axpy(int n, __bf16 a, __bf16 *x, __bf16 *y) {
+    for (int i = 0; i < n; i++) {
+        y[i] = a * x[i] + y[i];
+    }
+}
+
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("Uso: %s <tamaño del vector> [<seed>]\n", argv[0]);
@@ -42,10 +50,8 @@ int main(int argc, char *argv[]) {
         printf("%f ", (float)y_small[i]);
     }
 
-    // Ejecutar la operación AXPY dentro del main
-    for (int i = 0; i < N_SMALL; i++) {
-        y_small[i] = (__bf16)(a * x_small[i]) + y_small[i];
-    }
+    // Se ejecuta la operación AXPY
+    axpy(N_SMALL, a, x_small, y_small);
 
     printf("]\nArray y_small despues de AXPY: [ ");
     for (int i = 0; i < N_SMALL; i++) {
@@ -83,11 +89,9 @@ int main(int argc, char *argv[]) {
     start = clock();
     
     ////    Código del programa cuyo tiempo quiero medir
-    
-    // Ejecutar la operación AXPY dentro del main
-    for (int i = 0; i < n; i++) {
-        y[i] = (__bf16)(a * x[i]) + y[i];
-    }
+
+    // Se ejecuta la operación AXPY
+    axpy(n, a, x, y);
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;

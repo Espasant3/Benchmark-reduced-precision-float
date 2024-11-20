@@ -9,6 +9,23 @@
 #define N_SMALL 5
 
 
+void dct(__fp16 *input, __fp16 *output, int n_size) {
+    _Float16 alpha;
+    _Float16 sum;
+    for (int k = 0; k < n_size; k++) {
+        if (k == 0) {
+            alpha = sqrtf(1.0 / n_size);
+        } else {
+            alpha = sqrtf(2.0 / n_size);
+        }
+        sum = 0.0;
+        for (int n = 0; n < n_size; n++) {
+            sum += input[n] * cosf(M_PI * (2.0 * n + 1.0) * k / (2.0 * n_size));
+        }
+        output[k] = alpha * sum;
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     
@@ -17,7 +34,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }  
 
-    int N = atoi(argv[1]);
+    int n = atoi(argv[1]);
 
     __fp16 *input_small = (__fp16 *)malloc(N_SMALL * sizeof(__fp16));
     __fp16 *output_small = (__fp16 *)malloc(N_SMALL * sizeof(__fp16));
@@ -41,23 +58,8 @@ int main(int argc, char *argv[]) {
     }
     printf("]\n");
 
-    //dct(input_small, output_small);
-
-    // Operacion dct
-    __fp16 alpha;
-    __fp16 sum;
-    for (int k = 0; k < N_SMALL; k++) {
-        if (k == 0) {
-            alpha = sqrt(1.0 / N_SMALL);
-        } else {
-            alpha = sqrt(2.0 / N_SMALL);
-        }
-        sum = 0.0;
-        for (int n = 0; n < N_SMALL; n++) {
-            sum += input_small[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * N_SMALL));
-        }
-        output_small[k] = alpha * sum;
-    }
+    // Se ejecuta la operación DCT
+    dct(input_small, output_small, N_SMALL);
 
 
     printf("Resultado DCT_small: [");
@@ -70,16 +72,16 @@ int main(int argc, char *argv[]) {
     free(output_small);
 
 
-    __fp16 *input = (__fp16 *)malloc(N * sizeof(__fp16));
-    __fp16 *output = (__fp16 *)malloc(N * sizeof(__fp16));
+    __fp16 *input = (__fp16 *)malloc(n * sizeof(__fp16));
+    __fp16 *output = (__fp16 *)malloc(n * sizeof(__fp16));
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < n; i++) {
         float input_temp = ((float)rand() / (float)(RAND_MAX)) * 10.0f;
         input[i] = (__fp16)input_temp;
     }
 
     printf("Array input: [ ");
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < n; i++) {
         printf("%f ", (float)input[i]);
     }
     printf("]\n");
@@ -96,19 +98,8 @@ int main(int argc, char *argv[]) {
         Código del programa cuyo tiempo quiero medir
     */
 
-    for (int k = 0; k < N; k++) {
-        if (k == 0) {
-            alpha = sqrt(1.0 / N);
-        } else {
-            alpha = sqrt(2.0 / N);
-        }
-        sum = 0.0;
-        for (int n = 0; n < N; n++) {
-            sum += input[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * N));
-        }
-        output[k] = alpha * sum;
-    }
-
+    // Se ejecuta la operación DCT
+    dct(input, output, n);
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -117,7 +108,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f %.10e\n", (float)output[N-1], (float)output[N-1]);
+    printf("%f %.10e\n", (float)output[n-1], (float)output[n-1]);
 
     free(input);
     free(output);

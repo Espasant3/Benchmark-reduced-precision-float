@@ -12,13 +12,13 @@ void dct(_Float16 *input, _Float16 *output, int n_size) {
     _Float16 sum;
     for (int k = 0; k < n_size; k++) {
         if (k == 0) {
-            alpha = sqrt(1.0 / n_size);
+            alpha = sqrtf(1.0 / n_size);
         } else {
-            alpha = sqrt(2.0 / n_size);
+            alpha = sqrtf(2.0 / n_size);
         }
         sum = 0.0;
         for (int n = 0; n < n_size; n++) {
-            sum += input[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * n_size));
+            sum += input[n] * cosf(M_PI * (2.0 * n + 1.0) * k / (2.0 * n_size));
         }
         output[k] = alpha * sum;
     }
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }  
 
-    int N = atoi(argv[1]);
+    int n = atoi(argv[1]);
 
     _Float16 *input_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
     _Float16 *output_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     }
     printf("]\n");
 
+    // Se ejecuta la operación DCT
     dct(input_small, output_small, N_SMALL);
 
     printf("Resultado DCT_small: [");
@@ -68,20 +69,19 @@ int main(int argc, char *argv[]) {
     free(output_small);
 
 
-    _Float16 *input = (_Float16 *)malloc(N * sizeof(_Float16));
-    _Float16 *output = (_Float16 *)malloc(N * sizeof(_Float16));
+    _Float16 *input = (_Float16 *)malloc(n * sizeof(_Float16));
+    _Float16 *output = (_Float16 *)malloc(n * sizeof(_Float16));
 
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < n; i++) {
         float input_temp = ((float)rand() / (float)(RAND_MAX)) * 10.0f;
         input[i] = (_Float16)input_temp;
     }
 
     printf("Array input: [ ");
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < n; i++) {
         printf("%f ", (float)input[i]);
     }
     printf("]\n");
-
    
 
     //Para medir el tiempo de ejecución
@@ -95,7 +95,8 @@ int main(int argc, char *argv[]) {
         Código del programa cuyo tiempo quiero medir
     */
 
-    dct(input, output, N);
+    // Se ejecuta la operación DCT
+    dct(input, output, n);
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -104,7 +105,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f %.10e\n", (float)output[N-1], (float)output[N-1]);
+    printf("%f %.10e\n", (float)output[n-1], (float)output[n-1]);
 
     free(input);
     free(output);
