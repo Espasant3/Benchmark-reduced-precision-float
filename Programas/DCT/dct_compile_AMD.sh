@@ -63,6 +63,7 @@ fi
 
 if $force_run; then
 
+    echo "Flag --force detectada. Cross-compilando programas para arquitectura ARM."
     ### COMPILACION DEL PROGRAMA BASE
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out

@@ -6,9 +6,6 @@ Discusión sobre la existencia y las implementaciones de floats de 16 bits en di
 ### [GCC Half-Precision](https://gcc.gnu.org/onlinedocs/gcc/Half-Precision.html)
 Documentación oficial de GCC sobre la implementación de floats de media precisión.
 
-### [GCC 4.9.4 Half-Precision](https://gcc.gnu.org/onlinedocs/gcc-4.9.4/gcc/Half-Precision.html)
-Documentación de GCC versión 4.9.4 sobre floats de media precisión.
-
 ### [Installing and Using GCC for ARM](https://learn.arm.com/install-guides/gcc/cross/)
 Guía detallada sobre cómo instalar y usar GCC para cross-compilar para arquitecturas ARM.
 

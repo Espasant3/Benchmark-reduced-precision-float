@@ -2,6 +2,7 @@
 
 # Inicializar variables
 force_run=false
+force_flag=""
 
 # Verificar si el primer argumento es --force
 if [[ "$1" == "--force" ]]; then
@@ -32,6 +33,10 @@ ARCH=$(uname -m)
 
 # Obtener el proveedor del CPU
 VENDOR=$(grep -m 1 'vendor_id' /proc/cpuinfo | awk '{print $3}')
+# Asignar valor a force_flag basado en force_run
+if [ "$force_run" = true ]; then
+    force_flag="--force"
+fi
 
 # Dependiendo del proveedor del CPU, realizar diferentes acciones
 case "$VENDOR" in
@@ -41,23 +46,8 @@ case "$VENDOR" in
     AuthenticAMD)
         CPU_VENDOR="amd"
         ;;
-    Loongson)
-        CPU_VENDOR="loongson"
-        ;;
-    MIPS)
-        CPU_VENDOR="mips"
-        ;;
     HiSilicon)
         CPU_VENDOR="huawei"
-        ;;
-    riscv)
-        CPU_VENDOR="riscv"
-        ;;
-    power)
-        CPU_VENDOR="power_isa"
-        ;;
-    Nvidia)
-        CPU_VENDOR="nvidia"
         ;;
     *)
         CPU_VENDOR="unknown"
@@ -72,25 +62,25 @@ case "$ARCH" in
                 echo "Arquitectura: Intel de 64 bits"
                 # Instrucciones específicas para Intel de 64 bits
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_Intel.sh ${force_run:+--force}
+                ./AXPY/axpy_compile_Intel.sh $force_flag
                 echo "Compilando DCT"
-                ./DCT/dct_compile_Intel.sh ${force_run:+--force}
+                ./DCT/dct_compile_Intel.sh $force_flag
                 echo "Compilando DWT_1D"
-                #./DWT_1D/dwt_1d_compile_Intel.sh ${force_run:+--force}
+                #./DWT_1D/dwt_1d_compile_Intel.sh $force_flag
                 echo "Compilando PCA"
-                #./PCA/pca_compile_Intel.sh ${force_run:+--force}
+                #./PCA/pca_compile_Intel.sh $force_flag
                 ;;
             amd)
                 echo "Arquitectura: AMD de 64 bits"
                 # Instrucciones específicas para AMD de 64 bits
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_AMD.sh ${force_run:+--force}
+                ./AXPY/axpy_compile_AMD.sh $force_flag
                 echo "Compilando DCT"
-                ./DCT/dct_compile_AMD.sh ${force_run:+--force}
+                ./DCT/dct_compile_AMD.sh $force_flag
                 echo "Compilando DWT_1D"
-                ./DWT_1D/dwt_1d_compile_AMD.sh ${force_run:+--force}
+                ./DWT_1D/dwt_1d_compile_AMD.sh $force_flag
                 echo "Compilando PCA"
-                ./PCA/pca_compile_AMD.sh ${force_run:+--force}
+                ./PCA/pca_compile_AMD.sh $force_flag
                 ;;
             *)
                 echo "Vendor desconocido para x86_64"
@@ -105,61 +95,17 @@ case "$ARCH" in
                 echo "Arquitectura: Huawei de 64 bits"
                 echo "No hay soporte oficial por el momento."
                 ;;
-            nvidia)
-                echo "Arquitectura: Nvidia"
-                echo "No hay soporte oficial por el momento."
-                ;;
             *)
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_ARM.sh ${force_run:+--force}
+                ./AXPY/axpy_compile_ARM.sh $force_flag
                 echo "Compilando DCT"
-                ./DCT/dct_compile_ARM.sh ${force_run:+--force}
+                ./DCT/dct_compile_ARM.sh $force_flag
                 echo "Compilando DWT_1D"
-                ./DWT_1D/dwt_1d_compile_ARM.sh ${force_run:+--force}
+                ./DWT_1D/dwt_1d_compile_ARM.sh $force_flag
                 echo "Compilando PCA"
-                ./PCA/pca_compile_ARM.sh ${force_run:+--force}
+                ./PCA/pca_compile_ARM.sh $force_flag
                 ;;
         esac
-        ;;
-    mips|mips64)
-        echo "Arquitectura: MIPS"
-        case "$CPU_VENDOR" in
-            loongson)
-                echo "Arquitectura: Loongson basada en MIPS"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            mips)
-                echo "Arquitectura: MIPS genérica"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            *)
-                echo "Vendor desconocido para MIPS"
-                ;;
-        esac
-        ;;
-    riscv|riscv64)
-        echo "Arquitectura: RISC-V"
-        case "$CPU_VENDOR" in
-            loongson)
-                echo "Arquitectura: Loongson basada en RISC-V"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            riscv)
-                echo "Arquitectura: RISC-V de 64 bits"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            *)
-                echo "Vendor desconocido para RISC-V"
-                ;;
-        esac
-        ;;
-    powerpc|ppc64|ppc64le)
-        echo "Arquitectura: Power-ISA"
-        echo "No hay soporte oficial por el momento."
-        ;;
-    loongarch64)
-        echo "Arquitectura: LoongArch de 64 bits"
-        echo "No hay soporte oficial por el momento."
         ;;
     *)
         echo "Arquitectura desconocida o no soportada: $ARCH"

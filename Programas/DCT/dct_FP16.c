@@ -7,18 +7,18 @@
 // Definir el tamaño de la señal
 #define N_SMALL 5
 
-void dct(_Float16 *input, _Float16 *output) {
+void dct(_Float16 *input, _Float16 *output, int n_size) {
     _Float16 alpha;
     _Float16 sum;
-    for (int k = 0; k < N_SMALL; k++) {
+    for (int k = 0; k < n_size; k++) {
         if (k == 0) {
-            alpha = sqrt(1.0 / N_SMALL);
+            alpha = sqrt(1.0 / n_size);
         } else {
-            alpha = sqrt(2.0 / N_SMALL);
+            alpha = sqrt(2.0 / n_size);
         }
         sum = 0.0;
-        for (int n = 0; n < N_SMALL; n++) {
-            sum += input[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * N_SMALL));
+        for (int n = 0; n < n_size; n++) {
+            sum += input[n] * cos(M_PI * (2.0 * n + 1.0) * k / (2.0 * n_size));
         }
         output[k] = alpha * sum;
     }
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     }
     printf("]\n");
 
-    dct(input_small, output_small);
+    dct(input_small, output_small, N_SMALL);
 
     printf("Resultado DCT_small: [");
     for (int i = 0; i < N_SMALL; i++) {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
         Código del programa cuyo tiempo quiero medir
     */
 
-    dct(input, output);
+    dct(input, output, N);
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f\n", (float)output[N-1]);
+    printf("%f %.10e\n", (float)output[N-1], (float)output[N-1]);
 
     free(input);
     free(output);

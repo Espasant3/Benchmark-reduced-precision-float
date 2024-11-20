@@ -69,23 +69,8 @@ case "$VENDOR" in
     AuthenticAMD)
         CPU_VENDOR="amd"
         ;;
-    Loongson)
-        CPU_VENDOR="loongson"
-        ;;
-    MIPS)
-        CPU_VENDOR="mips"
-        ;;
     HiSilicon)
         CPU_VENDOR="huawei"
-        ;;
-    riscv)
-        CPU_VENDOR="riscv"
-        ;;
-    power)
-        CPU_VENDOR="power_isa"
-        ;;
-    Nvidia)
-        CPU_VENDOR="nvidia"
         ;;
     *)
         CPU_VENDOR="unknown"
@@ -133,10 +118,6 @@ case "$ARCH" in
                 echo "Arquitectura: Huawei de 64 bits"
                 echo "No hay soporte oficial por el momento."
                 ;;
-            nvidia)
-                echo "Arquitectura: Nvidia"
-                echo "No hay soporte oficial por el momento."
-                ;;
             *)
                 echo "Ejecutando AXPY"
                 ./AXPY/axpy_run_ARM.sh $tamanhoN $seed $force_flag
@@ -148,47 +129,6 @@ case "$ARCH" in
                 ./PCA/pca_run_ARM.sh $tamanhoN $seed $force_flag
                 ;;
         esac
-        ;;
-    mips|mips64)
-        echo "Arquitectura: MIPS"
-        case "$CPU_VENDOR" in
-            loongson)
-                echo "Arquitectura: Loongson basada en MIPS"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            mips)
-                echo "Arquitectura: MIPS genérica"
-                # Instrucciones específicas para MIPS
-                echo "No hay soporte oficial por el momento"
-                ;;
-            *)
-                echo "Vendor desconocido para MIPS"
-                ;;
-        esac
-        ;;
-    riscv|riscv64)
-        echo "Arquitectura: RISC-V"
-        case "$CPU_VENDOR" in
-            loongson)
-                echo "Arquitectura: Loongson basada en RISC-V"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            riscv)
-                echo "Arquitectura: RISC-V de 64 bits"
-                echo "No hay soporte oficial por el momento."
-                ;;
-            *)
-                echo "Vendor desconocido para RISC-V"
-                ;;
-        esac
-        ;;
-    powerpc|ppc64|ppc64le)
-        echo "Arquitectura: Power-ISA"
-        echo "No hay soporte oficial por el momento."
-        ;;
-    loongarch64)
-        echo "Arquitectura: LoongArch de 64 bits"
-        echo "No hay soporte oficial por el momento."
         ;;
     *)
         echo "Arquitectura desconocida o no soportada: $ARCH"

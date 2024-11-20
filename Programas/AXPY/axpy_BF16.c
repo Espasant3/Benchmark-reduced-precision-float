@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f\n", (float)y[n-1]);
+    printf("%f %.10e\n", (float)y[n-1], (float)y[n-1]);
 
     // Liberar memoria asignada
     free(x);

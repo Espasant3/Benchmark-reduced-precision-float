@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f\n", (float)output[N-1]);
+    printf("%f %.10e\n", (float)output[N-1], (float)output[N-1]);
 
     free(input);
     free(output);
