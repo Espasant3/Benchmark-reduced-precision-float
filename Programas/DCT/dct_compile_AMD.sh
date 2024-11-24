@@ -31,35 +31,41 @@ cd "$script_dir"
 gcc-14 -Wall -g dct_FP32.c -o dct_FP32 -lm
 
 
-### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA x86 (USA EL TIPO DE DATO _Float16)
+### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
-gcc-14 -Wall -g dct_FP16.c -o dct_FP16 -fexcess-precision=16 -lm
+if grep -q "sse2" /proc/cpuinfo; then
+    echo "SSE2 support detected. Compiling programs with _Float16 data."
+    gcc-14 -Wall -g dct_FP16.c -o dct_FP16 -fexcess-precision=16 -lm
 
-# Para los futuros procesadores AMD con arquitectura Zen 6
+    # Para los futuros procesadores AMD con arquitectura Zen 6
 
-if grep -q "avx512fp16" /proc/cpuinfo; then
-    echo "AVX512FP16 support detected. Compiling with -mavx512fp16."
+    if grep -q "avx512fp16" /proc/cpuinfo; then
+        echo "AVX512FP16 support detected. Compiling with -mavx512fp16."
 
-    # Compilar el programa optimizado con AVX512-FP16 (nativo para Zen 6)
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16_native-base -mavx512fp16 -lm
-    # Compilar el programa optimizado con AVX512-FP16 y precisión estándar
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16_avx512fp16_precision -fexcess-precision=standard -mavx512fp16 -lm
-    # Compilar el programa con máxima optimización para AVX512-FP16
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=standard -mfpmath=sse -mavx512fp16 -lm
+        # Compilar el programa optimizado con AVX512-FP16 (nativo para Zen 6)
+        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_native-base -mavx512fp16 -lm
+        # Compilar el programa optimizado con AVX512-FP16 y precisión estándar
+        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_avx512fp16_precision -fexcess-precision=16 -mavx512fp16 -lm
+        # Compilar el programa con máxima optimización para AVX512-FP16
+        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512fp16 -lm
 
-elif grep -q "avx512f" /proc/cpuinfo; then
-    echo "AVX512 support detected. Compiling with -mavx512f."
+    elif grep -q "avx512f" /proc/cpuinfo; then
+        echo "AVX512 support detected. Compiling with -mavx512f."
 
-    # Compilar el programa optimizado con AVX512 (nativo para Zen 4 y Zen 5)
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16_native-base -mavx512f -lm
-    # Compilar el programa optimizado con AVX512 y precisión estándar
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16_avx512_precision -fexcess-precision=standard -mavx512f -lm
-    # Compilar el programa con máxima optimización para AVX512
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=standard -mfpmath=sse -mavx512f -lm
+        # Compilar el programa optimizado con AVX512 (nativo para Zen 4 y Zen 5)
+        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_native-base -mavx512f -lm
+        # Compilar el programa optimizado con AVX512 y precisión estándar
+        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_avx512_precision -fexcess-precision=16 -mavx512f -lm
+        # Compilar el programa con máxima optimización para AVX512
+        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512f -lm
 
+    else
+        echo "AVX512 not supported on this system. Skipping compilation with AVX512 flags."
+    fi
 else
-    echo "AVX512 not supported on this system. Skipping compilation with AVX512 flags."
+    echo "SSE2 not supported on this system. Skipping compilation for programs with _Float16."
 fi
+
 
 if $force_run; then
 
@@ -69,17 +75,17 @@ if $force_run; then
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
     aarch64-linux-gnu-gcc -Wall dct_FP32.c -o dct_FP32.out -lm
 
-    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA x86 (USA EL TIPO DE DATO _Float16)
+    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall dct_FP16.c -o dct_FP16.out -lm
+    aarch64-linux-gnu-gcc -Wall -fexcess-precision=16 dct_FP16.c -o dct_FP16.out -lm
 
-    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (USA EL TIPO DE DATO __fp16)
+    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __fp16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall dct_FP16_ARM.c -o dct_FP16_ARM.out -lm
+    aarch64-linux-gnu-gcc -Wall -mfp16-format=ieee dct_FP16_ARM.c -o dct_FP16_ARM.out -lm
 
-    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (USA EL TIPO DE DATO __bf16)
+    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __bf16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
     aarch64-linux-gnu-gcc -Wall dct_BF16.c -o dct_BF16.out -lm
