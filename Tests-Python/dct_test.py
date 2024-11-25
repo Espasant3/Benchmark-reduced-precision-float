@@ -39,17 +39,12 @@ def main():
     # Example small array DCT calculation to match your C code
     
     N_SMALL = 5
-    input_small = np.random.rand(N_SMALL) * 10.0
+    #input_small = np.random.rand(N_SMALL) * 10.0
+    input_small = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     output_small = dct(input_small, N_SMALL)
     print(f"Array input_small: {input_small}")
     print(f"DCT_small: {output_small}")
 
-    input = np.random.rand(n) * 10.0
-    
-    print(f"Array input: {input}")
-    
-    output = dct(input, n)
-    print(f"DCT: {output}")
         
 
 if __name__ == "__main__":
