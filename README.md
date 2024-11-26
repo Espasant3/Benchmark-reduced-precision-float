@@ -120,38 +120,9 @@ Los scripts de compilación y ejecución aceptan los siguientes parámetros y fl
   - **HiSilicon Kunpeng**: Procesadores ARM de servidor de Huawei.
 - **Nota**: Por el momento no hay soporte oficial para Huawei (tanto Huawei Ascend como HiSilicon Kunpeng).
 
-#### MIPS (Loongson y genérica)
-- **Arquitectura**: mips, mips64
-- **Vendors**:
-  - **Loongson**: Procesadores basados en la arquitectura MIPS.
-  - **MIPS**: Procesadores MIPS genéricos.
-- **Nota**: No hay soporte oficial por el momento.
-
-#### RISC-V (Loongson y genérica)
-- **Arquitectura**: riscv, riscv64
-- **Vendors**:
-  - **Loongson**: Procesadores basados en la arquitectura RISC-V.
-  - **RISC-V**: Procesadores RISC-V genéricos.
-- **Nota**: No hay soporte oficial por el momento.
-
-#### Power-ISA
-- **Arquitectura**: powerpc, ppc64, ppc64le
-- **Vendor**: Power-ISA
-- **Nota**: No hay soporte oficial por el momento.
-
-#### LoongArch
-- **Arquitectura**: loongarch64
-- **Vendor**: LoongArch
-- **Nota**: No hay soporte oficial por el momento.
-
-#### Nvidia
-- **Arquitectura**: aarch64
-- **Vendor**: Nvidia
-- **Nota**: No hay soporte oficial por el momento.
-
 **Nota**: Para más información sobre los valores de `uname -m`, consultar la [Documentación del proyecto](./Bibliografia/URLs.md#architecturespecificsmemo)
 
-**Nota**: Los archivos ejecutados por el script `<nombre>_run_<arch>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables).
+**Nota**: Los archivos ejecutados por los scripts `<nombre>_run_<arch>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables) para poder ser ejecutados en los scripts.
 
 
 ## Preparación del entorno para Intel x86
@@ -233,11 +204,11 @@ Pasos para montar el contenedor:
     
 3. Ejecutar el programa:
     ```bash
-    ./programa-compilado <tamanho N> [<seed>] [--force]
+    ./programa-compilado <tamanho N> [<seed>]
     ```
     Opcionalmente se pueden comprobar fugas de memoria con:
     ```bash
-    valgrind --leak-check=full ./programa-compilado <tamanho N> [<seed>] [--force]
+    valgrind --leak-check=full ./programa-compilado <tamanho N> [<seed>]
     ```
 4. Cross-compilar el código para ARM:
    

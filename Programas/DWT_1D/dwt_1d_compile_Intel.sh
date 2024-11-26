@@ -32,4 +32,37 @@ cd "$script_dir"
 gcc-14 -Wall -g dwt_1d_FP32.c -o dwt_1d_FP32 
 
 
+
+
+
+# Compilación cruzada para ARM de 64 bits
+
+if $force_run; then
+
+    echo "Flag --force detectada. Cross-compilando programas para arquitectura ARM."
+    ### COMPILACION DEL PROGRAMA BASE
+
+    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
+    aarch64-linux-gnu-gcc -Wall axpy_FP32.c -o axpy_FP32.out
+
+
+    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
+
+    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
+    aarch64-linux-gnu-gcc -Wall -fexcess-precision=16 axpy_FP16.c -o axpy_FP16.out
+
+
+    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __fp16)
+
+    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
+    aarch64-linux-gnu-gcc -Wall -mfp16-format=ieee axpy_FP16_ARM.c -o axpy_FP16_ARM.out
+
+
+    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __bf16)
+
+    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
+    aarch64-linux-gnu-gcc -Wall axpy_BF16.c -o axpy_BF16.out
+
+fi
+
 exit 0

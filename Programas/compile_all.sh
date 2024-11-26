@@ -66,7 +66,7 @@ case "$ARCH" in
                 echo "Compilando DCT"
                 ./DCT/dct_compile_Intel.sh $force_flag
                 echo "Compilando DWT_1D"
-                #./DWT_1D/dwt_1d_compile_Intel.sh $force_flag
+                ./DWT_1D/dwt_1d_compile_Intel.sh $force_flag
                 echo "Compilando PCA"
                 #./PCA/pca_compile_Intel.sh $force_flag
                 ;;

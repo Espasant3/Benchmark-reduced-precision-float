@@ -89,7 +89,7 @@ case "$ARCH" in
                 echo "Ejecutando DCT"
                 ./DCT/dct_run_Intel.sh $tamanhoN $seed $force_flag
                 echo "Ejecutando DWT_1D"
-                #./DWT_1D/dwt_1d_run_Intel.sh $tamanhoN $seed $force_flag
+                ./DWT_1D/dwt_1d_run_Intel.sh $tamanhoN $seed $force_flag
                 echo "Ejecutando PCA"
                 #./PCA/pca_run_Intel.sh $tamanhoN $seed $force_flag
                 ;;
