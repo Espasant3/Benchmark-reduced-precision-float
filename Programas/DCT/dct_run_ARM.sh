@@ -56,7 +56,7 @@ script_dir="$(dirname "$0")"
 # Cambiar al directorio del script
 cd "$script_dir"
 
-echo "Arquitectura ARM de 64 bits detectada. Ejecutando nativamente."
+echo "Ejecutando nativamente en arquitectura ARM de 64 bits"
 for file in *.out; do
     if [ -f "$file" ] && [ -x "$file" ]; then
         if [ -z "$seed" ]; then
