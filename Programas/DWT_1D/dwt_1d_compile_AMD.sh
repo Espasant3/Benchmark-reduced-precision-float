@@ -28,7 +28,7 @@ cd "$script_dir"
 
 ### COMPILACION DEL PROGRAMA BASE
 
-gcc-14 -Wall -g axpy_FP32.c -o axpy_FP32
+gcc-14 -Wall -g dwt_1d_FP32.c -o dwt_1d_FP32
 
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
@@ -36,7 +36,7 @@ gcc-14 -Wall -g axpy_FP32.c -o axpy_FP32
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
 
-    gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16 -fexcess-precision=16
+    gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16 -fexcess-precision=16
 
     # Para los futuros procesadores AMD con arquitectura Zen 6
 
@@ -44,21 +44,21 @@ if grep -q "sse2" /proc/cpuinfo; then
         echo "AVX512FP16 support detected. Compiling with -mavx512fp16."
 
         # Compilar el programa optimizado con AVX512-FP16 (nativo para Zen 6)
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_native-base -mavx512fp16
+        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_native-base -mavx512fp16
         # Compilar el programa optimizado con AVX512-FP16 y precisión estándar
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_avx512fp16_precision -fexcess-precision=16 -mavx512fp16
+        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_avx512fp16_precision -fexcess-precision=16 -mavx512fp16
         # Compilar el programa con máxima optimización para AVX512-FP16
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512fp16
+        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512fp16
 
     elif grep -q "avx512f" /proc/cpuinfo; then
         echo "AVX512 support detected. Compiling with -mavx512f."
 
         # Compilar el programa optimizado con AVX512 (nativo para Zen 4 y Zen 5)
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_native-base -mavx512f
+        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_native-base -mavx512f
         # Compilar el programa optimizado con AVX512 y precisión estándar
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_avx512_precision -fexcess-precision=16 -mavx512f
+        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_avx512_precision -fexcess-precision=16 -mavx512f
         # Compilar el programa con máxima optimización para AVX512
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512f
+        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512f
 
     else
         echo "AVX512 not supported on this system. Skipping compilation with AVX512 flags."
@@ -74,22 +74,22 @@ if $force_run; then
     ### COMPILACION DEL PROGRAMA BASE
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall axpy_FP32.c -o axpy_FP32.out
+    aarch64-linux-gnu-gcc -Wall dwt_1d_FP32.c -o dwt_1d_FP32.out
 
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall -fexcess-precision=16 axpy_FP16.c -o axpy_FP16.out
+    aarch64-linux-gnu-gcc -Wall -fexcess-precision=16 dwt_1d_FP16.c -o dwt_1d_FP16.out
 
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __fp16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall axpy_FP16_ARM.c -o axpy_FP16_ARM.out
+    aarch64-linux-gnu-gcc -Wall dwt_1d_FP16_ARM.c -o dwt_1d_FP16_ARM.out
 
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __bf16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall axpy_BF16.c -o axpy_BF16.out
+    aarch64-linux-gnu-gcc -Wall dwt_1d_BF16.c -o dwt_1d_BF16.out
 
 fi
 

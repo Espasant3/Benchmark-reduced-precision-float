@@ -60,10 +60,10 @@ echo "Ejecutando nativamente en arquitectura ARM de 64 bits"
 for file in *.out; do
     if [ -f "$file" ] && [ -x "$file" ]; then
         if [ -z "$seed" ]; then
-            echo "Ejecutando $file con N $tamanhoN"
+            echo "Ejecutando $file con N=$tamanhoN"
             ./"$file" "$tamanhoN"
         else
-            echo "Ejecutando $file con N $tamanhoN y seed $seed"
+            echo "Ejecutando $file con N=$tamanhoN y seed=$seed"
             ./"$file" "$tamanhoN" "$seed"
         fi
         echo ""
@@ -77,10 +77,10 @@ if $force_run; then
         for file in *; do
             if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.sh ]] && [[ "$file" != *.out ]] && [[ "$file" != *.o ]]; then
                 if [ -z "$seed" ]; then
-                    echo "Ejecutando $file con N $tamanhoN"
+                    echo "Ejecutando $file con N=$tamanhoN"
                     sde -spr -- ./"$file" "$tamanhoN"
                 else
-                    echo "Ejecutando $file con N $tamanhoN y seed $seed"
+                    echo "Ejecutando $file con N=$tamanhoN y seed=$seed"
                     sde -spr -- ./"$file" "$tamanhoN" "$seed"
                 fi
                 echo ""

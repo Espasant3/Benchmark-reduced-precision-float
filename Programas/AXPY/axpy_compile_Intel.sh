@@ -79,7 +79,7 @@ if $force_run; then
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __fp16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall -mfp16-format=ieee axpy_FP16_ARM.c -o axpy_FP16_ARM.out
+    aarch64-linux-gnu-gcc -Wall axpy_FP16_ARM.c -o axpy_FP16_ARM.out
 
 
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __bf16)

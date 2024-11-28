@@ -13,31 +13,9 @@ typedef struct {
     int high_pass_size;
 } WaveletKernels;
 
-void convolve1d(float* input_vector, int vector_size, double* kernel, int kernel_size) {
-    float* temp_vector = (float*) malloc(vector_size * sizeof(float));
-
-    for (int i = 0; i < vector_size; i++) {
-        temp_vector[i] = 0.0f;
-    }
-
-    for (int i = 0; i < vector_size; i++) {
-        for (int j = 0; j < kernel_size; j++) {
-            if (i + j < vector_size) {
-                temp_vector[i] += input_vector[i + j] * (float)kernel[j];
-            }
-        }
-    }
-
-    for (int i = 0; i < vector_size; i++) {
-        input_vector[i] = temp_vector[i];
-    }
-
-    free(temp_vector);
-}
-
-void convolve1d_generic(float* input_vector, int vector_size, WaveletKernels kernels) {
-    float* low_pass_result = (float*) malloc(vector_size * sizeof(float));
-    float* high_pass_result = (float*) malloc(vector_size * sizeof(float));
+void convolve1d_generic(_Float16* input_vector, int vector_size, WaveletKernels kernels) {
+    _Float16* low_pass_result = (_Float16*) malloc(vector_size * sizeof(_Float16));
+    _Float16* high_pass_result = (_Float16*) malloc(vector_size * sizeof(_Float16));
 
     for (int i = 0; i < vector_size; i++) {
         low_pass_result[i] = 0.0f;
@@ -47,7 +25,7 @@ void convolve1d_generic(float* input_vector, int vector_size, WaveletKernels ker
     for (int i = 0; i < vector_size; i++) {
         for (int j = 0; j < kernels.low_pass_size; j++) {
             if (i + j < vector_size) {
-                low_pass_result[i] += input_vector[i + j] * (float)kernels.low_pass_kernel[j];
+                low_pass_result[i] += input_vector[i + j] * (_Float16)kernels.low_pass_kernel[j];
             }
         }
     }
@@ -55,7 +33,7 @@ void convolve1d_generic(float* input_vector, int vector_size, WaveletKernels ker
     for (int i = 0; i < vector_size; i++) {
         for (int j = 0; j < kernels.high_pass_size; j++) {
             if (i + j < vector_size) {
-                high_pass_result[i] += input_vector[i + j] * (float)kernels.high_pass_kernel[j];
+                high_pass_result[i] += input_vector[i + j] * (_Float16)kernels.high_pass_kernel[j];
             }
         }
     }
@@ -69,19 +47,6 @@ void convolve1d_generic(float* input_vector, int vector_size, WaveletKernels ker
     free(high_pass_result);
 }
 
-/**
- * @brief Initializes the wavelet kernels based on the specified kernel type.
- *
- * This function sets up the wavelet kernels structure with the appropriate
- * coefficients for the given kernel type. The kernels are used in the 
- * discrete wavelet transform (DWT) process.
- *
- * @param kernels Pointer to the WaveletKernels structure to be initialized.
- * @param kernel_type Integer representing the type of wavelet kernel to use.
- *                    Acceptable values are:
- *                    - LEGALL_53_WAVELET (1)
- *                    - CDF_97_WAVELET (2)
- */
 void initialize_kernels(WaveletKernels* kernels, int kernel_type) {
     switch (kernel_type) {
         case LEGALL_53_WAVELET:
@@ -140,14 +105,15 @@ int main(int argc, char *argv[]) {
 
     int n = atoi(argv[1]);
 
-    float* input_vector_small = (float*) malloc(N_SMALL * sizeof(float));
-    float* aux_vector_small = (float*) malloc(N_SMALL * sizeof(float));
+    _Float16* input_vector_small = (_Float16*) malloc(N_SMALL * sizeof(_Float16));
+    _Float16* aux_vector_small = (_Float16*) malloc(N_SMALL * sizeof(_Float16));
 
     unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
     srand(seed);
 
     for (int i = 0; i < N_SMALL; i++) {
-        aux_vector_small[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+        float temp_value = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+        aux_vector_small[i] = (_Float16)temp_value;
     }
 
     for (int i = 0; i < N_SMALL; i++) {
@@ -156,7 +122,7 @@ int main(int argc, char *argv[]) {
 
     printf("Array input_vector_small: [ ");
     for (int i = 0; i < N_SMALL; i++) {
-        printf("%f ", input_vector_small[i]);
+        printf("%f ", (float)input_vector_small[i]);
     }
     printf("]\n");
 
@@ -169,7 +135,7 @@ int main(int argc, char *argv[]) {
 
     printf("Result: ");
     for (int i = 0; i < N_SMALL; i++) {
-        printf("%f ", input_vector_small[i]);
+        printf("%f ", (float)input_vector_small[i]);
     }
     printf("\n");
 
@@ -187,7 +153,7 @@ int main(int argc, char *argv[]) {
 
     printf("Result: ");
     for (int i = 0; i < N_SMALL; i++) {
-        printf("%f ", input_vector_small[i]);
+        printf("%f ", (float)input_vector_small[i]);
     }
     printf("\n");
 
@@ -198,11 +164,12 @@ int main(int argc, char *argv[]) {
 
     // Fin del programa para un vector pequeño
 
-    float* input_vector = (float*) malloc(n * sizeof(float));
-    float* aux_vector = (float*) malloc(n * sizeof(float));
+    _Float16* input_vector = (_Float16*) malloc(n * sizeof(_Float16));
+    _Float16* aux_vector = (_Float16*) malloc(n * sizeof(_Float16));
 
     for (int i = 0; i < n; i++) {
-        aux_vector[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+        float temp_value = ((float)rand() / (float)(RAND_MAX)) * 10.0;
+        aux_vector[i] = (_Float16)temp_value;
     }
 
     for (int i = 0; i < n; i++) {
@@ -235,7 +202,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f %.10e\n", input_vector[n-1], input_vector[n-1]);
+    printf("%f %.10e\n", (float)input_vector[n-1], (float)input_vector[n-1]);
 
     free(kernels.low_pass_kernel);
     free(kernels.high_pass_kernel);
@@ -265,7 +232,7 @@ int main(int argc, char *argv[]) {
 
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
-    printf("%f %.10e\n", input_vector[n-1], input_vector[n-1]);
+    printf("%f %.10e\n", (float)input_vector[n-1], (float)input_vector[n-1]);
 
     free(input_vector);
     free(aux_vector);
