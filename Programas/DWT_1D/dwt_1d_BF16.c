@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <arm_fp16.h>
+#include <arm_bf16.h>
 
 #define LEGALL_53_WAVELET 1
 #define CDF_97_WAVELET 2
