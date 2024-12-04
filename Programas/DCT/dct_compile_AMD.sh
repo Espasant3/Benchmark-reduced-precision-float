@@ -18,6 +18,10 @@ else
     done
 fi
 
+OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC"
+
+COMMON_FLAGS="-Wall -g -lm"
+
 ### SCRIPT DE COMPILACION PARA ARQUITECTURA AMD x86_64
 
 # Obtener el directorio donde está ubicado el script
@@ -28,26 +32,35 @@ cd "$script_dir"
 
 ### COMPILACION DEL PROGRAMA BASE
 
-gcc-14 -Wall -g dct_FP32.c -o dct_FP32 -lm
+gcc-14 $COMMON_FLAGS dct_FP32.c -o dct_FP32
 
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
-    gcc-14 -Wall -g dct_FP16.c -o dct_FP16 -fexcess-precision=16 -lm
+    
+    gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16 -fexcess-precision=16 $OPT_FLAGS
 
     # Para los futuros procesadores AMD con arquitectura Zen 6
 
     if grep -q "avx512fp16" /proc/cpuinfo; then
         echo "AVX512FP16 support detected. Compiling with -mavx512fp16."
+        
+        COMMON_FLAGS+=" -march=znver6 -mtune=znver6 -mavx512fp16"
 
         # Compilar el programa optimizado con AVX512-FP16 (nativo para Zen 6)
-        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_native-base -mavx512fp16 -lm
+        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_native-base $OPT_FLAGS
         # Compilar el programa optimizado con AVX512-FP16 y precisión estándar
-        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_avx512fp16_precision -fexcess-precision=16 -mavx512fp16 -lm
+        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_avx512fp16_precision -fexcess-precision=16 $OPT_FLAGS
         # Compilar el programa con máxima optimización para AVX512-FP16
-        gcc-14 -Wall -g dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512fp16 -lm
+        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS
+
+        # Eliminar los flags específicos de esta sección
+        COMMON_FLAGS="${COMMON_FLAGS/-mavx512fp16/}"
+        COMMON_FLAGS="${COMMON_FLAGS/-march=znver6/}"
+        COMMON_FLAGS="${COMMON_FLAGS/-mtune=znver6/}"
+        COMMON_FLAGS=$(echo $COMMON_FLAGS | tr -s ' ' | xargs)
 
     elif grep -q "avx512f" /proc/cpuinfo; then
         echo "AVX512 support detected. Compiling with -mavx512f."

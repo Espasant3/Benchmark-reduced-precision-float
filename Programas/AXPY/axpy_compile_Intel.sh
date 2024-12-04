@@ -18,6 +18,10 @@ else
     done
 fi
 
+OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC"
+
+COMMON_FLAGS="-Wall -g"
+
 ### SCRIPT DE COMPILACION PARA ARQUITECTURA INTEL x86
 
 # Obtener el directorio donde está ubicado el script
@@ -29,7 +33,7 @@ cd "$script_dir"
 
 ### COMPILACION DEL PROGRAMA BASE
 
-gcc-14 -Wall -g axpy_FP32.c -o axpy_FP32
+gcc-14 $COMMON_FLAGS axpy_FP32.c -o axpy_FP32 $OPT_FLAGS
 
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
@@ -37,18 +41,23 @@ gcc-14 -Wall -g axpy_FP32.c -o axpy_FP32
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
 
-    gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16 -fexcess-precision=16
+    gcc-14 $COMMON_FLAGS axpy_FP16.c -o axpy_FP16 -fexcess-precision=16 $OPT_FLAGS
 
     if grep -q "avx512fp16" /proc/cpuinfo; then
         
         echo "AVX512FP16 support detected. Compiling with -mavx512fp16."
+        COMMON_FLAGS+=" -mavx512fp16"
 
         # Compilar el programa optimizado con AVX512 (nativo)
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_native-base -mavx512fp16
+        gcc-14 $COMMON_FLAGS axpy_FP16.c -o axpy_FP16_native-base $OPT_FLAGS
         # Compilar el programa optimizado con AVX512 y precisión de 16 bits
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_avx512_precision -fexcess-precision=16 -mavx512fp16
+        gcc-14 $COMMON_FLAGS axpy_FP16.c -o axpy_FP16_avx512_precision -fexcess-precision=16 $OPT_FLAGS
         # Compilar el programa con máxima optimización
-        gcc-14 -Wall -g axpy_FP16.c -o axpy_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512fp16
+        gcc-14 $COMMON_FLAGS axpy_FP16.c -o axpy_FP16_max_performance -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS
+
+        # Eliminar los flags específicos de esta sección
+        COMMON_FLAGS="${COMMON_FLAGS/-mavx512fp16/}" 
+        COMMON_FLAGS=$(echo $COMMON_FLAGS | tr -s ' ' | xargs)
 
     else
         echo "AVX512FP16 not supported on this system. Skipping compilation with -mavx512fp16."
