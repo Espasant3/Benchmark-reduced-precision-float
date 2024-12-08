@@ -1,7 +1,10 @@
 #!/bin/bash
 
+### SCRIPT DE COMPILACION PARA ARQUITECTURA INTEL x86
+
 # Inicializar variables
 force_run=false
+additional_flags=""
 
 # Verificar si el primer argumento es --force
 if [[ "$1" == "--force" ]]; then
@@ -18,11 +21,21 @@ else
     done
 fi
 
-OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC"
+# Procesar flags adicionales
+for arg in "$@"; do
+    if [[ "$arg" == -* && "$arg" != --* ]]; then
+        additional_flags+=" $arg"
+    else
+        echo "Flag no válida: $arg"
+        exit 1
+    fi
+done
 
-COMMON_FLAGS="-Wall -g -lm"
+COMMON_FLAGS="-Wall -g"
 
-### SCRIPT DE COMPILACION PARA ARQUITECTURA INTEL x86
+OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC $additional_flags"
+
+LINK_FLAGS="-lm"
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
@@ -33,7 +46,7 @@ cd "$script_dir"
 
 ### COMPILACION DEL PROGRAMA BASE
 
-gcc-14 $COMMON_FLAGS dct_FP32.c -o dct_FP32 $OPT_FLAGS
+gcc-14 $COMMON_FLAGS dct_FP32.c -o dct_FP32 $OPT_FLAGS $LINK_FLAGS
 
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
@@ -41,7 +54,7 @@ gcc-14 $COMMON_FLAGS dct_FP32.c -o dct_FP32 $OPT_FLAGS
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
 
-    gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16 -fexcess-precision=16 $OPT_FLAGS
+    gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
 
     if grep -q "avx512fp16" /proc/cpuinfo; then
         
@@ -49,11 +62,11 @@ if grep -q "sse2" /proc/cpuinfo; then
         COMMON_FLAGS+=" -mavx512fp16"
 
         # Compilar el programa optimizado con AVX512 (nativo)
-        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_native-base $OPT_FLAGS
+        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_native-base $OPT_FLAGS $LINK_FLAGS
         # Compilar el programa optimizado con AVX512 y precisión 16 bits
-        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_avx512_precision -fexcess-precision=16 $OPT_FLAGS
+        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_avx512_precision -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
         # Compilar el programa con máxima optimización
-        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS
+        gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16_max_performance -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS $LINK_FLAGS
 
         # Eliminar los flags específicos de esta sección
         COMMON_FLAGS="${COMMON_FLAGS/-mavx512fp16/}"

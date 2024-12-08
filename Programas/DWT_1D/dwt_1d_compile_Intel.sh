@@ -1,7 +1,10 @@
 #!/bin/bash
 
+### SCRIPT DE COMPILACION PARA ARQUITECTURA INTEL x86
+
 # Inicializar variables
 force_run=false
+additional_flags=""
 
 # Verificar si el primer argumento es --force
 if [[ "$1" == "--force" ]]; then
@@ -18,11 +21,19 @@ else
     done
 fi
 
-OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC"
+# Procesar flags adicionales
+for arg in "$@"; do
+    if [[ "$arg" == -* && "$arg" != --* ]]; then
+        additional_flags+=" $arg"
+    else
+        echo "Flag no válida: $arg"
+        exit 1
+    fi
+done
 
 COMMON_FLAGS="-Wall -g"
 
-### SCRIPT DE COMPILACION PARA ARQUITECTURA INTEL x86
+OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC $additional_flags"
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"

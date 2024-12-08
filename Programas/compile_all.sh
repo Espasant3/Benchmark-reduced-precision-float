@@ -3,6 +3,7 @@
 # Inicializar variables
 force_run=false
 force_flag=""
+additional_flags=""
 
 # Verificar si el primer argumento es --force
 if [[ "$1" == "--force" ]]; then
@@ -18,6 +19,16 @@ else
         fi
     done
 fi
+
+# Procesar flags adicionales
+for arg in "$@"; do
+    if [[ "$arg" == -* && "$arg" != --* ]]; then
+        additional_flags+=" $arg"
+    else
+        echo "Flag no válida: $arg"
+        exit 1
+    fi
+done
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
@@ -62,13 +73,13 @@ case "$ARCH" in
                 echo "Arquitectura: Intel de 64 bits"
                 # Instrucciones específicas para Intel de 64 bits
                 echo "Compilando AXPY"
-                ./AXPY/axpy_compile_Intel.sh $force_flag
+                ./AXPY/axpy_compile_Intel.sh $force_flag $additional_flags
                 echo "Compilando DCT"
-                ./DCT/dct_compile_Intel.sh $force_flag
+                ./DCT/dct_compile_Intel.sh $force_flag $additional_flags
                 echo "Compilando DWT_1D"
-                ./DWT_1D/dwt_1d_compile_Intel.sh $force_flag
+                ./DWT_1D/dwt_1d_compile_Intel.sh $force_flag $additional_flags
                 echo "Compilando PCA"
-                #./PCA/pca_compile_Intel.sh $force_flag
+                ./PCA/pca_compile_Intel.sh $force_flag $additional_flags
                 ;;
             amd)
                 echo "Arquitectura: AMD de 64 bits"

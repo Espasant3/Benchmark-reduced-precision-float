@@ -1,7 +1,10 @@
 #!/bin/bash
 
+### SCRIPT DE COMPILACION PARA ARQUITECTURA AMD x86_64
+
 # Inicializar variables
 force_run=false
+additional_flags=""
 
 # Verificar si el primer argumento es --force
 if [[ "$1" == "--force" ]]; then
@@ -18,17 +21,26 @@ else
     done
 fi
 
-OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC"
+# Procesar flags adicionales
+for arg in "$@"; do
+    if [[ "$arg" == -* && "$arg" != --* ]]; then
+        additional_flags+=" $arg"
+    else
+        echo "Flag no válida: $arg"
+        exit 1
+    fi
+done
 
 COMMON_FLAGS="-Wall -g"
 
-### SCRIPT DE COMPILACION PARA ARQUITECTURA AMD x86_64
+OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC $additional_flags"
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
 # Cambiar al directorio del script
 cd "$script_dir"
+
 
 ### COMPILACION DEL PROGRAMA BASE
 
@@ -61,16 +73,6 @@ if grep -q "sse2" /proc/cpuinfo; then
         COMMON_FLAGS="${COMMON_FLAGS/-march=znver6/}"
         COMMON_FLAGS="${COMMON_FLAGS/-mtune=znver6/}"
         COMMON_FLAGS=$(echo $COMMON_FLAGS | tr -s ' ' | xargs)
-
-    elif grep -q "avx512f" /proc/cpuinfo; then
-        echo "AVX512 support detected. Compiling with -mavx512f."
-
-        # Compilar el programa optimizado con AVX512 (nativo para Zen 4 y Zen 5)
-        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_native-base -mavx512f
-        # Compilar el programa optimizado con AVX512 y precisión estándar
-        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_avx512_precision -fexcess-precision=16 -mavx512f
-        # Compilar el programa con máxima optimización para AVX512
-        gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16_max_performance -fexcess-precision=16 -mfpmath=sse -mavx512f
 
     else
         echo "AVX512 not supported on this system. Skipping compilation with AVX512 flags."

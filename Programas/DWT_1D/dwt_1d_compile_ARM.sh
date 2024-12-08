@@ -2,15 +2,45 @@
 
 ### SCRIPT DE COMPILACION PARA ARQUITECTURA ARM DE 64 BITS
 
+# Inicializar variables
+force_run=false
+additional_flags=""
+
+# Verificar si el primer argumento es --force
+if [[ "$1" == "--force" ]]; then
+    force_run=true
+    shift
+else
+    # Procesar argumentos de entrada
+    for arg in "$@"; do
+        if [[ "$arg" == "--force" ]]; then
+            force_run=true
+            set -- "${@/--force/}"
+            break
+        fi
+    done
+fi
+
+# Procesar flags adicionales
+for arg in "$@"; do
+    if [[ "$arg" == -* && "$arg" != --* ]]; then
+        additional_flags+=" $arg"
+    else
+        echo "Flag no válida: $arg"
+        exit 1
+    fi
+done
+
+COMMON_FLAGS="-Wall"
+
+OPT_FLAGS="-O3 -march=armv8.2-a+fp16+fp16fml+simd -ftree-vectorize -fomit-frame-pointer -fPIC $additional_flags"
+
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
 # Cambiar al directorio del script
 cd "$script_dir"
 
-OPT_FLAGS="-O3 -march=armv8.2-a+fp16+fp16fml+simd -ftree-vectorize"
-
-COMMON_FLAGS="-Wall"
 
 ### COMPILACION DEL PROGRAMA BASE
 
