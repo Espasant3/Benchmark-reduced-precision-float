@@ -13,6 +13,8 @@ RUN apt-get update && \
     python3-pip \
     python3-venv \
     libgsl-dev \
+    libblas-dev \
+    liblapack-dev \
     wget \
     cmake && \
     apt-get clean && \

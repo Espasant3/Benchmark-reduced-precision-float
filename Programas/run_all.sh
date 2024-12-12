@@ -91,7 +91,7 @@ case "$ARCH" in
                 echo "Ejecutando DWT_1D"
                 ./DWT_1D/dwt_1d_run_Intel.sh $tamanhoN $seed $force_flag
                 echo "Ejecutando PCA"
-                #./PCA/pca_run_Intel.sh $tamanhoN $seed $force_flag
+                ./PCA/pca_run_Intel.sh $tamanhoN $seed $force_flag
                 ;;
             amd)
                 echo "Arquitectura: AMD de 64 bits"

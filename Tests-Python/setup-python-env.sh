@@ -18,4 +18,8 @@ source "$(pwd)/entorno_TFG/bin/activate"
 # Instalar los paquetes sin mostrar la salida estándar
 pip install -r requirements.txt > /dev/null 2>&1
 
+# Desactivar el entorno virtual
 deactivate
+
+# Mensaje de confirmación final
+echo "El entorno virtual ha sido configurado y los paquetes se han instalado correctamente."
