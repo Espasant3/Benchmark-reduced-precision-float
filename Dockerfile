@@ -15,6 +15,7 @@ RUN apt-get update && \
     libgsl-dev \
     libblas-dev \
     liblapack-dev \
+    libarmpl-dev \
     wget \
     cmake && \
     apt-get clean && \
