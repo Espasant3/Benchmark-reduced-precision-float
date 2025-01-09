@@ -20,9 +20,9 @@ Matrix* _create_Matrix(int rows, int cols) {
     Matrix* matrix = malloc(sizeof(Matrix));
     matrix->rows = rows;
     matrix->cols = cols;
-    matrix->data = malloc(rows * sizeof(double *));
+    matrix->data = malloc(rows * sizeof(float *));
     for(int i = 0; i < rows; i++) {
-        matrix->data[i] = malloc(cols * sizeof(double));
+        matrix->data[i] = malloc(cols * sizeof(float));
     }
     for(int i = 0; i < rows; i++) {
         for(int j = 0; j < cols; j++) {
@@ -32,7 +32,6 @@ Matrix* _create_Matrix(int rows, int cols) {
 
     return matrix;
 }
-
 
 // Función para liberar la memoria de una estructura Matrix
 void _free_matrix(Matrix* matrix) {
@@ -54,6 +53,15 @@ void _print_matrix(Matrix* matrix) {
     }
 }
 
+// Función para copiar una matriz a otra
+void _copy_matrix(Matrix* source, Matrix* destination) {
+    for(int i = 0; i < source->rows; i++) {
+        for(int j = 0; j < source->cols; j++) {
+            destination->data[i][j] = source->data[i][j];
+        }
+    }
+}
+
 // Función para calcular las medias y desviaciones estándar de cada columna de la matriz
 void _calc_means_and_deviations(Matrix* matrix, float *medias, float *desviaciones) {
     for(int j = 0; j < matrix->cols; j++) {
@@ -67,15 +75,6 @@ void _calc_means_and_deviations(Matrix* matrix, float *medias, float *desviacion
             suma_desviaciones += (matrix->data[i][j] - medias[j]) * (matrix->data[i][j] - medias[j]);
         }
         desviaciones[j] = sqrt(suma_desviaciones / matrix->rows);
-    }
-}
-
-// Función para copiar una matriz a otra
-void _copy_matrix(Matrix* source, Matrix* destination) {
-    for(int i = 0; i < source->rows; i++) {
-        for(int j = 0; j < source->cols; j++) {
-            destination->data[i][j] = source->data[i][j];
-        }
     }
 }
 
@@ -113,27 +112,6 @@ void calculate_covariance(Matrix* matrix, Matrix* covariance) {
     }
 }
 
-// Función para calcular los valores y vectores propios de la matriz de covarianza
-void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, float *eigenvalues, float *eigenvectors) {
-    int n = covariance->rows;
-    int lda = n;
-
-    // Copiar datos de la matriz de covarianza a eigenvectors (array plano)
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            eigenvectors[i * n + j] = covariance->data[i][j];
-        }
-    }
-
-    // Usar LAPACKE_ssyev para calcular valores y vectores propios
-    int info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
-
-    if (info > 0) {
-        printf("Error: LAPACKE_ssyev failed to converge. Info: %d\n", info);
-        exit(EXIT_FAILURE);
-    }
-}
-
 // Función para ordenar los valores propios y vectores propios en orden descendente
 void sort_eigenvalues_and_eigenvectors(int n, float* eigenvalues, float* eigenvectors) {
     for (int i = 0; i < n - 1; i++) {
@@ -153,6 +131,31 @@ void sort_eigenvalues_and_eigenvectors(int n, float* eigenvalues, float* eigenve
             }
         }
     }
+}
+
+// Función para calcular los valores y vectores propios de la matriz de covarianza
+void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, float *eigenvalues, float *eigenvectors) {
+    int n = covariance->rows;
+    int lda = n;
+
+    // Copiar datos de la matriz de covarianza a eigenvectors (array plano)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            eigenvectors[i * n + j] = covariance->data[i][j];
+        }
+    }
+
+    // Usar LAPACKE_ssyev para calcular valores y vectores propios
+    int info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
+
+    if (info > 0) {
+        printf("Error: LAPACKE_ssyev failed to converge. Info: %d\n", info);
+        exit(EXIT_FAILURE);
+    }
+    
+    // Ordenar valores propios y vectores propios
+    sort_eigenvalues_and_eigenvectors(n, eigenvalues, eigenvectors);
+
 }
 
 // Función para transformar los datos usando los vectores propios
@@ -216,9 +219,6 @@ void do_pca(Matrix* matrix) {
 
     // Calcular valores propios y vectores propios
     calculate_eigenvalues_and_eigenvectors(covariance, eigenvalues, eigenvectors);
-
-    // Ordenar valores propios y vectores propios
-    sort_eigenvalues_and_eigenvectors(covariance->rows, eigenvalues, eigenvectors);
 
     // Crear matriz para datos transformados
     Matrix* datos_transformados = _create_Matrix(matrix->rows, matrix->cols);
