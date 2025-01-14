@@ -22,14 +22,8 @@ Matrix* _create_Matrix(int rows, int cols) {
     matrix->cols = cols;
     matrix->data = malloc(rows * sizeof(float *));
     for(int i = 0; i < rows; i++) {
-        matrix->data[i] = malloc(cols * sizeof(float));
+        matrix->data[i] = calloc(cols, sizeof(float));
     }
-    for(int i = 0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            matrix->data[i][j] = 0;
-        }
-    }
-
     return matrix;
 }
 
@@ -112,37 +106,63 @@ void calculate_covariance(Matrix* matrix, Matrix* covariance) {
     }
 }
 
-// Función para ordenar los valores propios y vectores propios en orden descendente
-void sort_eigenvalues_and_eigenvectors(int n, float* eigenvalues, float* eigenvectors) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - 1 - i; j++) {
-            if (eigenvalues[j] < eigenvalues[j + 1]) {
-                // Intercambiar valores propios
-                float temp_value = eigenvalues[j];
-                eigenvalues[j] = eigenvalues[j + 1];
-                eigenvalues[j + 1] = temp_value;
+// Función auxiliar para intercambiar dos elementos en un array
+void swap(float* a, float* b) {
+    float temp = *a;
+    *a = *b;
+    *b = temp;
+}
 
-                // Intercambiar columnas de vectores propios
-                for (int k = 0; k < n; k++) {
-                    float temp_vector = eigenvectors[k * n + j];
-                    eigenvectors[k * n + j] = eigenvectors[k * n + j + 1];
-                    eigenvectors[k * n + j + 1] = temp_vector;
-                }
-            }
+// Función auxiliar para intercambiar dos columnas en una matriz
+void swap_columns(float* eigenvectors, int n, int col1, int col2) {
+    for (int i = 0; i < n; i++) {
+        float temp = eigenvectors[i * n + col1];
+        eigenvectors[i * n + col1] = eigenvectors[i * n + col2];
+        eigenvectors[i * n + col2] = temp;
+    }
+}
+
+// Función auxiliar para particionar el array de valores propios
+int partition(float* eigenvalues, float* eigenvectors, int n, int low, int high) {
+    float pivot = eigenvalues[high];
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (eigenvalues[j] > pivot) {
+            i++;
+            swap(&eigenvalues[i], &eigenvalues[j]);
+            swap_columns(eigenvectors, n, i, j);
         }
     }
+    swap(&eigenvalues[i + 1], &eigenvalues[high]);
+    swap_columns(eigenvectors, n, i + 1, high);
+    return i + 1;
+}
+
+// Función auxiliar para aplicar quicksort
+void quicksort(float* eigenvalues, float* eigenvectors, int n, int low, int high) {
+    if (low < high) {
+        int pi = partition(eigenvalues, eigenvectors, n, low, high);
+        quicksort(eigenvalues, eigenvectors, n, low, pi - 1);
+        quicksort(eigenvalues, eigenvectors, n, pi + 1, high);
+    }
+}
+
+// Función para ordenar los valores propios y vectores propios en orden descendente
+void sort_eigenvalues_and_eigenvectors(int n, float* eigenvalues, float* eigenvectors) {
+    quicksort(eigenvalues, eigenvectors, n, 0, n - 1);
 }
 
 // Función para calcular los valores y vectores propios de la matriz de covarianza
 void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, float *eigenvalues, float *eigenvectors) {
+    
     int n = covariance->rows;
     int lda = n;
+    int covariance_size = covariance->rows * covariance->cols;
 
     // Copiar datos de la matriz de covarianza a eigenvectors (array plano)
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            eigenvectors[i * n + j] = covariance->data[i][j];
-        }
+    for (int i = 0; i < covariance_size; i++) {
+        eigenvectors[i] = covariance->data[i / covariance->cols][i % covariance->cols];
     }
 
     // Usar LAPACKE_ssyev para calcular valores y vectores propios
@@ -169,15 +189,15 @@ void transform_data(Matrix* matrix, float* eigenvectors, Matrix* transformed_dat
         exit(EXIT_FAILURE);
     }
 
-    // Asegurarse de que los punteros son válidos y alineados correctamente
-    float* matrix_data = (float*)malloc(matrix->rows * matrix->cols * sizeof(float));
-    float* transformed_data_data = (float*)malloc(transformed_data->rows * transformed_data->cols * sizeof(float));
+    int matrix_size = matrix->rows * matrix->cols;
+    int transformed_size = transformed_data->rows * transformed_data->cols;
 
-    for (int i = 0; i < matrix->rows; i++) {
-        for (int j = 0; j < matrix->cols; j++) {
-            matrix_data[i * matrix->cols + j] = matrix->data[i][j];
-            transformed_data_data[i * transformed_data->cols + j] = transformed_data->data[i][j];
-        }
+    // Asegurarse de que los punteros son válidos y alineados correctamente
+    float* matrix_data = (float*)malloc(matrix_size * sizeof(float));
+    float* transformed_data_data = (float*)calloc(transformed_size, sizeof(float));
+
+    for (int i = 0; i < matrix_size; i++) {
+        matrix_data[i] = matrix->data[i / matrix->cols][i % matrix->cols];
     }
 
     cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
@@ -186,12 +206,11 @@ void transform_data(Matrix* matrix, float* eigenvectors, Matrix* transformed_dat
                 eigenvectors, matrix->cols, 
                 0.0f, transformed_data_data, matrix->cols);
 
-    // Copiar los datos de vuelta a `transformed_data`
-    for (int i = 0; i < transformed_data->rows; i++) {
-        for (int j = 0; j < transformed_data->cols; j++) {
-            transformed_data->data[i][j] = transformed_data_data[i * transformed_data->cols + j];
-        }
+    // Copiar los datos de vuelta a transformed_data
+    for (int i = 0; i < transformed_size; i++) {
+        transformed_data->data[i / transformed_data->cols][i % transformed_data->cols] = transformed_data_data[i];
     }
+
 
     free(matrix_data);
     free(transformed_data_data);
@@ -214,8 +233,15 @@ void do_pca(Matrix* matrix) {
     calculate_covariance(matrix, covariance);
 
     // Asignar memoria para eigenvalues y eigenvectors
-    float* eigenvalues = (float*) malloc(covariance->rows * sizeof(float));
-    float* eigenvectors = (float*) malloc(covariance->rows * covariance->cols * sizeof(float));
+    float* eigenvalues = (float*) calloc(covariance->rows, sizeof(float));
+    float* eigenvectors = (float*) calloc(covariance->rows, covariance->cols * sizeof(float));
+
+    if (eigenvalues == NULL || eigenvectors == NULL) {
+        printf("Error: No se pudo reservar memoria para eigenvalues y eigenvectors.\n");
+        _free_matrix(matrix);
+        _free_matrix(covariance);
+        exit(EXIT_FAILURE);
+    }
 
     // Calcular valores propios y vectores propios
     calculate_eigenvalues_and_eigenvectors(covariance, eigenvalues, eigenvectors);
