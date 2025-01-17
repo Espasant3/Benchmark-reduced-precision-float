@@ -12,10 +12,9 @@ RUN apt-get update && \
     python3 \
     python3-pip \
     python3-venv \
-    libgsl-dev \
     libblas-dev \
     liblapack-dev \
-    libarmpl-dev \
+    liblapacke-dev \
     wget \
     cmake && \
     apt-get clean && \
@@ -35,6 +34,16 @@ RUN if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ]; then \
         rm -rf /var/lib/apt/lists/*; \
     else \
         echo "Not installing ARM cross-compiler as the architecture is not x86_64 or amd64"; \
+    fi
+
+# Install libarmpl-dev conditionally based on architecture
+RUN if [ "$(uname -m)" = "aarch64" ]; then \
+        apt-get update && \
+        apt-get install -y --no-install-recommends libarmpl-dev && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*; \
+    else \
+        echo "Not installing libarmpl-dev as the architecture is not aarch64"; \
     fi
 
 # Copy the requirements file and the script from the host to the container

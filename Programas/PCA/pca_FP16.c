@@ -10,6 +10,7 @@
 #ifdef __x86_64__
 #include <cblas.h>
 #elif defined(__aarch64__)
+#include <arm_fp16.h>
 #include <armpl.h>
 #endif
 
