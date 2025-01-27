@@ -52,7 +52,7 @@ gcc-14 $COMMON_FLAGS dwt_1d_FP32.c -o dwt_1d_FP32 $OPT_FLAGS
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
 
-    gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16 -fexcess-precision=16
+    gcc-14 -Wall -g dwt_1d_FP16.c -o dwt_1d_FP16 -fexcess-precision=16 $OPT_FLAGS
 
     # Para los futuros procesadores AMD con arquitectura Zen 6
 
