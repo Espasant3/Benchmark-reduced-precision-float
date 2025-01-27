@@ -71,13 +71,6 @@ int main(int argc, char *argv[]) {
         input[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
     }
 
-    printf("Array input: [ ");
-    for (int i = 0; i < n; i++) {
-        printf("%f ", input[i]);
-    }
-    printf("]\n");
-
-
     //Para medir el tiempo de ejecución
 
     clock_t start, end;

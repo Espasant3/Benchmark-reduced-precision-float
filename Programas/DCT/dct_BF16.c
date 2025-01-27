@@ -79,13 +79,6 @@ int main(int argc, char *argv[]) {
         input[i] = (__bf16)input_temp;
     }
 
-    printf("Array input: [ ");
-    for (int i = 0; i < n; i++) {
-        printf("%f ", (float)input[i]);
-    }
-    printf("]\n");
-
-
     //Para medir el tiempo de ejecución
     
     clock_t start, end;
