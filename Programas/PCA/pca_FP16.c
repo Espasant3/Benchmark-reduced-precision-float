@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
 #include <time.h>
-//#include <cblas.h>
 #include <lapacke.h>
 
 // Incluye las bibliotecas adecuadas según la arquitectura

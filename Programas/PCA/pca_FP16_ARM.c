@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
 #include <time.h>
-#include <cblas.h>
 #include <lapacke.h>
 #include <arm_fp16.h>
 #include <armpl.h> // Esta es para usar cblas_hgemm

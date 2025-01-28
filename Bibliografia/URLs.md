@@ -13,19 +13,22 @@ Guía detallada sobre cómo instalar y usar GCC para cross-compilar para arquite
 Instrucciones sobre cómo cross-compilar programas para arquitecturas ARM en Ubuntu.
 
 ### [SPEC CPU 2017 Flags: GCC](https://www.spec.org/cpu2017/flags/gcc.2021-07-21.html#user_F-fomit-frame-pointer)
-Descripciones de flags para GCC en SPEC CPU 2017, incluyendo optimizaciones y portabilidad, incluye información del flag `-fomit-frame-pointer`
+Descripciones de flags para GCC en SPEC CPU 2017, incluyendo optimizaciones y portabilidad, incluye información del flag `-fomit-frame-pointer`.
 
 ### [GCC Optimize Options](https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Optimize-Options.html)
 Opciones de compilación que controlan diversas optimizaciones del compilador (documentación oficial y más actualizada), incluyendo los flags `-fomit-frame-pointer` y `-ftree-vectorize`.
 
 ### [SPEC HPC 2021 Flags: GCC](https://www.spec.org/hpc2021/flags/gcc.html)
-Información general sobre flags de compilación en la plataforma HPC de SPEC
+Información general sobre flags de compilación en la plataforma HPC de SPEC.
 
 ### [GCC Code Generation Options](https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/Code-Gen-Options.html#index-fPIC)
-Opciones de compilación que controlan las convenciones de generación de código, incluyendo incluye el flag `-fPIC`. 
+Opciones de compilación que controlan las convenciones de generación de código, incluyendo el flag `-fPIC`.
 
 ### [GCC x86 Options](https://gcc.gnu.org/onlinedocs/gcc-14.2.0/gcc/x86-Options.html)
 Opciones específicas de compilación para la familia de procesadores x86 (generación de instrucciones y ajuste de código para diferentes microarquitecturas), incluyendo los flags `-march` y `-mtune`.
+
+### [BLAS Basic Linear Algebra Subprograms: cblas_hgemm](https://developer.arm.com/documentation/101004/2410/BLAS-Basic-Linear-Algebra-Subprograms/CBLAS-functions/cblas-hgemm?lang=en)
+Información sobre la función `cblas_hgemm` en BLAS, que realiza multiplicaciones de matrices con números en formato float de 16 bits.
 
 ## Soporte de hardware
 
