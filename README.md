@@ -35,11 +35,11 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
   - `<time.h>`: [Documentación](https://www.cplusplus.com/reference/ctime/)
   - `<gsl/gsl_eigen.h>`: [Documentación](https://www.gnu.org/software/gsl/doc/html/eigen.html)
   - `<math.h>`: [Documentación](https://www.cplusplus.com/reference/cmath/)
-  - `<cblas.h>`:  [Documentación] (https://www.gnu.org/software/gsl/doc/html/cblas.html)
-  - `<lapacke.h>`: [Documentación] (https://netlib.org/lapack/lapacke.html)
+  - `<cblas.h>`:  [Documentación](https://www.gnu.org/software/gsl/doc/html/cblas.html)
+  - `<lapacke.h>`: [Documentación](https://netlib.org/lapack/lapacke.html)
   - `<arm_fp16.h>`: (para soporte del tipo de dato `__fp16`, float16, específico de ARM)
   - `<arm_bf16.h>`: (para soporte del tipo de dato `__bf16`, bfloat, específico de ARM)
-  - `<armpl.h>`: [Documentación] (https://developer.arm.com/documentation/101004/2410/General-information/Arm-Performance-Libraries)
+  - `<armpl.h>`: [Documentación](https://developer.arm.com/documentation/101004/2410/General-information/Arm-Performance-Libraries)
 
 
 
