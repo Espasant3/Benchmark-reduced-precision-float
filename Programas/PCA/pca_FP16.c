@@ -303,16 +303,12 @@ void transform_data(Matrix* matrix, _Float16* eigenvectors, Matrix* transformed_
     }
 
     // Realizar la multiplicación de matrices utilizando BLAS
-    int info =  cblas_hgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+    cblas_hgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 matrix->rows, transformed_data->cols, matrix->cols,
                 1.0, matrix_data, matrix->cols,
                 eigenvectors_f, matrix->cols,
                 0.0, transformed_data_data, transformed_data->cols);
 
-    if (info > 0) {
-        printf("Error: cblas_hgemm failed to converge. Info: %d\n", info);
-        exit(EXIT_FAILURE);
-    }
 
     // Copiar los datos de vuelta a transformed_data
     for (int i = 0; i < transformed_size; i++) {

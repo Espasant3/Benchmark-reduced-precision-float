@@ -38,8 +38,8 @@ OPT_FLAGS="-O3 -march=armv8.2-a+fp16+fp16fml+simd -ftree-vectorize -fomit-frame-
 LINK_FLAGS="-lm -llapacke -llapack -lblas"
 
 # Definir rutas predeterminadas para la librería armpl (pueden ser sobrescritas por el usuario)
-ARMPL_LIB="$HOME/armpl/lib"
-ARMPL_INCLUDE="$HOME/armpl/include"
+ARMPL_LIB="/opt/arm/armpl_24.10_gcc/lib/"
+ARMPL_INCLUDE="/opt/arm/armpl_24.10_gcc/include/"
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"

@@ -39,7 +39,15 @@ RUN if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ]; then \
 # Install libarmpl-dev conditionally based on architecture
 RUN if [ "$(uname -m)" = "aarch64" ]; then \
         apt-get update && \
-        apt-get install -y --no-install-recommends libarmpl-dev && \
+        cd ../root/ && \
+        wget https://developer.arm.com/-/cdn-downloads/permalink/Arm-Performance-Libraries/Version_24.10/arm-performance-libraries_24.10_deb_gcc.tar && \
+        tar -xvf arm-performance-libraries_24.10_deb_gcc.tar && \
+        cd arm-performance-libraries_24.10_deb && \
+        ./arm-performance-libraries_24.10_deb.sh --accept && \
+        #cd /workspace/ && \
+        echo "/opt/arm/armpl_24.10_gcc/lib/" | tee /etc/ld.so.conf.d/armpl.conf && \
+        ldconfig && \ 
+        #apt-get install -y --no-install-recommends libarmpl-dev && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*; \
     else \

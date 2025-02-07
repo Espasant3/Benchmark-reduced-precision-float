@@ -235,20 +235,19 @@ void transform_data(Matrix* matrix, __bf16* eigenvectors, Matrix* transformed_da
     }
 
 
-    int info =  cblas_hgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+    cblas_hgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
                 matrix->rows, matrix->cols, matrix->cols, 
                 1.0f, matrix_data, matrix->cols, 
-                eigenvectors, matrix->cols, 
+                eigenvectors_f, matrix->cols, 
                 0.0f, transformed_data_data, matrix->cols);
-
-    if (info > 0) {
-        printf("Error: cblas_hgemm failed to converge. Info: %d\n", info);
-        exit(EXIT_FAILURE);
-    }
 
     // Copiar los datos de vuelta a transformed_data
     for (int i = 0; i < transformed_size; i++) {
         transformed_data->data[i / transformed_data->cols][i % transformed_data->cols] = (__bf16)transformed_data_data[i];
+    }
+
+    for(int i = 0; i < matrix->cols * matrix->cols; i++) {
+        eigenvectors[i] = (_Float16)eigenvectors_f[i];
     }
 
     free(matrix_data);
