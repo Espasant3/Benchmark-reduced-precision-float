@@ -10,6 +10,7 @@
 !*.sh
 !*.py
 !*.md
+!*.csv
 !.gitignore
 !requirements.txt
 !Dockerfile
