@@ -30,6 +30,12 @@ Opciones específicas de compilación para la familia de procesadores x86 (gener
 ### [BLAS Basic Linear Algebra Subprograms: cblas_hgemm](https://developer.arm.com/documentation/101004/2410/BLAS-Basic-Linear-Algebra-Subprograms/CBLAS-functions/cblas-hgemm?lang=en)
 Información sobre la función `cblas_hgemm` en BLAS, que realiza multiplicaciones de matrices con números en formato float de 16 bits.
 
+### [Arm Performance Libraries (ARMPL)](https://learn.arm.com/install-guides/armpl/)
+Guía de instalación y uso de las bibliotecas de alto rendimiento de ARM (ARMPL), diseñadas para optimizar operaciones matemáticas y científicas en sistemas basados en arquitecturas ARM.
+
+### [Advanced Matrix Extensions (AMX)](https://en.wikipedia.org/wiki/Advanced_Matrix_Extensions)
+Información sobre las Advanced Matrix Extensions (AMX), una tecnología de hardware desarrollada por Intel para acelerar operaciones matriciales en procesadores modernos, ampliamente utilizada en aplicaciones de aprendizaje automático y computación de alto rendimiento.
+
 ## Soporte de hardware
 
 ### [Half-precision floating-point format](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)

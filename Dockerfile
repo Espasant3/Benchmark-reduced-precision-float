@@ -44,10 +44,8 @@ RUN if [ "$(uname -m)" = "aarch64" ]; then \
         tar -xvf arm-performance-libraries_24.10_deb_gcc.tar && \
         cd arm-performance-libraries_24.10_deb && \
         ./arm-performance-libraries_24.10_deb.sh --accept && \
-        #cd /workspace/ && \
         echo "/opt/arm/armpl_24.10_gcc/lib/" | tee /etc/ld.so.conf.d/armpl.conf && \
         ldconfig && \ 
-        #apt-get install -y --no-install-recommends libarmpl-dev && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*; \
     else \
