@@ -26,9 +26,9 @@ def get_cache_info():
 
         # Patrones de búsqueda para caché (adaptados al nuevo formato)
         cache_patterns = {
-            "L1d": r"L1d:\s+([\d.]+ [KMG]iB) \((\d+) instance[s]\)",
-            "L2": r"L2:\s+([\d.]+ [KMG]iB) \((\d+) instance[s]\)",
-            "L3": r"L3:\s+([\d.]+ [KMG]iB) \((\d+) instance[s]?\)"  # Maneja singular/plural
+            "L1d": r"L1d(?: cache)?:\s+([\d.]+ [KMG]iB) \((\d+) instance[s]?\)",
+            "L2": r"L2(?: cache)?:\s+([\d.]+ [KMG]iB) \((\d+) instance[s]?\)",
+            "L3": r"L3(?: cache)?:\s+([\d.]+ [KMG]iB) \((\d+) instance[s]?\)"  # Maneja singular/plural
         }
 
         # Buscar los tamaños de caché en la salida
@@ -340,13 +340,13 @@ def main():
         1572864, 2097152, 3145728, 4194304, 8388608, 12582912, 
         16777216, 20971520, 33554432, 67108864, 134217728
     ]
-    n_16bit = [2 * x for x in n_float]
+    #n_16bit = [2 * x for x in n_float]
     n_float_matrices = [
         2, 10, 50, 100, 200,  # Rango inicial (crecimiento no crítico)
         300, 400, 500, 600, 700, 800, 900, 1000,  # Transición a crecimiento cúbico
         1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200  # Zona de interés
     ]   
-    n_16bit_matrices = [int(1.4142 * x) for x in n_float_matrices]
+    #n_16bit_matrices = [int(1.4142 * x) for x in n_float_matrices]
 
     # Límites de memoria
     limites = {
@@ -359,9 +359,12 @@ def main():
 
     # Selección de valores
     if tipo_prueba == 'array':
-        valores_n = n_16bit if tipo_dato == 'half' else n_float
+        #valores_n = n_16bit if tipo_dato == 'half' else n_float
+        valores_n = n_float
     else:
-        valores_n = n_16bit_matrices if tipo_dato == 'half' else n_float_matrices
+        #valores_n = n_16bit_matrices if tipo_dato == 'half' else n_float_matrices
+        valores_n = n_float_matrices
+
 
     print(f"Configuración detectada: {tipo_prueba.upper()} - {tipo_dato.upper()}")
     print(f"Valores de n: {valores_n}")

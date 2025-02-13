@@ -1,3 +1,13 @@
 numpy
 argparse
 scikit-learn
+matplotlib
+subprocess
+matplotlib.lines
+csv
+statistics
+math
+re
+pathlib
+platform
+datetime
