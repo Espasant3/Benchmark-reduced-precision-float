@@ -99,7 +99,24 @@ def calcular_n_para_memoria(memoria_bytes, tipo_dato, nombre_programa):
 
     # Caso especial para matrices cuadradas (PCA)
     if 'pca' in nombre_programa.lower():
-        return int(math.sqrt(memoria_bytes / bytes_por_elemento))
+        bytes_por_elemento = 2 if tipo_dato == "half" else 4
+        
+        # Ecuación: 4n² + n = memoria_bytes / bytes_por_elemento
+        total_memoria = memoria_bytes / bytes_por_elemento
+        
+        # Resolver la ecuación cuadrática 4n² + n - total_memoria = 0
+        a = 4
+        b = 1
+        c = -total_memoria
+        
+        discriminante = b**2 - 4 * a * c
+        
+        if discriminante < 0:
+            raise ValueError("Memoria insuficiente para PCA")
+            
+        n = (-b + math.sqrt(discriminante)) / (2 * a)
+        
+        return int(n)
 
     # Manejo de casos específicos según el programa
     elif "dwt_1d" in nombre_programa.lower():
@@ -280,13 +297,13 @@ def plot_grafica(valores_n, tiempos_por_n, num_tiempos, tipo_dato, nombre_progra
     ax.grid(True, which='major', linestyle='--', linewidth=0.5, color='gray', alpha=0.7)
     ax.grid(False, which='minor')  # Desactivar líneas secundarias
 
-    # Límites de memoria
+    # Límites de memoria (sumando las memorias de los niveles inferiores)
     limites = {
         "L1": L1_CACHE_LIMIT,
-        "L2": L2_CACHE_LIMIT,
-        "L3": L3_CACHE_LIMIT,
-        "RAM 64MiB": RAM_LIMITS[0],
-        "RAM 512MiB": RAM_LIMITS[1]
+        "L2": L1_CACHE_LIMIT + L2_CACHE_LIMIT,  # Sumar L1 y L2
+        "L3": L1_CACHE_LIMIT + L2_CACHE_LIMIT + L3_CACHE_LIMIT,  # Sumar L1, L2 y L3
+        "RAM 64MiB": RAM_LIMITS[0] + L1_CACHE_LIMIT + L2_CACHE_LIMIT + L3_CACHE_LIMIT,  # Sumar L1, L2, L3 y RAM 64MiB
+        "RAM 512MiB": RAM_LIMITS[1] + L1_CACHE_LIMIT + L2_CACHE_LIMIT + L3_CACHE_LIMIT  # Sumar L1, L2, L3 y RAM 512MiB
     }
 
     # Verificar si los límites son alcanzables
@@ -336,15 +353,16 @@ def main():
     # Valores predefinidos
     n_float = [
         4096, 6144, 8192, 12288, 16384, 32768, 65536, 98304, 
-        131072, 163840, 196608, 262144, 327680, 524288, 1048576, 
-        1572864, 2097152, 3145728, 4194304, 8388608, 12582912, 
-        16777216, 20971520, 33554432, 67108864, 134217728
+        131072, 163840, 196608, 262144, 327680, 524288, 786432, 
+        917504, 1048576, 1310720, 1742848 #, 1802240, 1911728
+        #2097152, 3145728, 4194304, 8388608, 12582912, 
+        #16777216, 20971520, 33554432, 67108864, 134217728
     ]
     #n_16bit = [2 * x for x in n_float]
     n_float_matrices = [
-        2, 10, 50, 100, 200,  # Rango inicial (crecimiento no crítico)
-        300, 400, 500, 600, 700, 800, 900, 1000,  # Transición a crecimiento cúbico
-        1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200  # Zona de interés
+        2, 10, 55, 100, 200,  # Rango inicial (crecimiento no crítico)
+        291, 400, 500, 600, 700, 800, 900, 933,  # Transición a crecimiento cúbico
+        1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000,  # Zona de interés
     ]   
     #n_16bit_matrices = [int(1.4142 * x) for x in n_float_matrices]
 
