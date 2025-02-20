@@ -339,6 +339,8 @@ def main():
                         help="Guardar la gráfica en PNG (predeterminado: False)")
     parser.add_argument("--show_plot", type=lambda x: x.lower() == 'true', default=False, 
                         help="Mostrar la gráfica en pantalla (predeterminado: False)")
+    parser.add_argument("--n_extended", type=lambda x: x.lower() == 'true', default=False, 
+                        help="Usar valores extendidos de n (predeterminado: False)")
     args = parser.parse_args()
 
     # Extraer el nombre base del programa (sin ruta ni extensión)
@@ -358,29 +360,32 @@ def main():
         #2097152, 3145728, 4194304, 8388608, 12582912, 
         #16777216, 20971520, 33554432, 67108864, 134217728
     ]
-    #n_16bit = [2 * x for x in n_float]
+
     n_float_matrices = [
         2, 10, 55, 100, 200,  # Rango inicial (crecimiento no crítico)
         291, 400, 500, 600, 700, 800, 900, 933,  # Transición a crecimiento cúbico
-        1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000,  # Zona de interés
+        1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000 #, 2100, 2200  # Zona de interés
     ]   
-    #n_16bit_matrices = [int(1.4142 * x) for x in n_float_matrices]
 
-    # Límites de memoria
-    limites = {
-        "L1": L1_CACHE_LIMIT,
-        "L2": L2_CACHE_LIMIT,
-        "L3": L3_CACHE_LIMIT,
-        "RAM 64MiB": RAM_LIMITS[0],
-        "RAM 512MiB": RAM_LIMITS[1]
-    }
+    if args.n_extended:
+        n_float = [
+            4096, 6144, 8192, 12288, 16384, 32768, 65536, 98304, 
+            131072, 163840, 196608, 262144, 327680, 524288, 786432, 
+            917504, 1048576, 1310720, 1742848, 1802240, 1911728,
+            2097152, 3145728, 4194304, 8388608, 12582912, 
+            16777216, 20971520, 33554432, 67108864, 134217728
+        ]
+
+        n_float_matrices = [
+            2, 10, 55, 100, 200,  # Rango inicial (crecimiento no crítico)
+            291, 400, 500, 600, 700, 800, 900, 933,  # Transición a crecimiento cúbico
+            1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000, 2100, 2200  # Zona de interés
+        ]
 
     # Selección de valores
     if tipo_prueba == 'array':
-        #valores_n = n_16bit if tipo_dato == 'half' else n_float
         valores_n = n_float
     else:
-        #valores_n = n_16bit_matrices if tipo_dato == 'half' else n_float_matrices
         valores_n = n_float_matrices
 
 
