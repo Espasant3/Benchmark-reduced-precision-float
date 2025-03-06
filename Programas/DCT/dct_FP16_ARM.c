@@ -4,23 +4,38 @@
 #include <time.h>
 #include <arm_fp16.h>
 
-
-// Definir el tamaño de la señal
 #define N_SMALL 5
 
 
 void dct(__fp16 *input, __fp16 *output, int n_size) {
-    _Float16 alpha;
-    _Float16 sum;
+    const float pi = 3.1415926535f; // Literal float para PI
+    // Precomputar raíces cuadradas
+    const __fp16 sqrt1 = (__fp16) sqrtf(1.0f / n_size); 
+    const __fp16 sqrt2 = (__fp16) sqrtf(2.0f / n_size);
+    
     for (int k = 0; k < n_size; k++) {
-        if (k == 0) {
-            alpha = sqrtf(1.0 / n_size);
-        } else {
-            alpha = sqrtf(2.0 / n_size);
-        }
-        sum = 0.0;
-        for (int n = 0; n < n_size; n++) {
-            sum += input[n] * cosf(M_PI * (2.0 * n + 1.0) * k / (2.0 * n_size));
+        __fp16 alpha = (k == 0) ? sqrt1 : sqrt2;
+        __fp16 sum = 0.0f;
+        // Calcular theta_k y delta para la relación de recurrencia
+        float theta_k = (pi * k) / (2.0f * n_size);
+        float delta = (pi * k) / n_size; // 2*theta_k
+        
+        // Precomputar cos(delta) y sin(delta)
+        float cos_delta = cosf(delta);
+        float sin_delta = sinf(delta);
+        
+        // Inicializar para n=0
+        float cos_angle = cosf(theta_k);
+        float sin_angle = sinf(theta_k);
+        sum += input[0] * cos_angle;
+        
+        // Bucle interno: calcular para n >= 1 usando recurrencia
+        for (int n = 1; n < n_size; n++) {
+            float new_cos = cos_angle * cos_delta - sin_angle * sin_delta;
+            float new_sin = sin_angle * cos_delta + cos_angle * sin_delta;
+            sum += input[n] * new_cos;
+            cos_angle = new_cos;
+            sin_angle = new_sin;
         }
         output[k] = alpha * sum;
     }
