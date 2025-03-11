@@ -84,27 +84,7 @@ fi
 if $force_run; then
 
     echo "Flag --force detectada. Cross-compilando programas para arquitectura ARM."
-    ### COMPILACION DEL PROGRAMA BASE
 
-    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall pca_FP32.c -o pca_FP32.out $LINK_FLAGS
-
-
-    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
-
-    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall -fexcess-precision=16 pca_FP16.c -o pca_FP16.out $LINK_FLAGS
-    #gcc -o pca_program pca_program.c -larmpl_lp64 -larmpl_mp -lm
-
-    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __fp16)
-
-    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall pca_FP16_ARM.c -o pca_FP16_ARM.out $LINK_FLAGS
-
-
-    ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __bf16)
-
-    # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall pca_BF16.c -o pca_BF16.out $LINK_FLAGS
+    echo "No es posible compilar para ARM los programas de PCA debido a la necesidad de librerías específicas de arquitecturas ARM."
 
 fi
