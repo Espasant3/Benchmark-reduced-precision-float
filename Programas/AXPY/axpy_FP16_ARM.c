@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include <arm_fp16.h>
 
 #define N_SMALL 5
@@ -13,12 +14,29 @@ void axpy(int n, __fp16 a, __fp16 *x, __fp16 *y) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Uso: %s <tamaño del vector> [<seed>]\n", argv[0]);
-        return EXIT_FAILURE;
+        
+    int verbose = 0;
+    int opt;
+
+    // Manejar opciones (-v)
+    while ((opt = getopt(argc, argv, "v")) != -1) {
+        switch (opt) {
+            case 'v':
+                verbose = 1;
+                break;
+            default:
+                fprintf(stderr, "Uso: %s [-v] <tamaño del vector> [<seed>]\n", argv[0]);
+                return EXIT_FAILURE;
+        }
     }
 
-    int n = atoi(argv[1]);
+    // Verificar argumentos restantes (tamaño y seed)
+    if (optind >= argc) {
+        fprintf(stderr, "Uso: %s [-v] <tamaño del vector> [<seed>]\n", argv[0]);
+        return EXIT_FAILURE;
+    }   
+
+    int n = atoi(argv[optind]);
     __fp16 a = 2.3752f16;
     __fp16 *x_small = (__fp16 *)malloc(N_SMALL * sizeof(__fp16));
     __fp16 *y_small = (__fp16 *)malloc(N_SMALL * sizeof(__fp16));
@@ -29,7 +47,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Se usa una semilla proporcionada como argumento o una por defecto
-    unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
+    unsigned int seed = (optind + 1 < argc) ? (unsigned int)atoi(argv[optind + 1]) : (unsigned int)time(NULL);
     srand(seed);
 
     // Generar elementos aleatorios entre 0 y 10
@@ -100,6 +118,14 @@ int main(int argc, char *argv[]) {
     // Se imprime un valor al final para evitar que las optimizaciones se salten alguna operaciones
 
     printf("%f %.10e\n", (float)y[n-1], (float)y[n-1]);
+
+    if(verbose){
+        printf("Resultados ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", (float)y[i]);
+        }
+        printf("\n");    
+    }
 
     // Liberar memoria asignada
     free(x);

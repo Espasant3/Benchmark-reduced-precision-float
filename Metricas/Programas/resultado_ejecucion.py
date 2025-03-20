@@ -5,11 +5,17 @@ import argparse
 from pathlib import Path
 import subprocess
 
-def medir_resultados(programa, n, seed):
+def medir_resultados(programa, n, seed, use_qemu):
     try:
+        # Determinar el comando a ejecutar
+        if use_qemu:
+            comando = ["qemu-aarch64", programa, str(n), str(seed), "-v"]
+        else:
+            comando = [programa, str(n), str(seed), "-v"]
+        
         # Ejecutar el programa una única vez
         resultado = subprocess.run(
-            [programa, str(n), str(seed)],
+            comando,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -62,16 +68,16 @@ def parse_arguments():
     parser.add_argument('-p', '--programa', required=True, help='Path to the program to execute.')
     parser.add_argument('-n', '--n_value', required=True, type=int, help="Número de valores a generar")
     parser.add_argument('-s', '--seed', type=int, default=1234, help="Semilla para la generación de números aleatorios")
+    parser.add_argument('-q', '--use_qemu', action='store_true', help="Ejecutar el programa con qemu-aarch64")
     return parser.parse_args()
 
 def main():
     """Main function that orchestrates the program execution."""
     args = parse_arguments()
     
-    all_results = medir_resultados(args.programa, args.n_value, args.seed)
+    all_results = medir_resultados(args.programa, args.n_value, args.seed, args.use_qemu)
 
     if all_results:
-        print(f"Results extracted: {all_results}")
         save_to_csv(all_results, args.programa, args.n_value, args.seed)
     else:
         print("No results to save.")
