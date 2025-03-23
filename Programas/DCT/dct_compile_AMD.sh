@@ -6,29 +6,34 @@
 force_run=false
 additional_flags=""
 
-# Verificar si el primer argumento es --force
-if [[ "$1" == "--force" ]]; then
-    force_run=true
-    shift
-else
-    # Procesar argumentos de entrada
-    for arg in "$@"; do
-        if [[ "$arg" == "--force" ]]; then
-            force_run=true
-            set -- "${@/--force/}"
-            break
-        fi
-    done
-fi
+# Uso: $0 [--force] [opciones adicionales]
+usage() {
+    echo "Uso: $0 [-f|--force] [opciones adicionales]"
+    exit 1
+}
 
-# Procesar flags adicionales
-for arg in "$@"; do
-    if [[ "$arg" == -* && "$arg" != --* ]]; then
-        additional_flags+=" $arg"
-    else
-        echo "Flag no válida: $arg"
-        exit 1
-    fi
+# Procesar argumentos manualmente
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--force)
+            force_run=true
+            shift
+            ;;
+        --)  # Fin de las opciones
+            shift
+            break
+            ;;
+        -*)
+            # Flags adicionales para el compilador
+            additional_flags+=" $1"
+            echo "Flag adicional añadido para compilar: $1"
+            shift
+            ;;
+        *)
+            # Argumentos posicionales (tamaño N, seed, etc.)
+            break
+            ;;
+    esac
 done
 
 COMMON_FLAGS="-Wall -g"
@@ -86,7 +91,7 @@ fi
 
 if $force_run; then
 
-    echo "Flag --force detectada. Cross-compilando programas para arquitectura ARM."
+    echo "Flag [-f]--force detectada. Cross-compilando programas para arquitectura ARM."
     ### COMPILACION DEL PROGRAMA BASE
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out

@@ -12,29 +12,52 @@ check_qemu() {
 # Inicializar variables
 force_run=false
 
-# Verificar si el primer argumento es --force
-if [[ "$1" == "--force" ]]; then
-    force_run=true
-    shift
-else
-    # Procesar argumentos de entrada
-    for arg in "$@"; do
-        if [[ "$arg" == "--force" ]]; then
-            force_run=true
-            set -- "${@/--force/}"
-            break
-        fi
-    done
-fi
+tamanhoN=""
+seed=""
 
-# Verificar si se proporcionaron al menos un parámetro
-if [ $# -lt 1 ]; then
-    echo "Uso: $0 <tamanho N> [<seed>] [--force]"
+# Uso: $0 [-f|--force] <tamanho N> [<seed>]
+usage() {
+    echo "Uso: $0 [-f|--force] <tamanho N> [<seed>]"
     exit 1
+}
+
+# Procesar argumentos con GNU getopt
+TEMP=$(getopt -o f --long force -n "$0" -- "$@")
+
+# Verificar si hubo error en getopt
+if [ $? != 0 ]; then
+    echo "Error: Opción no reconocida o falta de argumento."
+    usage
 fi
 
+eval set -- "$TEMP"
+
+# Asignar variables basadas en opciones
+while true; do
+    case "$1" in
+        -f|--force)
+            force_run=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Error interno en getopt"
+            exit 1
+            ;;
+    esac
+done
+
+# Verificar si se proporcionaron al menos un parámetro posicional (tamanhoN)
+if [ $# -lt 1 ]; then
+    usage
+fi
+
+# Asignar argumentos posicionales
 tamanhoN=$1
-seed=$2
+seed=${2:-}
 
 # Comprobar que tamanhoN sea un número positivo mayor que 0
 if ! [[ "$tamanhoN" =~ ^[0-9]+$ ]] || [ "$tamanhoN" -le 0 ]; then
@@ -72,7 +95,7 @@ done
 
 # Ejecutar solo si el flag --force está presente
 if $force_run; then
-    echo "Flag --force presente. Intentando ejecutar todos los archivos con extensión .out en el directorio actual."
+    echo "Flag [-f]--force presente. Intentando ejecutar todos los archivos con extensión .out en el directorio actual."
     echo "Comprobando qemu-aarch64..."
     if check_qemu; then
         echo "qemu-aarch64 detectado. Ejecutando con emulación."

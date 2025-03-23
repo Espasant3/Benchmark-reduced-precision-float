@@ -3,29 +3,52 @@
 # Inicializar variables
 force_flag=""
 
-# Verificar si el primer argumento es --force
-if [[ "$1" == "--force" ]]; then
-    force_flag="--force"
-    shift
-else
-    # Procesar argumentos de entrada
-    for arg in "$@"; do
-        if [[ "$arg" == "--force" ]]; then
-            force_flag="--force"
-            set -- "${@/--force/}"
-            break
-        fi
-    done
-fi
+tamanhoN=""
+seed=""
 
-# Verificar si se proporcionaron al menos un parámetro
-if [ $# -lt 1 ]; then
-    echo "Uso: $0 <tamanho N> [<seed>] [--force]"
+# Uso: $0 [-f|--force] <tamanho N> [<seed>]
+usage() {
+    echo "Uso: $0 [-f|--force] <tamanho N> [<seed>]"
     exit 1
+}
+
+# Procesar argumentos con GNU getopt
+TEMP=$(getopt -o f --long force -n "$0" -- "$@")
+
+# Verificar si hubo error en getopt
+if [ $? != 0 ]; then
+    echo "Error: Opción no reconocida o falta de argumento."
+    usage
 fi
 
+eval set -- "$TEMP"
+
+# Asignar variables basadas en opciones
+while true; do
+    case "$1" in
+        -f|--force)
+            force_flag="-f"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Error interno en getopt"
+            exit 1
+            ;;
+    esac
+done
+
+# Verificar si se proporcionaron al menos un parámetro posicional (tamanhoN)
+if [ $# -lt 1 ]; then
+    usage
+fi
+
+# Asignar argumentos posicionales
 tamanhoN=$1
-seed=$2
+seed=${2:-}
 
 # Comprobar que tamanhoN sea un número positivo mayor que 0
 if ! [[ "$tamanhoN" =~ ^[0-9]+$ ]] || [ "$tamanhoN" -le 0 ]; then
