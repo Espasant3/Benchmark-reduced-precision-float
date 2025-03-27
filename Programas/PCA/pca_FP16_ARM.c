@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
 #include <lapacke.h>
 #include <arm_fp16.h>
 #include <armpl.h> // Esta es para usar cblas_hgemm
@@ -43,6 +44,17 @@ void _print_matrix(Matrix* matrix) {
         printf("\t");
         for(int j = 0; j < matrix->cols; j++) {
             printf("%f\t", (float)matrix->data[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Función para imprimir una matriz con más decimales
+void _print_matrix_exp(Matrix* matrix) {
+    for(int i = 0; i < matrix->rows; i++) {
+        printf("\t");
+        for(int j = 0; j < matrix->cols; j++) {
+            printf("%.10e  ", (float)matrix->data[i][j]);
         }
         printf("\n");
     }
@@ -287,14 +299,30 @@ void do_pca(Matrix* matrix) {
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 2) {
-        printf("Uso: %s <tamaño de la matriz nxn> [<seed>]\n", argv[0]);
-        return EXIT_FAILURE;
+    int verbose = 0;
+    int opt;
+
+    // Manejar opciones (-v)
+    while ((opt = getopt(argc, argv, "v")) != -1) {
+        switch (opt) {
+            case 'v':
+                verbose = 1;
+                break;
+            default:
+                fprintf(stderr, "Uso: %s [-v] <tamaño del vector> [<seed>]\n", argv[0]);
+                return EXIT_FAILURE;
+        }
     }
 
-    int n = atoi(argv[1]);
+    // Verificar argumentos restantes (tamaño y seed)
+    if (optind >= argc) {
+        fprintf(stderr, "Uso: %s [-v] <tamaño del vector> [<seed>]\n", argv[0]);
+        return EXIT_FAILURE;
+    }   
 
-    unsigned int seed = (argc > 2) ? atoi(argv[2]) : (unsigned int)time(NULL);
+    int n = atoi(argv[optind]);
+
+    unsigned int seed = (optind + 1 < argc) ? (unsigned int)atoi(argv[optind + 1]) : (unsigned int)time(NULL);
     srand(seed);
 
     Matrix* matriz_small = _create_Matrix(N_SMALL, N_SMALL);
@@ -330,7 +358,8 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < matriz->rows; i++) {
         for (int j = 0; j < matriz->cols; j++) {
-            matriz->data[i][j] = (float)rand() / RAND_MAX * 10.0f; // Genera números aleatorios entre 0 y 10
+            float temp = (float)rand() / RAND_MAX * 10.0f; // Genera números aleatorios entre 0 y 10
+            matriz->data[i][j] = (__fp16)temp;
         }
     }
 
@@ -355,6 +384,11 @@ int main(int argc, char *argv[]) {
 
     printf("%f %.10e\n", (float)matriz->data[n-1][n-1], (float)matriz->data[n-1][n-1]);
     
+    if(verbose){
+        printf("Resultados ejecucion: \n");
+        _print_matrix_exp(matriz);
+    }
+
     _free_matrix(matriz);
 
     return EXIT_SUCCESS;
