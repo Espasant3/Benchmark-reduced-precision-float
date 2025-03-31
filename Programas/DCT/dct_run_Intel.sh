@@ -8,10 +8,17 @@ check_qemu() {
         return 1
     fi
 }
+# Función para construir el mensaje (mejor legibilidad)
+build_message() {
+    local msg="Ejecutando $1 con N=$2"
+    [ -n "$3" ] && msg+=" y seed=$3"       # Añade seed si existe
+    [ -n "$verbose_flag" ] && msg+=" [verbose]"  # Añade verbose si está activo
+    echo "$msg"
+}
 
 # Inicializar variables
 force_run=false
-
+verbose_flag=""
 tamanhoN=""
 seed=""
 
@@ -22,7 +29,7 @@ usage() {
 }
 
 # Procesar argumentos con GNU getopt
-TEMP=$(getopt -o f --long force -n "$0" -- "$@")
+TEMP=$(getopt -o fvh --long force,help -n "$0" -- "$@")
 
 # Verificar si hubo error en getopt
 if [ $? != 0 ]; then
@@ -39,6 +46,18 @@ while true; do
             force_run=true
             shift
             ;;
+        -v)
+            verbose_flag="-v"
+            shift
+            ;;
+        -h|--help)
+            # Mostrar ayuda
+            echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
+            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
+            echo "  -v                Muestra información adicional durante la ejecución."
+            echo "  -h, --help        Muestra esta ayuda y sale."
+            exit 0
+            ;;    
         --)
             shift
             break
@@ -82,17 +101,11 @@ cd "$script_dir"
 # Ejecutar todos los archivos sin extensión en el directorio actual una vez, ignorando .sh
 for file in *; do
     if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.sh ]] && [[ "$file" != *.out ]] && [[ "$file" != *.o ]]; then
-        if [ -z "$seed" ]; then
-            echo "Ejecutando $file con N=$tamanhoN"
-            ./"$file" "$tamanhoN"
-        else
-            echo "Ejecutando $file con N=$tamanhoN y seed=$seed"
-            ./"$file" "$tamanhoN" "$seed"
-        fi
+        echo "$(build_message "$file" "$tamanhoN" "$seed")"
+        ./"$file" "$tamanhoN" "$seed" "$verbose_flag" 
         echo ""
     fi
 done
-
 
 # Ejecutar solo si el flag --force está presente
 if $force_run; then
@@ -102,13 +115,8 @@ if $force_run; then
         echo "qemu-aarch64 detectado. Ejecutando con emulación."
         for file in *.out; do
             if [ -f "$file" ] && [ -x "$file" ]; then
-                if [ -z "$seed" ]; then
-                    echo "Ejecutando $file con N=$tamanhoN"
-                    qemu-aarch64 ./"$file" "$tamanhoN"
-                else
-                    echo "Ejecutando $file con N=$tamanhoN y seed=$seed"
-                    qemu-aarch64 ./"$file" "$tamanhoN" "$seed"
-                fi
+                echo "$(build_message "$file" "$tamanhoN" "$seed")"
+                qemu-aarch64 ./"$file" "$tamanhoN" "$seed" "$verbose_flag"
                 echo ""
             fi
         done

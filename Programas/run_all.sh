@@ -2,18 +2,19 @@
 
 # Inicializar variables
 force_flag=""
+verbose_flag=""
 
 tamanhoN=""
 seed=""
 
-# Uso: $0 [-f|--force] <tamanho N> [<seed>]
+# Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]
 usage() {
-    echo "Uso: $0 [-f|--force] <tamanho N> [<seed>]"
+    echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
     exit 1
 }
 
 # Procesar argumentos con GNU getopt
-TEMP=$(getopt -o f --long force -n "$0" -- "$@")
+TEMP=$(getopt -o fvh --long force,help -n "$0" -- "$@")
 
 # Verificar si hubo error en getopt
 if [ $? != 0 ]; then
@@ -30,6 +31,18 @@ while true; do
             force_flag="-f"
             shift
             ;;
+        -v)
+            verbose_flag="-v"
+            shift
+            ;;
+        -h|--help)
+            # Mostrar ayuda
+            echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
+            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
+            echo "  -v                Muestra información adicional durante la ejecución."
+            echo "  -h, --help        Muestra esta ayuda y sale."
+            exit 0
+            ;;      
         --)
             shift
             break
@@ -109,7 +122,7 @@ case "$ARCH" in
             script="${DIR}/${dir_lower}_run_${CPU_VENDOR}.sh"  # Formato: directorio/dir_run_ARCH.sh
             if [[ -f "$script" && -x "$script" ]]; then
                 echo "Ejecutando $DIR"
-                ./"$script" $tamanhoN $seed $force_flag
+                ./"$script" $tamanhoN $seed $force_flag $verbose_flag
             else
                 echo "Error: Script no encontrado o no ejecutable -> $script"
             fi
