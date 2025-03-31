@@ -19,6 +19,13 @@ while [[ $# -gt 0 ]]; do
             force_run=true
             shift
             ;;
+        -h|--help)
+            # Mostrar ayuda
+            echo "Uso: $0 [-f|--force] [opciones adicionales]"
+            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas a la arquitectura aarch64."
+            echo "  -h, --help        Muestra esta ayuda y sale."
+            exit 0
+            ;;            
         --)  # Fin de las opciones
             shift
             break
