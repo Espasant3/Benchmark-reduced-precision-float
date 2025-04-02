@@ -1,0 +1,6 @@
+# Resultados DCT
+# Referencia: dct_FP32_n15000_seed1234
+Comparación,Execución,MSE
+dct_FP16_n15000_seed1234 vs dct_FP32_n15000_seed1234,1,8.12039826
+dct_FP16_ARM_n15000_seed1234 vs dct_FP32_n15000_seed1234,1,8.12040084
+dct_BF16_n15000_seed1234 vs dct_FP32_n15000_seed1234,1,22.76062118
