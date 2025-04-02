@@ -1,53 +1,100 @@
 import numpy as np
-from PIL import Image
+import csv
 import argparse
+import os
 
-def calcular_cr_señal(señal_original, señal_comprimida):
-    # Calcular la longitud de la señal original
-    longitud_original = len(señal_original)
+def cargar_datos_csv(ruta_archivo):
+    """Carga datos desde CSV y los devuelve como diccionario de ejecuciones."""
+    datos = {}
+    with open(ruta_archivo, 'r') as f:
+        reader = csv.DictReader(f)
+        for fila in reader:
+            ejec = int(fila["Ejecucion"])
+            if ejec not in datos:
+                datos[ejec] = []
+            datos[ejec].append(fila)
+    return datos
 
-    # Calcular la longitud de la señal comprimida
-    longitud_comprimida = len(señal_comprimida)
+def reconstruir_array(datos_ejecucion):
+    """Convierte datos de 1D en un array de NumPy."""
+    indices = [int(d["Indice"]) for d in datos_ejecucion]
+    valores = [float(d["Valor"]) for d in datos_ejecucion]
+    array = np.zeros(max(indices) + 1)  # +1 para índices base 1
+    for i, val in zip(indices, valores):
+        array[i - 1] = val  # Ajuste a base 0
+    return array
 
-    # Calcular la relación de compresión
-    cr = longitud_original / longitud_comprimida
+def reconstruir_matriz(datos_ejecucion):
+    """Convierte datos de 2D en una matriz de NumPy."""
+    filas = max(int(d["Fila"]) for d in datos_ejecucion)
+    cols = max(int(d["Columna"]) for d in datos_ejecucion)
+    matriz = np.zeros((filas, cols))
+    for d in datos_ejecucion:
+        i, j, val = int(d["Fila"]), int(d["Columna"]), float(d["Valor"])
+        matriz[i - 1, j - 1] = val  # Ajuste a base 0
+    return matriz
 
-    return cr
+def calcular_cr(original, comprimido):
+    return original.size / comprimido.size
 
-def calcular_cr_imagen(imagen_original, imagen_comprimida):
-    # Convertir las imágenes a arrays de numpy
-    imagen_original = np.array(imagen_original)
-    imagen_comprimida = np.array(imagen_comprimida)
-
-    # Calcular el tamaño de la imagen original
-    tamaño_original = imagen_original.size
-
-    # Calcular el tamaño de la imagen comprimida
-    tamaño_comprimida = imagen_comprimida.size
-
-    # Calcular la relación de compresión
-    cr = tamaño_original / tamaño_comprimida
-
-    return cr
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Calcular relación de compresión')
+    # Argumentos como flags opcionales (orden arbitrario)
+    parser.add_argument(
+        '-d', '--dimension',
+        choices=['1d', '2d'],
+        required=True,
+        help='Dimensión de los datos (1d o 2d)'
+    )
+    parser.add_argument(
+        '-o', '--original',
+        required=True,
+        help='Archivo original (CSV)'
+    )
+    parser.add_argument(
+        '-c', '--comprimido',
+        required=True,
+        help='Archivo comprimido (CSV)'
+    )
+    parser.add_argument(
+        '-e', '--ejecucion',
+        type=int,
+        help='Filtrar por ejecución específica'
+    )
+    return parser.parse_args()
 
 def main():
-    parser = argparse.ArgumentParser(description='Calcular la relación de compresión')
-    parser.add_argument('dimension', choices=['1d', '2d'], help='Dimensión de los datos')
-    parser.add_argument('archivo_original', help='Archivo original')
-    parser.add_argument('archivo_comprimido', help='Archivo comprimido')
+    args = parse_arguments()
 
-    args = parser.parse_args()
+    # Verificar si los archivos existen
+    if not os.path.isfile(args.original):
+        print(f"Error: Archivo original '{args.original}' no encontrado.")
+        return
+    if not os.path.isfile(args.comprimido):
+        print(f"Error: Archivo comprimido '{args.comprimido}' no encontrado.")
+        return
 
-    if args.dimension == '1d':
-        señal_original = np.loadtxt(args.archivo_original)
-        señal_comprimida = np.loadtxt(args.archivo_comprimido)
-        cr = calcular_cr_señal(señal_original, señal_comprimida)
-    elif args.dimension == '2d':
-        imagen_original = Image.open(args.archivo_original)
-        imagen_comprimida = Image.open(args.archivo_comprimido)
-        cr = calcular_cr_imagen(imagen_original, imagen_comprimida)
+    # Cargar datos
+    datos_orig = cargar_datos_csv(args.original)
+    datos_comp = cargar_datos_csv(args.comprimido)
 
-    print("La relación de compresión es:", cr)
+    # Filtrar por ejecución (si se especifica)
+    ejecuciones = [args.ejecucion] if args.ejecucion else datos_orig.keys()
+
+    for ejec in ejecuciones:
+        print(f"\n--- Ejecución {ejec} ---")
+        orig_ejec = datos_orig[ejec]
+        comp_ejec = datos_comp.get(ejec, [])
+
+        if args.dimension == '1d':
+            señal_orig = reconstruir_array(orig_ejec)
+            señal_comp = reconstruir_array(comp_ejec)
+        elif args.dimension == '2d':
+            señal_orig = reconstruir_matriz(orig_ejec)
+            señal_comp = reconstruir_matriz(comp_ejec)
+
+        cr = calcular_cr(señal_orig, señal_comp)
+        print(f"Relación de compresión (CR): {cr:.5f}")
 
 if __name__ == "__main__":
     main()
