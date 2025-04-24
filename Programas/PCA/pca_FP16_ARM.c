@@ -334,7 +334,8 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < matriz_small->rows; i++) {
         for (int j = 0; j < matriz_small->cols; j++) {
-            matriz_small->data[i][j] = (float)rand() / RAND_MAX * 10.0f; // Genera números aleatorios entre 0 y 10
+            float temp = (float)rand() / RAND_MAX * 10.0f; // Genera números aleatorios entre 0 y 10
+            matriz_small->data[i][j] = (__fp16)temp;
         }
     }
     
