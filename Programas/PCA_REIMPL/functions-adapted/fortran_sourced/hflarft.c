@@ -1,0 +1,132 @@
+
+#include "../include/lapacke_utils_reimpl.h"
+
+void hflarft(char direct, char storev, int n, int k, _Float16 *v, int ldv, _Float16 *tau, _Float16 *t, int ldt) {
+    int l = k / 2;
+    int kl = k - l;
+    int dirf = lsame_reimpl(direct, 'F');
+    int colv = lsame_reimpl(storev, 'C');
+    int qr = dirf && colv;
+    int lq = dirf && !colv;
+    int ql = !dirf && colv;
+
+    /* Base cases */
+    if (n == 0 || k == 0) return;
+    if (n == 1 || k == 1) {
+        t[0] = tau[0];
+        return;
+    }
+
+    if (qr) {
+        /* Recursive calls for T11 and T22 */
+        hflarft(direct, storev, n, l, v, ldv, tau, t, ldt);
+        hflarft(direct, storev, n - l, kl, &v[l + l * ldv], ldv, &tau[l], &t[l + l * ldt], ldt);
+
+        /* T12 = V21' */
+        for (int j = 0; j < l; j++) {
+            for (int i = 0; i < kl; i++) {
+                t[(l + i) + j * ldt] = v[j + (l + i) * ldv];
+            }
+        }
+
+        /* T12 = T12 * V22 */
+        hftrmm('R', 'L', 'N', 'U', l, kl, 1.0F16, &v[l + l * ldv], ldv, &t[l * ldt], ldt);
+
+        /* T12 += V31' * V32 */
+        if (n > k) {
+            int nk = n - k;
+            hfgemm('T', 'N', l, kl, nk, 1.0F16, 
+                   &v[k * ldv], ldv, 
+                   &v[l + k * ldv], ldv, 
+                   1.0F16, &t[l * ldt], ldt);
+        }
+
+        /* T12 = -T11 * T12 */
+        hftrmm('L', 'U', 'N', 'N', l, kl, -1.0F16, t, ldt, &t[l * ldt], ldt);
+
+        /* T12 = T12 * T22 */
+        hftrmm('R', 'U', 'N', 'N', l, kl, 1.0F16, &t[l + l * ldt], ldt, &t[l * ldt], ldt);
+
+    } else if (lq) {
+        /* Recursive calls for T11 and T22 */
+        hflarft(direct, storev, n, l, v, ldv, tau, t, ldt);
+        hflarft(direct, storev, n - l, kl, &v[l + l * ldv], ldv, &tau[l], &t[l + l * ldt], ldt);
+
+        /* Copy V12 to T12 */
+        hflacpy('A', l, kl, &v[l * ldv], ldv, &t[l * ldt], ldt);
+
+        /* T12 = T12 * V22' */
+        hftrmm('R', 'U', 'T', 'U', l, kl, 1.0F16, &v[l + l * ldv], ldv, &t[l * ldt], ldt);
+
+        /* T12 += V13 * V23' */
+        if (n > k) {
+            int nk = n - k;
+            hfgemm('N', 'T', l, kl, nk, 1.0F16, 
+                   &v[k * ldv], ldv, 
+                   &v[l + k * ldv], ldv, 
+                   1.0F16, &t[l * ldt], ldt);
+        }
+
+        /* T12 = -T11 * T12 */
+        hftrmm('L', 'U', 'N', 'N', l, kl, -1.0F16, t, ldt, &t[l * ldt], ldt);
+
+        /* T12 = T12 * T22 */
+        hftrmm('R', 'U', 'N', 'N', l, kl, 1.0F16, &t[l + l * ldt], ldt, &t[l * ldt], ldt);
+
+    } else if (ql) {
+        /* Recursive calls for T11 and T22 */
+        hflarft(direct, storev, n - kl, kl, v, ldv, tau, t, ldt);
+        hflarft(direct, storev, n, l, &v[kl * ldv], ldv, &tau[kl], &t[kl + kl * ldt], ldt);
+
+        /* T21 = V22' */
+        for (int j = 0; j < kl; j++) {
+            for (int i = 0; i < l; i++) {
+                t[j + (kl + i) * ldt] = v[(kl + i) + (n - k + j) * ldv];
+            }
+        }
+
+        /* T21 = T21 * V21 */
+        hftrmm('R', 'U', 'N', 'U', l, kl, 1.0F16, &v[(n - k) * ldv], ldv, &t[kl * ldt], ldt);
+
+        /* T21 += V32' * V31 */
+        if (n > k) {
+            int nk = n - k;
+            hfgemm('T', 'N', l, kl, nk, 1.0F16, 
+                   &v[kl * ldv], ldv, 
+                   v, ldv, 
+                   1.0F16, &t[kl * ldt], ldt);
+        }
+
+        /* T21 = -T22 * T21 */
+        hftrmm('L', 'L', 'N', 'N', l, kl, -1.0F16, &t[kl + kl * ldt], ldt, &t[kl * ldt], ldt);
+
+        /* T21 = T21 * T11 */
+        hftrmm('R', 'L', 'N', 'N', l, kl, 1.0F16, t, ldt, &t[kl * ldt], ldt);
+
+    } else {
+        /* RQ case */
+        hflarft(direct, storev, n - l, kl, v, ldv, tau, t, ldt);
+        hflarft(direct, storev, n, l, &v[kl * ldv], ldv, &tau[kl], &t[kl + kl * ldt], ldt);
+
+        /* Copy V22 to T21 */
+        hflacpy('A', l, kl, &v[kl + (n - k) * ldv], ldv, &t[kl * ldt], ldt);
+
+        /* T21 = T21 * V12' */
+        hftrmm('R', 'L', 'T', 'U', l, kl, 1.0F16, &v[(n - k) * ldv], ldv, &t[kl * ldt], ldt);
+
+        /* T21 += V21 * V11' */
+        if (n > k) {
+            int nk = n - k;
+            hfgemm('N', 'T', l, kl, nk, 1.0F16, 
+                   &v[kl * ldv], ldv, 
+                   v, ldv, 
+                   1.0F16, &t[kl * ldt], ldt);
+        }
+
+        /* T21 = -T22 * T21 */
+        hftrmm('L', 'L', 'N', 'N', l, kl, -1.0F16, &t[kl + kl * ldt], ldt, &t[kl * ldt], ldt);
+
+        /* T21 = T21 * T11 */
+        hftrmm('R', 'L', 'N', 'N', l, kl, 1.0F16, t, ldt, &t[kl * ldt], ldt);
+    }
+}
