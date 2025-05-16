@@ -7,6 +7,7 @@
 
 # Excepto los archivos específicos que queremos rastrear
 !*.c
+!*.h
 !*.sh
 !*.py
 !*.md
