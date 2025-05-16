@@ -57,29 +57,61 @@ _Float16 hflansy(char norm, char uplo, int n, const _Float16 *a, int lda, _Float
             }
         }
     } else if (lsame_reimpl(norm, 'F') || lsame_reimpl(norm, 'E')) {
-        // Frobenius norm
         _Float16 scale = 0.0F16;
         _Float16 sum = 1.0F16;
+        bool has_nan = false;
+
+        // Verificar NaN en todos los elementos relevantes de la matriz
+        // Dentro del bloque que verifica NaN en hflansy:
         if (lsame_reimpl(uplo, 'U')) {
-            for (int j = 1; j < n; ++j) {
-                //LAPACKE_hflassq(j, &a[j * lda], 1, &scale, &sum);
-                hflassq(j, (const _Float16*) &a[j * lda], 1, &scale, &sum);
+            for (int j = 0; j < n; ++j) {
+                for (int i = 0; i <= j; ++i) {
+                    _Float16 elem = a[i + j * lda];
+                    if (LAPACK_HFISNAN(elem)) {
+                        has_nan = true;
+                        break;
+                    }
+                }
+                if (has_nan) break;
             }
         } else {
-            for (int j = 0; j < n - 1; ++j) {
-                int num_elements = n - j - 1;
-                //LAPACKE_hflassq(num_elements, &a[(j + 1) + j * lda], 1, &scale, &sum);
-                hflassq(num_elements, (const _Float16*) &a[(j + 1) + j * lda], 1, &scale, &sum);
+            for (int j = 0; j < n; ++j) {
+                for (int i = j; i < n; ++i) {
+                    if (LAPACK_HFISNAN(a[i + j * lda])) {
+                        has_nan = true;
+                        break;
+                    }
+                }
+                if (has_nan) break;
             }
         }
-        sum *= 2.0F16;
-        //LAPACKE_hflassq(n, a, lda + 1, &scale, &sum);
-        hflassq(n, (const _Float16*) a, lda + 1, &scale, &sum);
-        value = scale * sqrtf(sum);
-    } else {
-        // Norma no soportada
-        return 0.0F16;
+
+        if (has_nan) {
+            return (_Float16)NAN;  // Retornar NaN inmediatamente
+        }
+
+        // Si no hay NaN, calcular la norma
+        if (lsame_reimpl(uplo, 'U')) {
+            for (int j = 0; j < n; ++j) {
+                hflassq(j + 1, &a[j], lda, &scale, &sum);
+            }
+        } else {
+            for (int j = 0; j < n; ++j) {
+                hflassq(n - j, &a[j * lda + j], lda, &scale, &sum);
+            }
+        }
+
+        value = scale * custom_sqrtf16(sum);
+
+        if (!has_nan) {
+            // Aplicar saturación solo si no hay NaN
+            if (value > FP16_MAX) {
+                value = FP16_MAX;
+            }
+        }
+
     }
 
     return value;
 }
+

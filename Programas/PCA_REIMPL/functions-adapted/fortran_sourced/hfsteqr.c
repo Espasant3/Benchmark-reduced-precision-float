@@ -12,13 +12,15 @@ void hfswap_columns(int n, _Float16 *z, int ldz, int col1, int col2) {
 
 
 void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int ldz, _Float16 *work, int *info) {
-    printf("LAPACKE_hfsteqr: n = %d, ldz = %d\n", n, ldz);
+    printf("LAPACKE_hfsteqr: compz = %c, n = %d, ldz = %d\n", compz, n, ldz);
     // Declaracion de constantes
     int MAXIT = 30;
 
     // Declarar todas las variables locales al principio
-    int icompz, l1 = 1, lend, lsv, lendsv, m, nm1, jtot = 0, nmaxit;
-    _Float16 anorm, eps, eps2, safmin, safmax, ssfmax, ssfmin, tst;
+    int icompz, jtot = 0, iscale, i, k;
+    int l, l1 = 1, lm1, lend, lendm1, lendp1, lsv, lendsv;
+    int m, mm, mm1, nm1, nmaxit;
+    _Float16 anorm, eps, eps2, safmin, safmax, ssfmax, ssfmin, tst, rt1, rt2;
     _Float16 p = 0.0F16, g = 0.0F16, r = 0.0F16, c = 0.0F16, s = 0.0F16, f = 0.0F16, b = 0.0F16;
 
     // Check COMPZ
@@ -30,9 +32,9 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
     *info = 0;
     if (icompz < 0) *info = -1;
     else if (n < 0) *info = -2;
-    else if (ldz < 1 || (icompz > 0 && ldz < n)) *info = -6;
+    else if (ldz < 1 || (icompz > 0 && ldz < MAX(1,n))) *info = -6;
     if (*info != 0) {
-        LAPACKE_xerbla("HFSTEQR", *info);
+        LAPACKE_xerbla("HFSTEQR", -(*info));
         return;
     }
 
@@ -48,278 +50,311 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
     eps2 = eps * eps;
     safmin = hflamch('S');
     safmax = 1.0F16 / safmin;
-    ssfmax = custom_sqrtf16(safmax) / 1.0F16;
+    ssfmax = custom_sqrtf16(safmax) / 3.0F16;
     ssfmin = custom_sqrtf16(safmin) / eps2;
 
     // Initialize Z to identity if needed
-    if (icompz == 2) hflaset('A', n, n, 0.0F16, 1.0F16, z, ldz);
+    if (icompz == 2) hflaset('F', n, n, 0.0F16, 1.0F16, z, ldz); // 'F' for full matrix
 
     nmaxit = n * MAXIT;
     nm1 = n - 1;
-
-    printf("Entrando en el bucle principal\n");
-    printf("l1 = %d, n = %d\n", l1, n);
-    printf("nm1 = %d\n", nm1);
-    printf("nmaxit = %d\n", nmaxit);
-    while (l1 <= n) {
-
-        if (l1 > 1) e[l1-2] = 0.0F16; // Adjust indices
-
-        // Find m (split point)
-        for (m = l1-1; m < nm1; m++) {
-            tst = ABS_Float16(e[m]);
-            if (tst <= custom_sqrtf16(ABS_Float16(d[m])) * custom_sqrtf16(ABS_Float16(d[m+1])) * eps) {
-                e[m] = 0.0F16;
-                break;
-            }
-        }
-        //if (m == nm1) m = n;
-        if (m == nm1) {
-            l1 = n + 1;  // Salir del bucle en la siguiente iteración
-        } else {
-            l1 = m + 1;  // Continuar procesamiento normal
-        }
-
-        int l = l1 - 1;
-        lsv = l;
-        lend = m;
-        lendsv = lend;
-        //l1 = m + 1;
-        if (lend == l) continue;
-
-        // Scale submatrix
-        int len = lend - l + 1;
-        anorm = hflanst('M', len, &d[l], &e[l]);
-        int iscale = 0;
-        if (anorm == 0.0F16) continue;
         
-        // Corregido (usar variables temporales):
-        int kl = 0, ku = 0, one = 1;
+    do{
+        while(1){ // 10
+            
+            if(l1 > n){
+                    // 160
+                if(icompz == 0){
+                    // Use Quick Sort
+                    hflasrt('I', n, d, info);
+                }else{
+                    // Use Selection Sort to minimize swaps of eigenvectors
 
-        if (anorm > ssfmax) {
+                    for(int ii = 2; ii <= n; ii++){
+                        i = ii - 1;
+                        k = i;
+                        p = d[i - 1];
+
+                        for(int j = ii; j <= n; j++){
+                            if(d[j - 1] < p){
+                                k = j;
+                                p = d[j - 1];
+                            }
+                        }
+                        if(k != i){
+                            d[k - 1] = d[i - 1];
+                            d[i - 1] = p;
+                            
+                            hfswap(n, &z[(i - 1) * ldz], 1, &z[(k - 1) * ldz], 1); // Column-major
+                            //hfswap(n, &z[i - 1], n, &z[k - 1], n); // Row-major
+
+                        }
+                    }
+                }
+                return;
+                // END 160
+            } 
+            if(l1 > 1) e[l1-2] = 0.0F16; // Ajustar índices
+            if(l1 <= nm1){
+                for(m = l1; m <= nm1; m++){
+                    tst = ABS_Float16(e[m-1]);
+
+                    if(tst == 0.0F16) break;
+
+                    if(tst <= custom_sqrtf16(ABS_Float16(d[m-1])) * custom_sqrtf16(ABS_Float16(d[m])) * eps) {
+                        e[m-1] = 0.0F16;
+                        break;
+                    }
+                }
+                if(m > nm1){
+                    m = n;
+                }
+            }else{
+                m = n;
+            }
+            
+            l = l1;
+            lsv = l;
+            lend = m;
+            lendsv = lend;
+            l1 = m + 1;
+            if(lend == l) continue;
+            
+            anorm = hflanst('M', lend - l + 1, &d[l-1], &e[l-1]);
+            iscale = 0;
+            if(anorm == 0.0F16) continue;
+            break;
+
+        } //////// FIN WHILE 1
+
+        if(anorm > ssfmax) {
             iscale = 1;
-            hflascl('G', kl, ku, anorm, ssfmax, len, one, &d[l], n, info);
-            hflascl('G', kl, ku, anorm, ssfmax, len - 1, one, &e[l], n, info);
+            hflascl('G', 0, 0, anorm, ssfmax, lend - l + 1, 1, &d[l-1], n, info);
+            hflascl('G', 0, 0, anorm, ssfmax, lend - l, 1, &e[l-1], n, info);
         } else if (anorm < ssfmin) {
             iscale = 2;
-            hflascl('G', kl, ku, anorm, ssfmin, len, one, &d[l], n, info);
-            hflascl('G', kl, ku, anorm, ssfmin, len - 1, one, &e[l], n, info);
+            hflascl('G', 0, 0, anorm, ssfmin, lend - l + 1, 1, &d[l-1], n, info);
+            hflascl('G', 0, 0, anorm, ssfmin, lend - l, 1, &e[l-1], n, info);
         }
 
-        // QL/QR iteration
-        if (ABS_Float16(d[lend-1]) < ABS_Float16(d[l-1])) {
+        // Choose between QL and QR iteration
+
+        if(ABS_Float16(d[lend-1]) < ABS_Float16(d[l-1])) {
             lend = lsv;
             l = lendsv;
         }
 
-        if (lend > l) {
-            // QL Iteration
-            c = 1.0F16;  // Valor inicial para rotaciones
-            s = 1.0F16;
-            p = 0.0F16;
-            int lendm1 = lend - 1;
-            while (1) {
-                // Buscar elemento subdiagonal pequeño (índices 0-based)
-                int m = lend;
-                if (l != lend) {
-                    for (m = l; m < lendm1; m++) {
-                        tst = ABS_Float16(e[m]) * ABS_Float16(e[m]);
-                        if (tst <= (eps2 * ABS_Float16(d[m])) * (ABS_Float16(d[m+1]) + safmin)) 
-                            break;
+        if(lend > l){
+            
+            while(1){  // 40    // QL Iteration
+                
+                if(l != lend){ //  Look for small subdiagonal element.
+                    lendm1 = lend - 1;
+                    for(m = l; m <= lendm1; m++){
+                        tst = ABS_Float16(e[m-1]) * ABS_Float16(e[m-1]);
+                        if(tst <= eps2 * ABS_Float16(d[m-1]) * ABS_Float16(d[m]) + safmin) break;
                     }
+                    if(m > lendm1) m = lend;
+
+                }else {
+                    m = lend;
                 }
-        
-                if (m < lend) e[m] = 0.0F16;
-                p = d[l];
-                if (m == l) break;
-        
-                // Caso 2x2 (ajustar índices)
-                if (m == l + 1) {
-                    _Float16 rt1, rt2;
-                    if (icompz > 0) {
-                        hflaev2(d[l], e[l], d[l+1], &rt1, &rt2, &c, &s);
-                        work[l] = c;
-                        work[n - 1 + l] = s;
-                        int two = 2;
-                        hflasr('R', 'V', 'B', n, two, &work[l], &work[n - 1 + l], 
-                               &z[l * ldz], ldz);
-                    } else {
-                        hflae2(d[l], e[l], d[l+1], &rt1, &rt2);
-                    }
-                    d[l] = rt1;
-                    d[l+1] = rt2;
-                    e[l] = 0.0F16;
-                    l += 2;
-                    if (l <= lend) continue;
+
+                if(m < lend) e[m-1] = 0.0F16;
+                p = d[l-1];
+                if(m == l){ // Eigenvalue found
+                    // 80
+                    d[l-1] = p;
+                    l += 1;
+                    if(l <= lend) continue;
                     break;
                 }
-        
-                if (jtot == nmaxit) break;
-                jtot++;
-        
-                // Cálculo del shift (0-based)
-                g = (d[l+1] - p) / (2.0F16 * e[l]);
-                r = hflapy2(g, 1.0F16);
-                g = d[m] - p + (e[l] / (g + (g > 0 ? r : -r)));
-                
-        
-                // Inner loop (rotaciones hacia atrás)
-                c = 1.0F16;
-                s = 1.0F16;
-                p = 0.0F16;
-                for (int i = m - 1; i >= l; i--) {
-                    f = s * e[i];
-                    b = c * e[i];
-                    hflartg(g, f, &c, &s, &r);
-                    if (i != m - 1) e[i+1] = r;
-                    g = d[i+1] - p;
-                    r = (d[i] - g) * s + 2.0F16 * c * b;
-                    p = s * r;
-                    d[i+1] = g + p;
-                    g = c * r - b;
-        
-                    // Guardar rotaciones en WORK
-                    if (icompz > 0) {
-                        work[i] = c;
-                        work[n - 1 + i] = -s;
-                    }
-                }
-        
-                // Aplicar rotaciones a Z (0-based)
-                if (icompz > 0) {
-                    int mm = m - l;
-                    hflasr('R', 'V', 'B', n, mm, &work[l], &work[n - 1 + l], 
-                           &z[l * ldz], ldz);
-                }
-        
-                d[l] -= p;
-                e[l] = g;
-            }
-        } else {
-            // QR Iteration
-            c = 1.0F16;  // Valor inicial para rotaciones
-            s = 1.0F16;
-            p = 0.0F16;
-            while (1) {
-                // Buscar elemento superdiagonal pequeño (0-based)
-                int m = lend;
-                if (l != lend) {
-                    for (m = l; m > lend; m--) {
-                        tst = ABS_Float16(e[m-1]) * ABS_Float16(e[m-1]);
-                        if (tst <= (eps2 * ABS_Float16(d[m])) * (ABS_Float16(d[m-1]) + safmin)) 
-                            break;
-                    }
-                }
-        
-                if (m > lend) e[m-1] = 0.0F16;
-                p = d[l];
-                if (m == l) break;
-        
-                // Caso 2x2 (0-based)
-                if (m == l - 1) {
-                    _Float16 rt1, rt2;
-                    if (icompz > 0) {
+
+            
+                if(m == l + 1){ // The remaining matrix is 2-by-2
+                    if(compz > 0){
                         hflaev2(d[l-1], e[l-1], d[l], &rt1, &rt2, &c, &s);
-                        work[m] = c;
-                        work[n - 1 + m] = s;
-                        int two = 2;
-                        hflasr('R', 'V', 'F', n, two, &work[m], &work[n - 1 + m], 
-                               &z[(l-1) * ldz], ldz);
-                    } else {
+                        work[l-1] = c;
+                        work[n - 1 + l - 1] = s;
+                        hflasr('R', 'V', 'B', n, 2, &work[l-1], &work[n - 1 + l - 1], &z[(l-1) * ldz], ldz); // Revisar por si se está pasando como row-major
+                    }else{
                         hflae2(d[l-1], e[l-1], d[l], &rt1, &rt2);
                     }
                     d[l-1] = rt1;
                     d[l] = rt2;
                     e[l-1] = 0.0F16;
-                    l -= 2;
-                    if (l >= lend) continue;
+                    l += 2;
+                    if(l <= lend) continue;
                     break;
+
                 }
-        
-                if (jtot == nmaxit) break;
+                if(jtot == nmaxit) break;
                 jtot++;
-        
-                // Cálculo del shift
-                g = (d[l-1] - p) / (2.0F16 * e[l-1]);
+
+                // Form shift
+
+                g = (d[l] - p) / (2.0F16 * e[l-1]);
                 r = hflapy2(g, 1.0F16);
-                g = d[m] - p + (e[l-1] / (g + (g > 0 ? r : -r)));
-        
-                // Inner loop (rotaciones hacia adelante)
-                c = 1.0F16;
+                //g = d[m-1] - p + (e[l-1] / (g + (g > 0.0F16 ? r : -r)));
+                g = d[m-1] - p + (e[l-1] / (g + (_Float16)copysignf((float)r, (float)g)));
+
                 s = 1.0F16;
+                c = 1.0F16;
                 p = 0.0F16;
-                for (int i = m; i < l; i++) {
-                    f = s * e[i];
-                    b = c * e[i];
+
+                // Inner loop
+
+                mm1 = m - 1;
+                for(i = mm1; i >= l; i--){
+                    f = s * e[i - 1];
+                    b = c * e[i - 1];
                     hflartg(g, f, &c, &s, &r);
-                    if (i != m) e[i-1] = r;
+                    if(i != m - 1){
+                        e[i] = r;
+                    }
                     g = d[i] - p;
-                    r = (d[i+1] - g) * s + 2.0F16 * c * b;
+                    r = (d[i - 1] - g) * s + 2.0F16 * c * b;
                     p = s * r;
                     d[i] = g + p;
                     g = c * r - b;
-        
-                    // Guardar rotaciones en WORK
-                    if (icompz > 0) {
-                        work[i] = c;
-                        work[n - 1 + i] = s;
+                    
+                    // If eigenvectors are desired, then save rotations.
+
+                    if(icompz > 0){
+                        work[i - 1] = c;
+                        work[n - 1 + i - 1] = -s;
+                    }
+
+
+
+                }
+
+                // If eigenvectors are desired, then apply saved rotations
+                if(icompz > 0) {
+                    mm = m - l + 1;
+                    hflasr('R', 'V', 'B', n, mm, &work[l-1], &work[n - 1 + l - 1], &z[(l-1) * ldz], ldz); // Revisar por si se está pasando como row-major
+                }
+
+                d[l - 1] = d[l - 1] - p;
+                e[l - 1] = g;   
+            }
+
+        } else{
+            // QR Iteration
+
+            while(1){ // 90
+
+                if(l <= lend){ // Look for small superdiagonal element.
+                    lendp1 = lend + 1;
+                    for(m = l; m >= lendp1; m--){
+                        tst = ABS_Float16(e[m-2]) * ABS_Float16(e[m-2]);
+                        if(tst<= (eps2 * ABS_Float16(d[m-1]) * ABS_Float16(d[m-2]) + safmin)) break;
+                    }
+                    if(m < lendp1) m = lend;
+                } else{
+                    m = lend;
+                }
+                // 110
+                if(m < lend) e[m-2] = 0.0F16;
+                p = d[l-1];
+
+                if(m == l){ // Eigenvalue found
+                    // 130
+                    d[l-1] = p; 
+                    l--;
+                    if(l >= lend) continue;
+                    break;
+                }
+                if(m == l - 1){  // The remaining matrix is 2-by-2
+                    if(compz > 0){
+                        hflaev2(d[l-2], e[l-2], d[l-1], &rt1, &rt2, &c, &s);
+                        work[m-1] = c;
+                        work[n - 1 + m - 1] = s;
+                        hflasr('R', 'V', 'F', n, 2, &work[m-1], &work[n - 1 + m - 1], &z[(l-2) * ldz], ldz); // Revisar por si se está pasando como row-major
+                    }else{
+                        hflae2(d[l-2], e[l-2], d[l-1], &rt1, &rt2);
+                    }
+
+                    d[l - 2] = rt1;
+                    d[l - 1] = rt2;
+                    e[l - 2] = 0.0F16;
+                    l -= 2;
+                    if(l >= lend) continue;
+                    break;
+                }
+
+                if(jtot == nmaxit) break;
+                jtot++;
+
+                // Form shift
+
+                g = (d[l-2] - p) / (2.0F16 * e[l-2]);
+                r = hflapy2(g, 1.0F16);
+                g = d[m-1] - p + (e[l-2] / (g + (_Float16)copysignf((float)r, (float)g)));
+
+                s = 1.0F16;
+                c = 1.0F16;
+                p = 0.0F16;
+
+                // Inner loop
+
+                lm1 = l - 1;
+
+                for(i = m; i <= lm1; i++){
+                    f = s * e[i-1];
+                    b = c * e[i-1];
+                    hflartg(g, f, &c, &s, &r);
+                    if(i != m){
+                        e[i-2] = r;
+                    }
+                    g = d[i-1] - p;
+                    r = (d[i] - g) * s + 2.0F16 * c * b;
+                    p = s * r;
+                    d[i-1] = g + p;
+                    g = c * r - b;
+                    // If eigenvectors are desired, then save rotations.
+                    if(icompz > 0){
+                        work[i-1] = c;
+                        work[n - 1 + i - 1] = s;
                     }
                 }
-        
-                // Aplicar rotaciones a Z
-                if (icompz > 0) {
-                    int mm = l - m;
-                    hflasr('R', 'V', 'F', n, mm, &work[m], &work[n - 1 + m], 
-                           &z[m * ldz], ldz);
+
+                // If eigenvectors are desired, then apply saved rotations.
+                if(icompz > 0) {
+                    mm = l - m + 1;
+                    hflasr('R', 'V', 'F', n, mm, &work[m-1], &work[n - 1 + m - 1], &z[(m - 1) * ldz], ldz); // Revisar por si se está pasando como row-major
                 }
-        
-                d[l] -= p;
-                e[l-1] = g;
+
+                d[l-1] = d[l-1] - p;
+                e[lm1-1] = g;
+                l--;
+
             }
+
+        } // 140
+
+        // Undo scaling if necessary
+
+        if(iscale == 1){
+            hflascl('G', 0, 0, ssfmax, anorm, lendsv - lsv + 1, 1, &d[lsv - 1], n, info);
+            hflascl('G', 0, 0, ssfmax, anorm, lendsv - lsv, 1, &e[lsv - 1], n, info);
+        }else if(iscale == 2){
+            hflascl('G', 0, 0, ssfmin, anorm, lendsv - lsv + 1, 1, &d[lsv - 1], n, info);
+            hflascl('G', 0, 0, ssfmin, anorm, lendsv - lsv, 1, &e[lsv - 1], n, info);
         }
 
-        // Undo scaling
-        if (iscale == 1) {
-            hflascl('G', kl, ku, ssfmax, anorm, lendsv - lsv + 1, one, &d[lsv], n, info);
-            hflascl('G', kl, ku, ssfmax, anorm, lendsv - lsv, one, &e[lsv], n, info);
-        } else if (iscale == 2) {
-            hflascl('G', kl, ku, ssfmin, anorm, lendsv - lsv + 1, one, &d[lsv], n, info);
-            hflascl('G', kl, ku, ssfmin, anorm, lendsv - lsv, one, &e[lsv], n, info);
+        if(jtot >= nmaxit){
+            // GO TO 10
+            break;
         }
-    }
 
-    // Check convergence (0-based)
-    if (jtot < nmaxit) {
-        l1 = 1; // Resetear para nueva iteración
-    } else {
-        // Contar elementos no convergentes en E
-        *info = 0;
-        for (int i = 0; i < n - 1; i++) {
-            if (e[i] != 0.0F16) (*info)++;
-            // Esto se podría modificar para que fuera ABS_Float16(e[i]) > eps // (epsilon)
-        }
-    }
+    }while(1);
 
-    // Sort eigenvalues and vectors
-    if (icompz == 0) {
-        hflasrt('I', n, d, info);
-    } else {
-        // Selection sort (adjusted for 0-based)
-        for (int i = 0; i < n - 1; i++) {
-            int k = i;
-            _Float16 p_val = d[i];
-            for (int j = i+1; j < n; j++) {
-                if (d[j] < p_val) {
-                    k = j;
-                    p_val = d[j];
-                }
-            }
-            if (k != i) {
-                d[k] = d[i];
-                d[i] = p_val;
-                //hfswap_row_major(n, &z[i], 1, &z[k], 1); // Acceso por filas (row-major)
-                hfswap_columns(n, z, ldz, i, k); // Intercambia columnas i y k
-            }
+    for(i = 1; i <= n - 1; i++){
+        if(e[i-1] != 0.0F16){
+            info++;
         }
     }
+    // 190
+    return;
 }

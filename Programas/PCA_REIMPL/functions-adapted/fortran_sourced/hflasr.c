@@ -81,7 +81,7 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
         info = 4;
     } else if (n < 0) {
         info = 5;
-    } else if (lda < MAX(1, n)) { // Como son matrices row-major, se valida n (aunque al ser cuadradas, m=n)
+    } else if (lda < MAX(1, m)) {
         info = 9;
     }
 
@@ -90,10 +90,8 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
         return;
     }
 
-    // Retorno rápido si no hay trabajo
     if (m == 0 || n == 0) return;
 
-    // Aplicar rotaciones desde la izquierda
     if (lsame_reimpl(side, 'L')) {
         if (lsame_reimpl(pivot, 'V')) {
             if (lsame_reimpl(direct, 'F')) {
@@ -102,9 +100,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < n; ++i) {
-                            temp = a[(j+1)*lda + i];
-                            a[(j+1)*lda + i] = ctemp * temp - stemp * a[j*lda + i];
-                            a[j*lda + i] = stemp * temp + ctemp * a[j*lda + i];
+                            temp = a[i*lda + (j+1)];
+                            a[i*lda + (j+1)] = ctemp * temp - stemp * a[i*lda + j];
+                            a[i*lda + j] = stemp * temp + ctemp * a[i*lda + j];
                         }
                     }
                 }
@@ -114,9 +112,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < n; ++i) {
-                            temp = a[(j+1)*lda + i];
-                            a[(j+1)*lda + i] = ctemp * temp - stemp * a[j*lda + i];
-                            a[j*lda + i] = stemp * temp + ctemp * a[j*lda + i];
+                            temp = a[i*lda + (j+1)];
+                            a[i*lda + (j+1)] = ctemp * temp - stemp * a[i*lda + j]; 
+                            a[i*lda + j] = stemp * temp + ctemp * a[i*lda + j]; 
                         }
                     }
                 }
@@ -128,9 +126,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j - 1];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < n; ++i) {
-                            temp = a[j*lda + i];
-                            a[j*lda + i] = ctemp * temp - stemp * a[i];
-                            a[i] = stemp * temp + ctemp * a[i];
+                            temp = a[i*lda + j]; 
+                            a[i*lda + j] = ctemp * temp - stemp * a[i*lda]; 
+                            a[i*lda] = stemp * temp + ctemp * a[i*lda]; 
                         }
                     }
                 }
@@ -140,9 +138,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j - 1];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < n; ++i) {
-                            temp = a[j*lda + i];
-                            a[j*lda + i] = ctemp * temp - stemp * a[i];
-                            a[i] = stemp * temp + ctemp * a[i];
+                            temp = a[i*lda + j]; 
+                            a[i*lda + j] = ctemp * temp - stemp * a[i*lda]; 
+                            a[i*lda] = stemp * temp + ctemp * a[i*lda]; 
                         }
                     }
                 }
@@ -154,9 +152,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < n; ++i) {
-                            temp = a[j*lda + i];
-                            a[j*lda + i] = stemp * a[(m-1)*lda + i] + ctemp * temp;
-                            a[(m-1)*lda + i] = ctemp * a[(m-1)*lda + i] - stemp * temp;
+                            temp = a[i*lda + j]; 
+                            a[i*lda + j] = stemp * a[i*lda + (m-1)] + ctemp * temp; 
+                            a[i*lda + (m-1)] = ctemp * a[i*lda + (m-1)] - stemp * temp; 
                         }
                     }
                 }
@@ -166,15 +164,15 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < n; ++i) {
-                            temp = a[j*lda + i];
-                            a[j*lda + i] = stemp * a[(m-1)*lda + i] + ctemp * temp;
-                            a[(m-1)*lda + i] = ctemp * a[(m-1)*lda + i] - stemp * temp;
+                            temp = a[i*lda + j];
+                            a[i*lda + j] = stemp * a[i*lda + (m-1)] + ctemp * temp; 
+                            a[i*lda + (m-1)] = ctemp * a[i*lda + (m-1)] - stemp * temp; 
                         }
                     }
                 }
             }
         }
-    } else { // Aplicar rotaciones desde la derecha
+    } else {
         if (lsame_reimpl(pivot, 'V')) {
             if (lsame_reimpl(direct, 'F')) {
                 for (j = 0; j < n - 1; ++j) {
@@ -182,22 +180,21 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < m; ++i) {
-                            temp = a[i*lda + (j+1)];
-                            a[i*lda + j+1] = ctemp * temp - stemp * a[i*lda + j];
-                            a[i*lda + j] = stemp * temp + ctemp * a[i*lda + j];
+                            temp = a[(j+1)*lda + i];
+                            a[(j+1)*lda + i] = ctemp * temp - stemp * a[j*lda + i]; 
+                            a[j*lda + i] = stemp * temp + ctemp * a[j*lda + i]; 
                         }
                     }
                 }
-                
             } else {
                 for (j = n - 2; j >= 0; --j) {
                     ctemp = c[j];
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < m; ++i) {
-                            temp = a[i*lda + (j+1)];
-                            a[i*lda + j+1] = ctemp * temp - stemp * a[i*lda + j];
-                            a[i*lda + j] = stemp * temp + ctemp * a[i*lda + j];
+                            temp = a[(j+1)*lda + i]; 
+                            a[(j+1)*lda + i] = ctemp * temp - stemp * a[j*lda + i]; 
+                            a[j*lda + i] = stemp * temp + ctemp * a[j*lda + i]; 
                         }
                     }
                 }
@@ -209,9 +206,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j - 1];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < m; ++i) {
-                            temp = a[i*lda + j];
-                            a[i*lda + j] = ctemp * temp - stemp * a[i*lda];
-                            a[i*lda] = stemp * temp + ctemp * a[i*lda];
+                            temp = a[j*lda + i]; 
+                            a[j*lda + i] = ctemp * temp - stemp * a[i];
+                            a[i] = stemp * temp + ctemp * a[i]; 
                         }
                     }
                 }
@@ -221,9 +218,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j - 1];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < m; ++i) {
-                            temp = a[i*lda + j];
-                            a[i*lda + j] = ctemp * temp - stemp * a[i*lda];
-                            a[i*lda] = stemp * temp + ctemp * a[i*lda];
+                            temp = a[j*lda + i]; 
+                            a[j*lda + i] = ctemp * temp - stemp * a[i]; 
+                            a[i] = stemp * temp + ctemp * a[i]; 
                         }
                     }
                 }
@@ -235,9 +232,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < m; ++i) {
-                            temp = a[i*lda + j];
-                            a[i*lda + j] = stemp * a[i*lda + (n-1)] + ctemp * temp;
-                            a[i*lda + (n-1)] = ctemp * a[i*lda + (n-1)] - stemp * temp;
+                            temp = a[j*lda + i]; 
+                            a[j*lda + i] = stemp * a[(n-1)*lda + i] + ctemp * temp; 
+                            a[(n-1)*lda + i] = ctemp * a[(n-1)*lda + i] - stemp * temp; 
                         }
                     }
                 }
@@ -247,9 +244,9 @@ void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
                     stemp = s[j];
                     if (ctemp != ONE || stemp != ZERO) {
                         for (i = 0; i < m; ++i) {
-                            temp = a[i*lda + j];
-                            a[i*lda + j] = stemp * a[i*lda + (n-1)] + ctemp * temp;
-                            a[i*lda + (n-1)] = ctemp * a[i*lda + (n-1)] - stemp * temp;
+                            temp = a[j*lda + i]; 
+                            a[j*lda + i] = stemp * a[(n-1)*lda + i] + ctemp * temp; 
+                            a[(n-1)*lda + i] = ctemp * a[(n-1)*lda + i] - stemp * temp; 
                         }
                     }
                 }

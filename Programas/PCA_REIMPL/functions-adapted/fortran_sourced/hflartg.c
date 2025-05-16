@@ -71,23 +71,33 @@ void hflartg(_Float16 f, _Float16 g, _Float16 *c, _Float16 *s, _Float16 *r) {
         _Float16 rtmax = custom_sqrtf16(safmax / 2.0F16);
 
         if (f1 > rtmin && f1 < rtmax && g1 > rtmin && g1 < rtmax) {
-            _Float16 d = custom_sqrtf16(f * f + g * g);
-            *c = f1 / d;
+            // Cálculo estable de la hipotenusa usando el método de LAPACK
+            _Float16 a = MAX(f1, g1);
+            _Float16 b = MIN(f1, g1);
+            _Float16 ratio = (a == 0.0F16) ? 0.0F16 : b / a;
+            _Float16 d = a * custom_sqrtf16(1.0F16 + ratio * ratio);
+            *c = (a == 0.0F16) ? 1.0F16 : f1 / d;
             *r = (f >= 0.0F16) ? d : -d;
             *s = g / (*r);
         } else {
-            // Calcular u como min(safmax, max(safmin, f1, g1))
+            // Escalar f y g para evitar underflow/overflow
             _Float16 u = MAX(f1, g1);
-            u = MAX(u, safmin);
+            u = MAX(u, rtmin);  // Asegurar que u ≥ rtmin
             u = MIN(u, safmax);
 
             _Float16 fs = f / u;
             _Float16 gs = g / u;
-            _Float16 d = custom_sqrtf16(fs * fs + gs * gs);
-            *c = ABS_Float16(fs) / d;
+
+            // Cálculo estable de la hipotenusa para fs y gs
+            _Float16 a = MAX(ABS_Float16(fs), ABS_Float16(gs));
+            _Float16 b = MIN(ABS_Float16(fs), ABS_Float16(gs));
+            _Float16 ratio = (a == 0.0F16) ? 0.0F16 : b / a;
+            _Float16 d = a * custom_sqrtf16(1.0F16 + ratio * ratio);
+
+            *c = (a == 0.0F16) ? 1.0F16 : ABS_Float16(fs) / d;
             *r = (f >= 0.0F16) ? d : -d;
             *s = gs / (*r);
-            *r *= u;
+            *r *= u;  // Re-escalar r
         }
     }
 }

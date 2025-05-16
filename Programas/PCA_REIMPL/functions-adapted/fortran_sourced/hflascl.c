@@ -201,18 +201,20 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
                     break;
                 }
 
-                case 6: {  // Banda general
-                    int K1 = KL + KU + 2;
-                    int K2 = KL + 1;
-                    int K3 = 2 * KL + KU + 1;
-                    for (J = 0; J < N; J++) {
-                        int J_fortran = J + 1;
-                        int start_i_fortran = MAX3(K1 - J_fortran, K2, 1);
-                        int end_i_fortran = MIN3(K3, KL + KU + 1 + M - J_fortran, K1 + M - J_fortran);
-                        int start_i = MAX(start_i_fortran - 1, 0);
-                        int end_i = MIN(end_i_fortran - 1, LDA - 1);
-                        for (I = start_i; I <= end_i; I++)
-                            A[I + J * LDA] *= MUL;
+                case 6: {  // Banda general (KL subdiagonales, KU superdiagonales)
+                    const int total_bands = KL + KU + 1;
+                    for (lapack_int col = 0; col < N; ++col) {
+                        // Rango de filas a escalar en la columna actual
+                        const int first_row = MAX(0, col - KU);           // Primera fila en la matriz original
+                        const int last_row = MIN(M - 1, col + KL);        // Última fila en la matriz original
+                        
+                        // Convertir a índices de almacenamiento banda
+                        const int storage_start = KU + (first_row - col); // Fila en el arreglo banda
+                        const int storage_end = KU + (last_row - col);
+                        
+                        for (int storage_row = storage_start; storage_row <= storage_end; ++storage_row) {
+                            A[storage_row + col * LDA] *= MUL;
+                        }
                     }
                     break;
                 }
