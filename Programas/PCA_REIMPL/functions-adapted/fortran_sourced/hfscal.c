@@ -7,7 +7,7 @@ void hfscal(int n, _Float16 sa, _Float16 *sx, int incx) {
     /* Caso para incremento unitario (optimizado) */
     if (incx == 1) {
         const int m = n % 5;
-        for (int i = 0; i < m; ++i) sx[i] *= sa;
+        for (int i = 0; i < m; i++) sx[i] *= sa;
         for (int i = m; i < n; i += 5) {
             sx[i]   *= sa;
             sx[i+1] *= sa;
@@ -18,7 +18,7 @@ void hfscal(int n, _Float16 sa, _Float16 *sx, int incx) {
     } 
     /* Caso general corregido para incrementos negativos */
     else {
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < n; i++) {
             sx[i * incx] *= sa;
         }
     }

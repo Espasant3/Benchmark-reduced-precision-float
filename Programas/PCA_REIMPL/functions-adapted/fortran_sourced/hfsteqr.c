@@ -12,7 +12,6 @@ void hfswap_columns(int n, _Float16 *z, int ldz, int col1, int col2) {
 
 
 void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int ldz, _Float16 *work, int *info) {
-    printf("LAPACKE_hfsteqr: compz = %c, n = %d, ldz = %d\n", compz, n, ldz);
     // Declaracion de constantes
     int MAXIT = 30;
 
@@ -57,6 +56,9 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
     if (icompz == 2) hflaset('F', n, n, 0.0F16, 1.0F16, z, ldz); // 'F' for full matrix
 
     nmaxit = n * MAXIT;
+    jtot = 0;
+
+    l1 = 1;
     nm1 = n - 1;
         
     do{

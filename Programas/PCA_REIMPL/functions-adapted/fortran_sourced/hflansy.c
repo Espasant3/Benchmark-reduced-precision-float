@@ -6,7 +6,7 @@
 _Float16 hflansy(char norm, char uplo, int n, const _Float16 *a, int lda, _Float16 *work) {
     _Float16 value = 0.0F16;
 
-    if (n == 0) return value;
+    if (n == 0) value = 0.0F16;
 
     if (lsame_reimpl(norm, 'M')) {
         // Maximum absolute value

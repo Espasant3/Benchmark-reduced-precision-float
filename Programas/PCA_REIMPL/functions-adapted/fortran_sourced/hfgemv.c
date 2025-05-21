@@ -9,10 +9,6 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
     // Local variables
     _Float16 temp;
     int i, j, ix, iy, jx, jy, kx, ky, lenx, leny;
-    lapack_logical transposed;
-
-    // Check for valid TRANS parameter
-    transposed = !lsame_reimpl(trans, 'N');
 
     // Test input parameters (igual que antes)
     int info = 0;
@@ -41,34 +37,50 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
     }
 
     // Set LENX and LENY (igual que antes)
-    lenx = transposed ? m : n;
-    leny = transposed ? n : m;
+    if(lsame_reimpl(trans, 'N')) {
+        lenx = n;
+        leny = m;
+    } else {
+        lenx = m;
+        leny = n;
+    }
 
-    // Compute start points for X and Y (igual que antes)
-    kx = (incx > 0) ? 0 : (lenx - 1) * ABS(incx);
-    ky = (incy > 0) ? 0 : (leny - 1) * ABS(incy);
+    if(incx > 0) {
+       kx = 0;
+    } else {
+        kx = (lenx - 1) * (-incx);
+    }
 
-    // Handle beta scaling of Y (igual que antes, con _Float16)
+    if(incy > 0) {
+       ky = 0;
+    } else {
+        ky = (leny - 1) * (-incy);
+    }
+
+    // Handle beta scaling of Y
     if (beta != one) {
         if (incy == 1) {
             if (beta == zero) {
-                for (i = 0; i < leny; ++i) {
+                for (i = 0; i < leny; i++) {
                     y[i] = zero;
                 }
             } else {
-                for (i = 0; i < leny; ++i) {
+                for (i = 0; i < leny; i++) {
                     y[i] *= beta;
                 }
             }
         } else {
             iy = ky;
-            for (i = 0; i < leny; ++i) {
-                if (beta == zero) {
+            if(beta == zero) {
+                for (i = 0; i < leny; i++) {
                     y[iy] = zero;
-                } else {
-                    y[iy] *= beta;
+                    iy += incy;
                 }
-                iy += incy;
+            } else {
+                for (i = 0; i < leny; i++) {
+                    y[iy] *= beta;
+                    iy += incy;
+                }
             }
         }
     }
@@ -78,36 +90,49 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
     }
 
     // Perform matrix-vector multiplication (igual que antes, con _Float16)
-    if (!transposed) {  // y = alpha*A*x + y
+    if (lsame_reimpl(trans, 'N')) {  // y = alpha*A*x + y
         jx = kx;
-        for (j = 0; j < n; ++j) {
-            temp = alpha * x[jx];
-            if (temp != zero) {
-                if (incy == 1) {
-                    for (i = 0; i < m; ++i) {
-                        y[i] += temp * a[i + j * lda];
-                    }
-                } else {
-                    iy = ky;
-                    for (i = 0; i < m; ++i) {
-                        y[iy] += temp * a[i + j * lda];
-                        iy += incy;
-                    }
+        if(incy == 1) {
+            for(j = 0; j < n; j++) {
+                temp = alpha * x[jx];
+                for (i = 0; i < m; ++i) {
+                    y[i] += temp * a[i + j * lda];
                 }
+                jx += incx;
             }
-            jx += incx;
+        } else {
+            for(j = 0; j < n; j++) {
+                temp = alpha * x[jx];
+                iy = ky;
+                for (i = 0; i < m; i++) {
+                    y[iy] += temp * a[i + j * lda];
+                    iy += incy;
+                }
+                jx += incx;
+            }
         }
     } else {  // y = alpha*A^T*x + y
         jy = ky;
-        for (j = 0; j < n; ++j) {
-            temp = zero;
-            ix = kx;
-            for (i = 0; i < m; ++i) {
-                temp += a[i + j * lda] * x[ix];
-                ix += incx;
+        if (incy == 1) {
+            for (j = 0; j < n; j++) {
+                temp = zero;
+                for (i = 0; i < m; i++) {
+                    temp += a[i + j * lda] * x[i];
+                }
+                y[jy] += alpha * temp;
+                jy += incy;
             }
-            y[jy] += alpha * temp;
-            jy += incy;
+        } else {
+            for (j = 0; j < n; j++) {
+                temp = zero;
+                ix = kx;
+                for (i = 0; i < m; i++) {
+                    temp += a[i + j * lda] * x[ix];
+                    ix += incx;
+                }
+                y[jy] += alpha * temp;
+                jy += incy;
+            }
         }
     }
 }

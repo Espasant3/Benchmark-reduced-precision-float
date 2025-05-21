@@ -42,41 +42,25 @@
 
 int ilaslr_reimpl_hf(int m, int n, _Float16 *a, int lda) {
     const _Float16 ZERO = 0.0f16;
+    int return_value = 0;
 
     // Caso 1: No hay filas (M == 0) → Retorna -1 (0-based).
     if (m == 0) {
-        return -1;
-    }
+        return_value = m - 1;
+    } else if (a[m - 1] != ZERO || a[m - 1 + (n - 1) * lda] != ZERO) {
+        return_value = m - 1; // Si no hay columnas, todas las filas son nulas.
+    } else{
+        return_value = 0;
+        for (int j = 0; j < n; j++) {
+            int i = m - 1;
 
-    int last_row = m - 1;
+            while(a[MAX(i, 0) + j * lda] == ZERO && i >= 0) {
+                i--;
 
-    // Caso 2: Verificar esquinas de la última fila (0-based).
-    if (n > 0) {
-        if (a[last_row + 0 * lda] != ZERO || a[last_row + (n-1) * lda] != ZERO) {
-            return last_row;
+            }
+            return_value = MAX(return_value, i);
+
         }
     }
-
-    // Caso 3: Escanear columnas.
-    int max_nonzero_row = -1;
-    for (int j = 0; j < n; j++) {
-        int i = last_row;
-
-        // Encontrar la última fila no nula en la columna j.
-        while (i >= 0 && a[i + j * lda] == ZERO) {
-            i--;
-        }
-
-        // Ajustar i a 0 si toda la columna es cero (como en Fortran).
-        if (i < 0) {
-            i = 0; // ¡Clave! Replicar el comportamiento de Fortran.
-        }
-
-        if (i > max_nonzero_row) {
-            max_nonzero_row = i;
-        }
-    }
-
-    // Si todas las columnas son cero, retorna 0 (como en Fortran).
-    return (max_nonzero_row == -1) ? 0 : max_nonzero_row;
+    return return_value;
 }

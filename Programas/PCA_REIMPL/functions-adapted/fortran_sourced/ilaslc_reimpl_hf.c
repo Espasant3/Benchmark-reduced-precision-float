@@ -38,23 +38,24 @@
 
 int ilaslc_reimpl_hf(int m, int n, _Float16 *a, int lda) {
     const _Float16 ZERO = 0.0f16;
-    
+
+
+    int return_value = 0;
+
     if (n == 0) {
-        return -1; // Caso n = 0
-    }
+        return n - 1; // Caso n = 0
+    } else if(a[(n - 1)*lda] != ZERO || a[(m - 1) + (n - 1) * lda] != ZERO) {
+        return n - 1; // Última columna tiene elementos no nulos.
 
-    int last_col = n - 1;
-    if (a[last_col * lda] != ZERO || a[(m-1) + last_col * lda] != ZERO) {
-        return last_col; // Última columna tiene elementos no nulos.
-    }
-
-    for (int j = last_col; j >= 0; j--) {
-        for (int i = 0; i < m; i++) {
-            if (a[i + j * lda] != ZERO) {
-                return j; // Columna no nula encontrada.
+    } else{
+        for(return_value = n - 1; return_value >= 0; return_value--) {
+            for (int i = 0; i < m; i++) {
+                if (a[i + return_value * lda] != ZERO) {
+                    return return_value; // Columna no nula encontrada.
+                }
             }
+
         }
     }
-
-    return -1; // Todas las columnas son nulas.
+    return return_value; // Todas las columnas son nulas.
 }

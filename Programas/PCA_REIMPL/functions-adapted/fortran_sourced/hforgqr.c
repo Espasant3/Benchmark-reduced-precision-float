@@ -37,11 +37,10 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
     int nb, lwkopt, lquery;
     int nbmin, nx, iws, ldwork;
     int ki, kk, i, ib, j, l, iinfo;
-    int zero = 0;
 
     *info = 0;
-    nb = ilaenv_reimpl_Float16(1, "SORGQR", " ", m, n, k, zero);
-    lwkopt = (n > 0) ? n * nb : 1;
+    nb = ilaenv_reimpl_Float16(1, "SORGQR", " ", m, n, k, -1);
+    lwkopt = MAX(1, n)*nb;
     work[0] = hfroundup_lwork(lwkopt);
     lquery = (lwork == -1);
 
@@ -51,14 +50,14 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
         *info = -2;
     } else if (k < 0 || k > n) {
         *info = -3;
-    } else if (lda < (m > 0 ? m : 1)) {
+    } else if (lda < MAX(1, m)) {
         *info = -5;
-    } else if (lwork < ((n > 0) ? n : 1) && !lquery) {
+    } else if (lwork < MAX(1,n) && !lquery) {
         *info = -8;
     }
 
     if (*info != 0) {
-        LAPACKE_xerbla("HFORGQR", *info);
+        LAPACKE_xerbla("HFORGQR", -(*info));
         return;
     } else if (lquery) {
         return;
@@ -73,26 +72,24 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
     nx = 0;
     iws = n;
     if (nb > 1 && nb < k) {
-        nx = ilaenv_reimpl_Float16(3, "SORGQR", " ", m, n, k, zero);
-        nx = (nx > 0) ? nx : 0;
+        nx = MAX(0, ilaenv_reimpl_Float16(3, "SORGQR", " ", m, n, k, -1));
         if (nx < k) {
             ldwork = n;
             iws = ldwork * nb;
             if (lwork < iws) {
                 nb = lwork / ldwork;
-                nbmin = ilaenv_reimpl_Float16(2, "SORGQR", " ", m, n, k, zero);
-                nbmin = (nbmin > 2) ? nbmin : 2;
+                nbmin = MAX(2, ilaenv_reimpl_Float16(2, "SORGQR", " ", m, n, k, -1));
             }
         }
     }
 
     if (nb >= nbmin && nb < k && nx < k) {
-        ki = (k - nx - 1) / nb * nb;
-        kk = (k < ki + nb) ? k : ki + nb;
+        ki = ((k - nx - 1) / nb) * nb;
+        kk = MIN(k, ki + nb);
 
         for (j = kk; j < n; j++) {
             for (i = 0; i < kk; i++) {
-                a[j * lda + i] = 0.0F16;
+                a[i + j * lda] = 0.0F16;
             }
         }
     } else {
@@ -100,32 +97,25 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
     }
 
     if (kk < n) {
-        int mm = m - kk;
-        int nn = n - kk;
-        int kk2 = k - kk;
-        hforg2r(mm, nn, kk2, &a[kk * lda + kk], lda, &tau[kk], work, &iinfo);
+        hforg2r(m - kk, n - kk, k - kk, &a[kk + kk * lda], lda, &tau[kk], work, &iinfo);
     }
 
     if (kk > 0) {
         for (i = ki; i >= 0; i -= nb) {
-            ib = (k - i) < nb ? (k - i) : nb;
-            if (i + ib <= n) {
-                int m_i = m - i;
-                int n_ib = n - i - ib;
-                int lwork2 = n - i - ib;
+            ib = MIN(nb, k - i + 1);
+            if ((i + 1) + ib <= n) {
 
-                hflarft('F', 'C', m_i, ib, &a[i * lda + i], lda, &tau[i], work, ib);
-                hflarfb('L', 'N', 'F', 'C', m_i, n_ib, ib,
-                        &a[i * lda + i], lda, work, ib, &a[i * lda + (i + ib)], lda,
-                        &work[ib], lwork2);
+                hflarft('F', 'C', m - i, ib, &a[i + i * lda], lda, &tau[i], work, ldwork);
+                hflarfb('L', 'N', 'F', 'C', m - i, n - i - ib, ib,
+                        &a[i + i * lda], lda, work, ldwork, &a[i + (i + ib) * lda], lda,
+                        &work[ib], ldwork);
             }
 
-            int m_i = m - i;
-            hforg2r(m_i, ib, ib, &a[i * lda + i], lda, &tau[i], work, &iinfo);
+            hforg2r(m - i, ib, ib, &a[i + i * lda], lda, &tau[i], work, &iinfo);
 
-            for (j = i; j < i + ib; j++) {
-                for (l = 0; l < i; l++) {
-                    a[j * lda + l] = 0.0F16;
+            for (j = i; j < i + ib - 1; j++) {
+                for (l = 0; l < i - 1; l++) {
+                    a[j + l * lda] = 0.0F16;
                 }
             }
         }

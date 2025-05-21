@@ -71,20 +71,36 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
                 
     bool DONE = false;
     int ITYPE, I, J;
+    int K1, K2, K3, K4;
     _Float16 BIGNUM, CFROM1, CFROMC = CFROM, CTO1, CTOC = CTO, MUL, SMLNUM;
 
     /* Validación de parámetros */
     *INFO = 0;
-    switch (TYPE) {
-        case 'G': ITYPE = 0; break;
-        case 'L': ITYPE = 1; break;
-        case 'U': ITYPE = 2; break;
-        case 'H': ITYPE = 3; break;
-        case 'B': ITYPE = 4; break;
-        case 'Q': ITYPE = 5; break;
-        case 'Z': ITYPE = 6; break;
-        default:  ITYPE = -1; break; // Caso no reconocido
-    }
+switch (TYPE) {
+    case 'G':
+    case 'g':
+        ITYPE = 0; break;
+    case 'L':
+    case 'l':
+        ITYPE = 1; break;
+    case 'U':
+    case 'u':
+        ITYPE = 2; break;
+    case 'H':
+    case 'h':
+        ITYPE = 3; break;
+    case 'B':
+    case 'b':
+        ITYPE = 4; break;
+    case 'Q':
+    case 'q':
+        ITYPE = 5; break;
+    case 'Z':
+    case 'z':
+        ITYPE = 6; break;
+    default:
+        ITYPE = -1; break;
+}
 
 
     if (ITYPE == -1)
@@ -126,27 +142,30 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
         if (CFROM1 == CFROMC) {  // CFROMC es infinito
             MUL = CTOC / CFROMC;
             DONE = true;
+            CTO1 = CTOC;
         } else {
             CTO1 = CTOC / BIGNUM;
             if (CTO1 == CTOC) {  // CTOC es cero o infinito
                 MUL = CTOC;
                 DONE = true;
                 CFROMC = 1.0F16;
-            } else if (abs(CFROM1) > abs(CTOC) && CTOC != 0.0F16) {
+            } else if (ABS_Float16(CFROM1) > ABS_Float16(CTOC) && CTOC != 0.0F16) {
                 MUL = SMLNUM;
+                DONE = false;
                 CFROMC = CFROM1;
-            } else if (abs(CTO1) > abs(CFROMC)) {
+            } else if (ABS_Float16(CTO1) > ABS_Float16(CFROMC)) {
                 MUL = BIGNUM;
+                DONE = false;
                 CTOC = CTO1;
             } else {
                 MUL = CTOC / CFROMC;
                 DONE = true;
+                if(MUL == 1.0F16){
+                    return;
+                }
             }
         }
-
-        if (DONE && MUL == 1.0F16)
-            return;
-
+        
         /* Aplicar escalado si es necesario */
         if (!DONE || MUL != 1.0F16) {
             switch (ITYPE) {
@@ -164,7 +183,7 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
 
                 case 2:  // Triangular superior
                     for (J = 0; J < N; J++) {
-                        int max_i = (J < M) ? J + 1 : M;
+                        int max_i = MIN(J, M);
                         for (I = 0; I < max_i; I++)
                             A[I + J * LDA] *= MUL;
                     }
@@ -172,7 +191,7 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
 
                 case 3: {  // Upper Hessenberg
                     for (J = 0; J < N; J++) {
-                        int max_i = (J + 2 < M) ? J + 2 : M;
+                        int max_i = MIN(J + 1, M);
                         for (I = 0; I < max_i; I++)
                             A[I + J * LDA] *= MUL;
                     }
@@ -180,9 +199,10 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
                 }
 
                 case 4: {  // Banda simétrica inferior
-                    int K3 = KL + 1;
+                    K3 = KL + 1;
+                    K4 = N + 1;
                     for (J = 0; J < N; J++) {
-                        int max_i = (K3 < (N - J)) ? K3 : (N - J);
+                        int max_i = MIN(K3, K4 - J);
                         for (I = 0; I < max_i; I++)
                             A[I + J * LDA] *= MUL;
                     }
@@ -190,11 +210,10 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
                 }
 
                 case 5: {  // Banda simétrica superior
-                    int K1 = KU + 2;
-                    int K3 = KU + 1;
+                    K1 = KU + 2;
+                    K3 = KU + 1;
                     for (J = 0; J < N; J++) {
-                        int start_i_f = (K1 - (J + 1) > 1) ? (K1 - (J + 1)) : 1;
-                        int start_i = start_i_f - 1;
+                        int start_i = MAX(K1 - (J + 1), 1) - 1;
                         for (I = start_i; I < K3; I++)
                             A[I + J * LDA] *= MUL;
                     }
@@ -202,18 +221,19 @@ void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 C
                 }
 
                 case 6: {  // Banda general (KL subdiagonales, KU superdiagonales)
-                    const int total_bands = KL + KU + 1;
-                    for (lapack_int col = 0; col < N; ++col) {
-                        // Rango de filas a escalar en la columna actual
-                        const int first_row = MAX(0, col - KU);           // Primera fila en la matriz original
-                        const int last_row = MIN(M - 1, col + KL);        // Última fila en la matriz original
-                        
-                        // Convertir a índices de almacenamiento banda
-                        const int storage_start = KU + (first_row - col); // Fila en el arreglo banda
-                        const int storage_end = KU + (last_row - col);
-                        
-                        for (int storage_row = storage_start; storage_row <= storage_end; ++storage_row) {
-                            A[storage_row + col * LDA] *= MUL;
+
+                    K1 = KL + KU + 2;
+                    K2 = KL + 1;
+                    K3 = 2 * KL + KU + 1;
+                    K4 = KL + KU + 1 + M;
+
+                    for (int j = 0; j < N; j++) {
+                        /* Convertimos el índice de columna: Fortran j es (j+1) en C */
+                        int i_start = MAX(K1 - (j + 1), K2) - 1; /* -1 para pasar a 0-based */
+                        int i_end   = MIN(K3, K4 - (j + 1)) - 1;
+                        for (int i = i_start; i <= i_end; i++) {
+                            /* Accedemos con el cálculo típico en almacenamiento column-major */
+                            A[i + j * LDA] *= MUL;
                         }
                     }
                     break;

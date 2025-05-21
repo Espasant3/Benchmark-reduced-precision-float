@@ -82,12 +82,13 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
                     for (k = m - 1; k >= 0; --k) {
                         if (b[k + j * ldb] != zero) {
                             temp = alpha * b[k + j * ldb];
+                            _Float16 temp_update = temp;
                             if (nounit) {
                                 temp *= a[k + k * lda];
                             }
                             b[k + j * ldb] = temp;
                             for (i = k + 1; i < m; ++i) {
-                                b[i + j * ldb] += temp * a[i + k * lda];
+                                b[i + j * ldb] += temp_update * a[i + k * lda];
                             }
                         }
                     }

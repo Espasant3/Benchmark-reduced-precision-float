@@ -37,7 +37,6 @@ lapack_int LAPACKE_hfsyev_work( int matrix_layout, char jobz, char uplo,
                                lapack_int n, _Float16* a, lapack_int lda, _Float16* w,
                                _Float16* work, lapack_int lwork )
 {
-    printf("LAPACKE_hfsyev_work: n = %d, lda = %d\n", n, lda);
     lapack_int info = 0;
     if( matrix_layout == LAPACK_COL_MAJOR ) {
         /* Call LAPACK function and adjust info */
@@ -68,7 +67,6 @@ lapack_int LAPACKE_hfsyev_work( int matrix_layout, char jobz, char uplo,
         /* Transpose input matrices */
         LAPACKE_hfsy_trans( matrix_layout, uplo, n, a, lda, a_t, lda_t );
         /* Call LAPACK function and adjust info */
-        printf("entrando a hfsyev\n");
         hfsyev( jobz, uplo, n, a_t, lda_t, w, work, lwork, &info );
         if( info < 0 ) {
             info = info - 1;

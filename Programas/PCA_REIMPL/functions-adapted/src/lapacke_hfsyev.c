@@ -36,7 +36,6 @@
 lapack_int LAPACKE_hfsyev( int matrix_layout, char jobz, char uplo, lapack_int n,
                           _Float16* a, lapack_int lda, _Float16* w )
 {
-    printf("LAPACKE_hfsyev: n = %d, lda = %d\n", n, lda);
     lapack_int info = 0;
     lapack_int lwork = -1;
     _Float16* work = NULL;
@@ -61,7 +60,7 @@ lapack_int LAPACKE_hfsyev( int matrix_layout, char jobz, char uplo, lapack_int n
     }
     lwork = (lapack_int)work_query;
     /* Allocate memory for work arrays */
-    work = (_Float16*)LAPACKE_malloc( sizeof(_Float16) * lwork ); //Es posible reemplazar la función LAPACKE_malloc por malloc directamente
+    work = (_Float16*)LAPACKE_calloc(lwork ,sizeof(_Float16));
     if( work == NULL ) {
         info = LAPACK_WORK_MEMORY_ERROR;
         goto exit_level_0;

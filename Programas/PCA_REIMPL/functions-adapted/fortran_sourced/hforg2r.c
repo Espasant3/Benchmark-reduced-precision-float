@@ -38,11 +38,11 @@
  * \see hfscal
  */
 
-void hforg2r(int m, int n, int k, _Float16 *A, int lda, 
-            _Float16 *tau, _Float16 *work, int *info) {
+void hforg2r(int m, int n, int k, _Float16 *A, int lda, _Float16 *tau, _Float16 *work, int *info) {
+   
     *info = 0;
 
-    // Validar parámetros de entrada
+    // Validación de parámetros
     if (m < 0) {
         *info = -1;
     } else if (n < 0 || n > m) {
@@ -57,41 +57,31 @@ void hforg2r(int m, int n, int k, _Float16 *A, int lda,
         return;
     }
 
-    // Retorno rápido si no hay trabajo
     if (n <= 0) return;
 
-    // Inicializar columnas desde k hasta n-1 con la matriz identidad
+    // Inicializar columnas k..n-1 como identidad
     for (int j = k; j < n; ++j) {
-        for (int i = 0; i < m; ++i) {
-            A[i * lda + j] = 0.0F16;
+        for (int l = 0; l < m; ++l) {
+            // Formato column-major: A[i + j*lda]
+            A[l + j*lda] = (l == j) ? 1.0F16 : 0.0F16;
         }
-        A[j * lda + j] = 1.0F16;
+
     }
+    // --- Paso 2: Aplicar reflectores en orden inverso (k-1 a 0) ---
+    // Aplicar reflectores en orden inverso
+    for (int i = k - 1; i >= 0; i--) {
 
-    // Aplicar reflectores Householder en orden inverso
-    for (int i = k-1; i >= 0; --i) {
-        // Aplicar reflector a las columnas derechas
-        if (i < n-1) {
-            char side = 'L';
-            int rows = m - i;
-            int cols = n - i - 1;
-            int incv = 1;
-            hflarf1f(side, rows, cols, &A[i*lda + i], incv, 
-                    tau[i], &A[i*lda + (i+1)], lda, work);
+        if(i < n){
+            hflarf1f('L', m-i, n-i-1, &A[i + i*lda], 1, tau[i], &A[i + (i+1)*lda], lda, work);
         }
-
-        // Escalar elementos debajo de la diagonal
-        if (i < m-1) {
-            int len = m - i - 1;
-            _Float16 scale = -tau[i];
-            int inc = 1;
-            hfscal(len, scale, &A[(i+1)*lda + i], inc);
+        if(i < m){
+            hfscal(m-i-1, -tau[i], &A[i+1 + i*lda], 1);
         }
+        A[i + i*lda] = 1.0F16 - tau[i];
 
-        // Establecer diagonal y elementos superiores
-        A[i*lda + i] = 1.0F16 - tau[i];
-        for (int l = 0; l < i; ++l) {
-            A[l*lda + i] = 0.0F16;
+        for(int l = 0; l < i; l++) {
+            A[l + i*lda] = 0.0F16;
         }
     }
+    return;
 }

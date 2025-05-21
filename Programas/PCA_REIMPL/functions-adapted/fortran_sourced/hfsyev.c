@@ -3,7 +3,6 @@
 
 void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Float16* w, _Float16* work, lapack_int lwork, lapack_int* info) {
 
-    printf("LAPACKE_hfsyev: n = %d, lda = %d\n", n, lda);
     // Flags lógicos
     lapack_int wantz = lsame_reimpl(jobz, 'V');
     lapack_int lower = lsame_reimpl(uplo, 'L');
@@ -69,7 +68,6 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
 
     // Scale matrix to allowable range, if necessary.
 
-    //float anrm = LAPACKE_hflansy(LAPACK_COL_MAJOR, 'M', uplo, n, a, lda);
     _Float16 anrm = hflansy('M', uplo, n, a, lda, work);
     int iscale = 0;
     _Float16 sigma = 1.0F16;
@@ -96,7 +94,7 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     lapack_int indwrk = indtau + n;
     lapack_int llwork = lwork - indwrk;
 
-    //*info = LAPACKE_hfsytrd(LAPACK_COL_MAJOR, uplo, n, a, lda, w, &work[inde], &work[indtau]);
+    printf("Va entrar a entrar en la función hfsytrd\n");
     hfsytrd(uplo, n, a, lda, w, &work[inde], &work[indtau], work, lwork, info);
     
     if (*info != 0) {
@@ -104,11 +102,10 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     }
     // ======== Cálculo de valores/vectores propios ========
     if (!wantz) {
-        //*info = LAPACKE_hfsterf(n, w, &work[inde]);  // Solo valores propios
         hfsterf(n, w, &work[inde], info);
     } else {
         // Generar matriz ortogonal (SORGTR)
-        //*info = LAPACKE_hforgtr(LAPACK_COL_MAJOR, uplo, n, a, lda, &work[indtau]);
+        printf("Va entrar a entrar en la función hforgtr\n");
         hforgtr(uplo, n, a, lda, &work[indtau], &work[indwrk], llwork, info);
         
         if (*info != 0) {
@@ -116,7 +113,6 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
         }
 
         // Calcular vectores propios (SSTEQR)
-        // Este ahora no debería dar ningún fallo
         hfsteqr('V', n, w, &work[inde], a, lda, &work[indtau], info);
 
         if (*info != 0) {
@@ -126,7 +122,6 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     // ======== Re-escalado de valores propios ========
     if (iscale == 1) {
         lapack_int imax = (*info == 0) ? n - 1 : *info - 1;
-        //LAPACKE_sscal(imax, 1.0F16 / sigma, w, 1);
         hfscal(imax, 1.0F16 / sigma, w, 1);
     }
 

@@ -3,50 +3,51 @@
 
 void hflasrt(char id, lapack_int n, _Float16 *d, lapack_int *info) {
     const int SELECT = 20;
-    int dir = -1;
-    int stack[32][2];
+    int dir;
+    int stack[2][32];
     int stkpnt = 0;
-    int start, endd, i, j, mid;
+    int start, endd, i, j;
+    int went_back_full = 1;
     _Float16 d1, d2, d3, dmnmx, tmp;
 
     *info = 0;
+    dir = -1;
 
     if (lsame_reimpl(id, 'D')) {
         dir = 0;
     } else if (lsame_reimpl(id, 'I')) {
         dir = 1;
-    } else {
+    } 
+    if(dir == -1) {
         *info = -1;
-        LAPACKE_xerbla("hflasrt", -(*info));
-        return;
-    }
-
-    // Validar parámetro N
-    if (n < 0) {
+    } else if(n < 0){
         *info = -2;
+    }
+    if(*info != 0) {
         LAPACKE_xerbla("hflasrt", -(*info));
         return;
     }
-
+    
     // Caso trivial
     if (n <= 1) return;
 
     // Inicializar pila con el rango completo (0-based)
+    
+    stkpnt = 0;
     stack[0][0] = 0;
     stack[0][1] = n - 1;
-    stkpnt = 1;
 
-    while (stkpnt > 0) {
+    do{
         // Extraer partición de la pila
+        start = stack[0][stkpnt];
+        endd = stack[1][stkpnt];
         stkpnt--;
-        start = stack[stkpnt][0];
-        endd = stack[stkpnt][1];
 
         // Insertion sort para particiones pequeñas
-        if (endd - start <= SELECT && endd > start) {
+        if (endd - start <= SELECT && endd - start > 0) {
             if (dir == 0) { // Orden descendente
-                for (i = start + 1; i <= endd; i++) {
-                    for (j = i; j > start; j--) {
+                for (i = start; i < endd; i++) {
+                    for (j = i; j >= start + 1; j--) {
                         if (d[j] > d[j-1]) {
                             tmp = d[j];
                             d[j] = d[j-1];
@@ -57,8 +58,8 @@ void hflasrt(char id, lapack_int n, _Float16 *d, lapack_int *info) {
                     }
                 }
             } else { // Orden ascendente
-                for (i = start + 1; i <= endd; i++) {
-                    for (j = i; j > start; j--) {
+                for (i = start; i < endd; i++) {
+                    for (j = i; j >= start + 1; j--) {
                         if (d[j] < d[j-1]) {
                             tmp = d[j];
                             d[j] = d[j-1];
@@ -73,8 +74,8 @@ void hflasrt(char id, lapack_int n, _Float16 *d, lapack_int *info) {
             // Selección del pivote (mediana de 3)
             d1 = d[start];
             d2 = d[endd];
-            mid = (start + endd) / 2;
-            d3 = d[mid];
+            i = (start + endd) / 2;
+            d3 = d[i];
 
             if (d1 < d2) {
                 if (d3 < d1) dmnmx = d1;
@@ -86,53 +87,101 @@ void hflasrt(char id, lapack_int n, _Float16 *d, lapack_int *info) {
                 else dmnmx = d1;
             }
 
-            // Partición
-            i = start - 1;
-            j = endd + 1;
+            went_back_full = 1;
             if (dir == 0) { // Descendente
+
+                i = start - 1;
+                j = endd + 1;
+
                 while (1) {
-                    do { j--; } while (d[j] < dmnmx);
-                    do { i++; } while (d[i] > dmnmx);
-                    if (i < j) {
+                    if(went_back_full){
+                        j--;
+                        if(d[j] < dmnmx){
+                            continue;
+                        }
+                    }
+                    went_back_full = 1;
+                    i++;
+
+                    if(d[i] > dmnmx){
+                        went_back_full = 0;
+                        continue;
+                    }
+                    if(i < j){
                         tmp = d[i];
                         d[i] = d[j];
                         d[j] = tmp;
-                    } else {
-                        break;
+                        went_back_full = 1;
+                        continue;
                     }
+                    if(j - start > endd - j - 1){
+                        stkpnt++;
+                        stack[0][stkpnt] = start;
+                        stack[1][stkpnt] = j;
+                        stkpnt++;
+                        stack[0][stkpnt] = j + 1;
+                        stack[1][stkpnt] = endd;
+                        stkpnt++;
+                    } else{
+                        stkpnt++;
+                        stack[0][stkpnt] = j + 1;
+                        stack[1][stkpnt] = endd;
+                        stkpnt++;
+                        stack[0][stkpnt] = start;
+                        stack[1][stkpnt] = j;
+                        stkpnt++;
+                    }
+                    break;
                 }
             } else { // Ascendente
+
+                i = start - 1;
+                j = endd + 1;
                 while (1) {
-                    do { j--; } while (d[j] > dmnmx);
-                    do { i++; } while (d[i] < dmnmx);
-                    if (i < j) {
+                    if(went_back_full){
+                        j--;
+                        if(d[j] < dmnmx){
+                            went_back_full = 1;
+                            continue;
+                        }
+                    }
+                    went_back_full = 1;
+                    i++;
+
+                    if(d[j] < dmnmx){
+                        went_back_full = 0;
+                        continue;
+                    }
+                    if(i < j){
                         tmp = d[i];
                         d[i] = d[j];
                         d[j] = tmp;
-                    } else {
-                        break;
+                        went_back_full = 1;
+                        continue;
                     }
-                }
-            }
-
-            // Apilar particiones (la más grande primero)
-            if (stkpnt < 31) {
-                if (j - start > endd - j - 1) {
-                    stack[stkpnt][0] = start;
-                    stack[stkpnt][1] = j;
-                    stkpnt++;
-                    stack[stkpnt][0] = j + 1;
-                    stack[stkpnt][1] = endd;
-                    stkpnt++;
-                } else {
-                    stack[stkpnt][0] = j + 1;
-                    stack[stkpnt][1] = endd;
-                    stkpnt++;
-                    stack[stkpnt][0] = start;
-                    stack[stkpnt][1] = j;
-                    stkpnt++;
+                    if(j - start > endd - j - 1){
+                        stkpnt++;
+                        stack[0][stkpnt] = start;
+                        stack[1][stkpnt] = j;
+                        stkpnt++;
+                        stack[0][stkpnt] = j + 1;
+                        stack[1][stkpnt] = endd;
+                    } else{
+                        stkpnt++;
+                        stack[0][stkpnt] = j + 1;
+                        stack[1][stkpnt] = endd;
+                        stkpnt++;
+                        stack[0][stkpnt] = start;
+                        stack[1][stkpnt] = j;
+                    }
+                    break;
                 }
             }
         }
-    }
+        /*
+        if(stkpnt < 0){
+            break;
+        }
+        */
+    }while (stkpnt >= 0);
 }

@@ -71,21 +71,110 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
 
     if (lsame_reimpl(storev, 'C')) {
         if (lsame_reimpl(direct, 'F')) {
-        } else {
+            if(lsame_reimpl(side, 'L')) { // storev = 'C', direct = 'F', side = 'L'
+                // Form H*C or H**T*C where C = (C1)
+                //                                  (C2)
+                
+                // W := C1
+                for (j = 0; j < k; j++) {
+                    hfcopy(n, &c[j], ldc, &work[j*ldwork], 1);
+                }
+                
+                // W := W * V1
+                hftrmm('R', 'L', 'N', 'U', n, k, 1.0F16, v, ldv, work, ldwork);
+                
+                if (m > k) {
+                    // W += C2 * V2
+                    hfgemm('T', 'N', n, k, m - k, 1.0F16,
+                          &c[k], ldc,
+                          &v[k], ldv,
+                          1.0F16, work, ldwork);
+                }
+                
+                // W := W * T or W * T^T
+
+                hftrmm('R', 'U', transt, 'N', n, k, 1.0F16, t, ldt, work, ldwork);
+
+                if(m > k) {
+                    // C2 -= V2^T * W
+                    hfgemm('N', 'T', m - k, n, k, -1.0F16,
+                          &v[k], ldv,
+                          work, ldwork,
+                          1.0F16, &c[k], ldc);
+                }
+
+                // W := W * V1^T
+
+                hftrmm('R', 'L', 'T', 'U', n, k, 1.0F16, v, ldv, work, ldwork);
+
+                // C1 = C1 - W**T
+
+                for(j = 0; j < k; j++) {
+                    for (i = 0; i < n; i++) {
+                        c[j + i*ldc] -= work[i + j*ldwork];
+                    }
+                }
+
+            } else if (lsame_reimpl(side, 'R')){ // storev = 'C', direct = 'F', side = 'R'
+
+                // W := C1
+
+                for(j = 0; j < k; j++) {
+                    hfcopy(m, &c[j*ldc], 1, &work[j*ldwork], ldwork);
+                }
+
+                // W := W * V1
+
+                hftrmm('R', 'L', 'N', 'U', m, k, 1.0F16, v, ldv, work, ldwork);
+
+                if(n > k) {
+                    // W += C2 * V2
+                    hfgemm('N', 'N', m, k, n - k, 1.0F16,
+                        &c[k*ldc], ldc,
+                        &v[k], ldv,
+                        1.0F16, work, ldwork);
+                }
+
+                // W := W * T or W * T^T
+
+                hftrmm('R', 'U', trans, 'N', m, k, 1.0F16, t, ldt, work, ldwork);
+
+                if(n > k) {
+                    // C2 -= W * V2^T
+                    hfgemm('N', 'T', m, n - k, k, -1.0F16,
+                        work, ldwork,
+                        &v[k], ldv,
+                        1.0F16, &c[k*ldc], ldc);
+                }
+
+                // W := W * V1^T
+
+                hftrmm('R', 'L', 'T', 'U', m, k, 1.0F16, v, ldv, work, ldwork);
+
+                // C1 -= W
+
+                for(j = 0; j < k; j++) {
+                    for (i = 0; i < m; i++) {
+                        c[i + j*ldc] -= work[i + j*ldwork];
+                    }
+                }
+            }
+
+        } else { // storev = 'C', direct = 'B'
             /* ========================================================
                DIRECT = 'B' (Backward) - Column-wise storage
             =========================================================*/
-            if (lsame_reimpl(side, 'L')) {
+            if (lsame_reimpl(side, 'L')) { // storev = 'C', direct = 'B', side = 'L'
                 // Form H*C or H**T*C where C = (C1)
                 //                                  (C2)
                 
                 // W := C2^T
                 for (j = 0; j < k; j++) {
-                    hfcopy(n, &c[(m - k + j)*ldc], 1, &work[j*ldwork], 1);
+                    hfcopy(n, &c[m - k + j], ldc, &work[j*ldwork], 1);
                 }
                 
                 // W := W * V2
-                hftrmm('R', 'U', 'N', 'U', n, k, 1.0F16, &v[(m - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'U', 'N', 'U', n, k, 1.0F16, &v[m - k], ldv, work, ldwork);
                 
                 if (m > k) {
                     // W += C1^T * V1
@@ -107,7 +196,7 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V2^T
-                hftrmm('R', 'U', 'T', 'U', n, k, 1.0F16, &v[(m - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'U', 'T', 'U', n, k, 1.0F16, &v[m - k], ldv, work, ldwork);
                 
                 // C2 -= W^T
                 for (j = 0; j < k; j++) {
@@ -116,16 +205,16 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                     }
                 }
                 
-            } else if (lsame_reimpl(side, 'R')) {
+            } else if (lsame_reimpl(side, 'R')) { // storev = 'C', direct = 'B', side = 'R'
                 // Form C*H or C*H**T where C = (C1 C2)
                 
                 // W := C2
                 for (j = 0; j < k; j++) {
-                    hfcopy(m, &c[(n - k + j)*ldc], 1, &work[j], ldwork);
+                    hfcopy(m, &c[(n - k + j)*ldc], 1, &work[j*ldwork], 1);
                 }
                 
                 // W := W * V2
-                hftrmm('R', 'U', 'N', 'U', m, k, 1.0F16, &v[(n - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'U', 'N', 'U', m, k, 1.0F16, &v[n - k], ldv, work, ldwork);
                 
                 if (n > k) {
                     // W += C1 * V1
@@ -147,7 +236,7 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V2^T
-                hftrmm('R', 'U', 'T', 'U', m, k, 1.0F16, &v[(n - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'U', 'T', 'U', m, k, 1.0F16, &v[n - k], ldv, work, ldwork);
                 
                 // C2 -= W
                 for (j = 0; j < k; j++) {
@@ -157,17 +246,17 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
             }
         }
-    } else if (lsame_reimpl(storev, 'R')) {
+    } else if (lsame_reimpl(storev, 'R')) { // storev = 'R'
         /* ========================================================
            STOREV = 'R' (Row-wise storage)
         =========================================================*/
-        if (lsame_reimpl(direct, 'F')) {
-            if (lsame_reimpl(side, 'L')) {
+        if (lsame_reimpl(direct, 'F')) { // storev = 'R', direct = 'F'
+            if (lsame_reimpl(side, 'L')) { // storev = 'R', direct = 'F', side = 'L'
                 // Left + Forward + Row-wise
                 
                 // W := C1^T
                 for (j = 0; j < k; j++) {
-                    hfcopy(n, &c[j*ldc], 1, &work[j*ldwork], 1);
+                    hfcopy(n, &c[j], ldc, &work[j*ldwork], 1);
                 }
                 
                 // W := W * V1^T
@@ -176,8 +265,8 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 if (m > k) {
                     // W += C2^T * V2^T
                     hfgemm('T', 'T', n, k, m - k, 1.0F16,
-                          &c[k*ldc], ldc,
-                          &v[k], ldv,
+                          &c[k], ldc,
+                          &v[k*ldv], ldv,
                           1.0F16, work, ldwork);
                 }
                 
@@ -187,9 +276,9 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 if (m > k) {
                     // C2 -= V2^T * W^T
                     hfgemm('T', 'T', m - k, n, k, -1.0F16,
-                          &v[k], ldv,
+                          &v[k*ldv], ldv,
                           work, ldwork,
-                          1.0F16, &c[k*ldc], ldc);
+                          1.0F16, &c[k], ldc);
                 }
                 
                 // W := W * V1
@@ -198,16 +287,16 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 // C1 -= W^T
                 for (j = 0; j < k; j++) {
                     for (i = 0; i < n; i++) {
-                        c[j*ldc + i] -= work[j*ldwork + i];
+                        c[j + i*ldc] -= work[i + j*ldwork];
                     }
                 }
                 
-            } else if (lsame_reimpl(side, 'R')) {
+            } else if (lsame_reimpl(side, 'R')) { // storev = 'R', direct = 'F', side = 'R'
                 // Right + Forward + Row-wise
                 
                 // W := C1
                 for (j = 0; j < k; j++) {
-                    hfcopy(m, &c[j], ldc, &work[j], ldwork);
+                    hfcopy(m, &c[j*ldc], 1, &work[j*ldwork], 1);
                 }
                 
                 // W := W * V1^T
@@ -216,8 +305,8 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 if (n > k) {
                     // W += C2 * V2^T
                     hfgemm('N', 'T', m, k, n - k, 1.0F16,
-                          &c[k], ldc,
-                          &v[k], ldv,
+                          &c[k*ldc], ldc,
+                          &v[k*ldv], ldv,
                           1.0F16, work, ldwork);
                 }
                 
@@ -228,8 +317,8 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                     // C2 -= W * V2
                     hfgemm('N', 'N', m, n - k, k, -1.0F16,
                           work, ldwork,
-                          &v[k], ldv,
-                          1.0F16, &c[k], ldc);
+                          &v[k*ldv], ldv,
+                          1.0F16, &c[k*ldc], ldc);
                 }
                 
                 // W := W * V1
@@ -238,20 +327,20 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 // C1 -= W
                 for (j = 0; j < k; j++) {
                     for (i = 0; i < m; i++) {
-                        c[j + i*ldc] -= work[j + i*ldwork];
+                        c[i + j*ldc] -= work[i + j*ldwork];
                     }
                 }
             }
-        } else {
+        } else { // storev = 'R', direct = 'B'
             /* ========================================================
                DIRECT = 'B' (Backward) - Row-wise storage
             =========================================================*/
-            if (lsame_reimpl(side, 'L')) {
+            if (lsame_reimpl(side, 'L')) { // storev = 'R', direct = 'B', side = 'L'
                 // Left + Backward + Row-wise
                 
                 // W := C2^T
                 for (j = 0; j < k; j++) {
-                    hfcopy(n, &c[(m - k + j)*ldc], 1, &work[j*ldwork], 1);
+                    hfcopy(n, &c[m - k + j], ldc, &work[j*ldwork], 1);
                 }
                 
                 // W := W * V2^T
@@ -282,16 +371,16 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 // C2 -= W^T
                 for (j = 0; j < k; j++) {
                     for (i = 0; i < n; i++) {
-                        c[(m - k + j)*ldc + i] -= work[j*ldwork + i];
+                        c[(m - k + j) + i*ldc] -= work[i+ j*ldwork];
                     }
                 }
                 
-            } else if (lsame_reimpl(side, 'R')) {
+            } else if (lsame_reimpl(side, 'R')) { // storev = 'R', direct = 'B', side = 'R'
                 // Right + Backward + Row-wise
                 
                 // W := C2
                 for (j = 0; j < k; j++) {
-                    hfcopy(m, &c[(n - k + j)*ldc], 1, &work[j], ldwork);
+                    hfcopy(m, &c[(n - k + j)*ldc], 1, &work[j*ldwork], 1);
                 }
                 
                 // W := W * V2^T

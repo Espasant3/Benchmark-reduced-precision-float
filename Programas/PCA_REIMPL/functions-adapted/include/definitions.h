@@ -66,10 +66,13 @@
 /* -------------------------------------------------------------------------- */
 
 #ifndef LAPACKE_malloc
-#define LAPACKE_malloc( size ) malloc( size )
+#define LAPACKE_malloc( size )      malloc( size )
+#endif
+#ifndef LAPACKE_calloc
+#define LAPACKE_calloc(nmemb, size) calloc(nmemb, size)
 #endif
 #ifndef LAPACKE_free
-#define LAPACKE_free( p )      free( p )
+#define LAPACKE_free( p )           free( p )
 #endif
 
 /* -------------------------------------------------------------------------- */

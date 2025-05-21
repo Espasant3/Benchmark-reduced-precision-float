@@ -74,33 +74,31 @@
  */
 
 void hforgtr(char uplo, int n, _Float16 *a, int lda, _Float16 *tau, _Float16 *work, lapack_int lwork, lapack_int *info) {
-    printf("LAPACKE_hforgtr: n = %d, lda = %d\n", n, lda);
     int upper, i, j, lquery, nb, lwkopt, iinfo;
-    const _Float16 zero = 0.0F16, one = 1.0F16;
 
     *info = 0;
     lquery = (lwork == -1);
     upper = lsame_reimpl(uplo, 'U');
 
-    // Validación de parámetros (igual que original)
+    // Validación de parámetros
     if (!upper && !lsame_reimpl(uplo, 'L')) {
         *info = -1;
     } else if (n < 0) {
         *info = -2;
-    } else if (lda < fmax(1, n)) {
+    } else if (lda < MAX(1, n)) {
         *info = -4;
-    } else if (lwork < fmax(1, n-1) && !lquery) {
+    } else if (lwork < MAX(1, n-1) && !lquery) {
         *info = -7;
     }
 
     // Cálculo de tamaño óptimo de WORK
     if (*info == 0) {
         if (upper) {
-            nb = ilaenv_reimpl_Float16(1, "sorgql", " ", n-1, n-1, n-1, -1);
+            nb = ilaenv_reimpl_Float16(1, "SORGQL", " ", n-1, n-1, n-1, -1);
         } else {
-            nb = ilaenv_reimpl_Float16(1, "sorgqr", " ", n-1, n-1, n-1, -1);
+            nb = ilaenv_reimpl_Float16(1, "SORGQR", " ", n-1, n-1, n-1, -1);
         }
-        lwkopt = fmax(1, n-1) * nb;
+        lwkopt = MAX(1, n-1) * nb;
         work[0] = hfroundup_lwork(lwkopt);
     }
 
@@ -111,52 +109,43 @@ void hforgtr(char uplo, int n, _Float16 *a, int lda, _Float16 *tau, _Float16 *wo
         return;
     }
 
-    // Caso especial para n = 0
     if (n == 0) {
-        work[0] = one;
+        work[0] = 1.0F16;
         return;
     }
 
     if (upper) {
         // ---- Caso UPPER (UPLO = 'U') ----
-        // Desplazar columnas a la izquierda
-        for (j = 0; j < n-1; ++j) {
-            // Copiar la fila j+1 a la fila j (equivalente a desplazar columnas en Fortran)
-            for (i = 0; i <= j; ++i) {
-                a[i*lda + j] = a[i*lda + (j+1)]; // A[i][j] = A[i][j+1]
+        for (j = 0; j < n-1; j++) {
+            for (i = 0; i < j-1; i++) {
+                a[i + j*lda] = a[i + (j+1)*lda];
             }
-            // Limpiar última posición de la fila j
-            a[(n-1)*lda + j] = zero; // A[j][n-1] = 0 (equivalente a A(N, J) en Fortran)
+            a[(n-1) + j*lda] = 0.0F16; 
         }
 
-        // Limpiar última columna
-        for (i = 0; i < n-1; ++i) {
-            a[(n-1)*lda + i] = zero;  // A[I][N-1] = 0
+        for (i = 0; i < n-1; i++) {
+            a[i + (n-1)*lda] = 0.0F16;
         }
-        a[(n-1)*lda + (n-1)] = one;   // A[N-1][N-1] = 1
+        a[(n-1) + (n-1)*lda] = 1.0F16;
 
-        // Generar Q
         hforgql(n-1, n-1, n-1, a, lda, tau, work, lwork, &iinfo);
 
     } else {
         // ---- Caso LOWER (UPLO = 'L') ----
-        // Desplazar columnas a la derecha
-        for (j = n-1; j > 0; --j) {
-            a[0*lda + j] = zero;  // A[0][j] = 0 (primera fila de la columna j)
-            for (i = j+1; i < n; ++i) {
-                a[i*lda + j] = a[i*lda + (j-1)];  // A[i][j] = A[i][j-1]
+        for (j = n-1; j >= 1; j--) {
+            a[j*lda] = 0.0F16; 
+            for (i = j+1; i < n; i++) {
+                a[i + j*lda] = a[i + (j-1)*lda];
             }
         }
 
-        // Inicializar primera columna (A[0][0] = 1, A[i][0] = 0 para i > 0)
-        a[0*lda] = one;   // A[0][0] = 1
-        for (i = 1; i < n; ++i) {
-            a[i*lda] = zero;  // A[i][0] = 0
+        a[0] = 1.0F16;
+        for (i = 1; i < n; i++) {
+            a[i] = 0.0F16; 
         }
 
-        // Generar Q si n > 1
         if (n > 1) {
-            hforgqr(n-1, n-1, n-1, &a[1*lda + 1], lda, tau, work, lwork, &iinfo);
+            hforgqr(n-1, n-1, n-1, &a[1 + 1*lda], lda, tau, work, lwork, &iinfo);
         }
     }
 

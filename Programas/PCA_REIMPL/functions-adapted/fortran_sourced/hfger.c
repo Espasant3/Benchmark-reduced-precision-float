@@ -1,7 +1,6 @@
 
 #include "../include/lapacke_utils_reimpl.h"
 
-// Cambiar todos los float por _Float16
 void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx, 
          const _Float16 *y, int incy, _Float16 *a, int lda) 
 {
@@ -31,12 +30,12 @@ void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx,
     int jy = (incy > 0) ? 0 : (n - 1) * (-incy);
 
     if (incx == 1) {
-        for (int j = 0; j < n; ++j) {
+        for (int j = 0; j < n; j++) {
             const _Float16 y_val = y[jy];
             if (y_val != 0.0F16) {
-                const _Float16 temp = alpha * y_val; // Operación en FP16
-                for (int i = 0; i < m; ++i) {
-                    a[i + j * lda] += x[i] * temp; // Cálculo en FP16
+                const _Float16 temp = alpha * y_val;
+                for (int i = 0; i < m; i++) {
+                    a[i + j * lda] += x[i] * temp;
                 }
             }
             jy += incy;
@@ -44,12 +43,12 @@ void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx,
     } else {
         const int kx = (incx > 0) ? 0 : (m - 1) * (-incx);
         
-        for (int j = 0; j < n; ++j) {
+        for (int j = 0; j < n; j++) {
             const _Float16 y_val = y[jy];
             if (y_val != 0.0F16) {
                 const _Float16 temp = alpha * y_val;
                 int ix = kx;
-                for (int i = 0; i < m; ++i) {
+                for (int i = 0; i < m; i++) {
                     a[i + j * lda] += x[ix] * temp;
                     ix += incx;
                 }

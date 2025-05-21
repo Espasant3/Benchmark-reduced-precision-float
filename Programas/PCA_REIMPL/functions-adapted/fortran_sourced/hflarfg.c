@@ -55,27 +55,27 @@
  */
 
 void hflarfg(int n, _Float16 *alpha, _Float16 *x, lapack_int incx, _Float16 *tau) {
-    const _Float16 ONE = 1.0F16, ZERO = 0.0F16;
     _Float16 beta, xnorm, safmin, rsafmn;
     int knt = 0;
 
     if (n <= 1) {
-        *tau = ZERO;
+        *tau = 0.0F16;
         return;
     }
 
     xnorm = hfnrm2(n - 1, x, incx);
 
-    if (xnorm == ZERO) {
-        *tau = ZERO;
+    if (xnorm == 0.0F16) {
+        *tau = 0.0F16;
     } else {
-        //beta = (_Float16)( -copysignf((float) LAPACKE_hflapy2( *alpha, xnorm ), (float)(*alpha) ));
+
         beta = (_Float16)( -copysignf((float) hflapy2( *alpha, xnorm ), (float)(*alpha) ));
 
         safmin = hflamch('S') / hflamch('E');
 
+
         if (ABS_Float16(beta) < safmin) {
-            rsafmn = ONE / safmin;
+            rsafmn = 1.0F16 / safmin;
             do {
                 knt++;
                 hfscal(n - 1, rsafmn, x, incx);
@@ -83,12 +83,11 @@ void hflarfg(int n, _Float16 *alpha, _Float16 *x, lapack_int incx, _Float16 *tau
                 *alpha *= rsafmn;
             } while (ABS_Float16(beta) < safmin && knt < 20);
             xnorm = hfnrm2(n - 1, x, incx);
-            //beta = (_Float16)( -copysignf((float) LAPACKE_hflapy2( *alpha, xnorm ), (float)(*alpha) ));
             beta = (_Float16)( -copysignf((float) hflapy2( *alpha, xnorm ), (float)(*alpha) ));
         }
 
         *tau = (beta - *alpha) / beta;
-        hfscal(n - 1, ONE / (*alpha - beta), x, incx);
+        hfscal(n - 1, 1.0F16 / (*alpha - beta), x, incx);
 
         for (int j = 0; j < knt; j++) {
             beta *= safmin;
