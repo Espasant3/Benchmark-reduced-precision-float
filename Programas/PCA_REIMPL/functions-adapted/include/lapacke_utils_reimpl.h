@@ -177,7 +177,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
 
 void hfcopy(int n, const _Float16 *sx, int incx, _Float16 *sy, int incy);
 
-_Float16 hflamch(const char cmach);
+_Float16 hflamch_Float16(const char cmach);
 
 _Float16 hfroundup_lwork(int lwork);
 
@@ -185,9 +185,9 @@ int ieeeck_reimpl_Float16(int ispec, _Float16 *zero, _Float16 *one);
 
 int ilaenv_reimpl_Float16(int ispec, char* name, char* opts, int n1, int n2, int n3, int n4);
 
-int ilaslc_reimpl_hf(int m, int n, _Float16 *a, int lda);
+int ilaslc_reimpl_Float16(int m, int n, _Float16 *a, int lda);
 
-int ilaslr_reimpl_hf(int m, int n, _Float16 *a, int lda);
+int ilaslr_reimpl_Float16(int m, int n, _Float16 *a, int lda);
 
 
 
@@ -203,13 +203,7 @@ int iparmq_reimpl(int ispec, const char *name, const char *opts, int n, int ilo,
 float slamch_reimpl(const char *cmach);
 
 
-
 /* The same functions */
-// Functions that are exactly the same as the original LAPACK functions
-
-lapack_logical LAPACKE_s_nancheck( lapack_int n,
-    const float *x,
-    lapack_int incx );
 
 
 #endif /* LAPACKE_UTILS_REIMPL_H */

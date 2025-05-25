@@ -6,11 +6,29 @@
 force_run=false
 additional_flags=""
 
-# Uso: $0 [--force] [opciones adicionales]
-usage() {
-    echo "Uso: $0 [-f|--force] [opciones adicionales]"
-    exit 1
+FILES=()
+
+#--- Declaración de funciones ---#
+
+# Función que rellena el array global FILES con los archivos encontrados
+collect_files() {
+  FILES=()  # Reinicia el array FILES
+  for dir in "${DIRECTORIOS[@]}"; do
+    for file in ./functions-adapted/"$dir"/*; do
+      [ -e "$file" ] && FILES+=("$file")
+    done
+  done
 }
+
+usage() {
+    # Mostrar ayuda de uso del script
+    echo "Uso: $0 [-f|--force] [opciones adicionales]"
+    echo "  -f, --force       Fuerza la compilación cruzada de todos los programas a la arquitectura aarch64."
+    echo "  -h, --help        Muestra esta ayuda y sale."
+    exit 0
+}
+
+#--- Fin de la sección de funciones ---#
 
 # Procesar argumentos manualmente
 while [[ $# -gt 0 ]]; do
@@ -20,11 +38,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            # Mostrar ayuda
-            echo "Uso: $0 [-f|--force] [opciones adicionales]"
-            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas a la arquitectura aarch64."
-            echo "  -h, --help        Muestra esta ayuda y sale."
-            exit 0
+           usage
             ;;
         --)  # Fin de las opciones
             shift
@@ -51,18 +65,6 @@ LINK_FLAGS="-lm -llapacke -llapack -lblas"
 
 DIRECTORIOS=("include" "src" "utils" "fortran_sourced")
 
-# Variable global FILES.
-FILES=()
-
-# Función que rellena el array global FILES con los archivos encontrados
-collect_files() {
-  FILES=()  # Reinicia el array FILES
-  for dir in "${DIRECTORIOS[@]}"; do
-    for file in ./functions-adapted/"$dir"/*; do
-      [ -e "$file" ] && FILES+=("$file")
-    done
-  done
-}
 
 # Llama a la función antes de usar la variable en la compilación
 collect_files
@@ -83,7 +85,6 @@ cd "$script_dir"
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
 
-    #gcc-14 $COMMON_FLAGS pca_reimpl_FP16.c ./functions-adapted/*/* -o pca_reimpl_FP16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
     gcc-14 $COMMON_FLAGS pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
 
 

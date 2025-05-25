@@ -51,7 +51,7 @@
  * 
  * \see hflarf   Para aplicación del reflector
  * \see hfnrm2   Para cálculo de norma en _Float16
- * \see hflamch  Para obtención de constantes máquina
+ * \see hflamch_Float16  Para obtención de constantes máquina
  */
 
 void hflarfg(int n, _Float16 *alpha, _Float16 *x, lapack_int incx, _Float16 *tau) {
@@ -71,7 +71,7 @@ void hflarfg(int n, _Float16 *alpha, _Float16 *x, lapack_int incx, _Float16 *tau
 
         beta = (_Float16)( -copysignf((float) hflapy2( *alpha, xnorm ), (float)(*alpha) ));
 
-        safmin = hflamch('S') / hflamch('E');
+        safmin = hflamch_Float16('S') / hflamch_Float16('E');
 
 
         if (ABS_Float16(beta) < safmin) {

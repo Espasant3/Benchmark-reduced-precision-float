@@ -45,9 +45,9 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
     }
 
     // Machine constants
-    eps = hflamch('E');
+    eps = hflamch_Float16('E');
     eps2 = eps * eps;
-    safmin = hflamch('S');
+    safmin = hflamch_Float16('S');
     safmax = 1.0F16 / safmin;
     ssfmax = custom_sqrtf16(safmax) / 3.0F16;
     ssfmin = custom_sqrtf16(safmin) / eps2;

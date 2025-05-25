@@ -59,8 +59,8 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     
     // Get machine constants.
 
-    _Float16 safmin = hflamch('S'); 
-    _Float16 eps = hflamch('E');
+    _Float16 safmin = hflamch_Float16('S'); 
+    _Float16 eps = hflamch_Float16('E');
     _Float16 smlnum = safmin / eps;
     _Float16 bignum = 1.0F16 / smlnum;
     _Float16 rmin = custom_sqrtf16(smlnum);
@@ -94,7 +94,6 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     lapack_int indwrk = indtau + n;
     lapack_int llwork = lwork - indwrk;
 
-    printf("Va entrar a entrar en la función hfsytrd\n");
     hfsytrd(uplo, n, a, lda, w, &work[inde], &work[indtau], work, lwork, info);
     
     if (*info != 0) {
@@ -105,7 +104,6 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
         hfsterf(n, w, &work[inde], info);
     } else {
         // Generar matriz ortogonal (SORGTR)
-        printf("Va entrar a entrar en la función hforgtr\n");
         hforgtr(uplo, n, a, lda, &work[indtau], &work[indwrk], llwork, info);
         
         if (*info != 0) {

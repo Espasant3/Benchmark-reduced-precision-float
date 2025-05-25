@@ -44,13 +44,13 @@
  * hflartg(3.0F16, 4.0F16, &c, &s, &r);
  * // c ≈ 0.6F16, s ≈ 0.8F16, r = 5.0F16
  * 
- * \see hflamch Para obtención de constantes máquina
+ * \see hflamch_Float16 Para obtención de constantes máquina
  * \see custom_sqrtf16 Implementación de raíz cuadrada en _Float16
  * \see ABS_Float16 Macro para valor absoluto en _Float16
  */
 
 void hflartg(_Float16 f, _Float16 g, _Float16 *c, _Float16 *s, _Float16 *r) {
-    _Float16 safmin = hflamch('S');
+    _Float16 safmin = hflamch_Float16('S');
     _Float16 safmax = 1.0F16 / safmin;
     
     _Float16 f1 = ABS_Float16(f);

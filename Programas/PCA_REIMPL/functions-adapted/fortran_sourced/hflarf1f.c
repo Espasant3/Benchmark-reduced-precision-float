@@ -34,9 +34,9 @@ void hflarf1f(char side, int m, int n, _Float16 *v, int incv, _Float16 tau,
         }
 
         if(applyleft){
-            lastc = ilaslc_reimpl_hf(lastv, n, C, ldc) + 1; // +1 para incluir la fila 0
+            lastc = ilaslc_reimpl_Float16(lastv, n, C, ldc) + 1; // +1 para incluir la fila 0
         }else{
-            lastc = ilaslr_reimpl_hf(m, lastv, C, ldc) + 1; // +1 para incluir la columna 0
+            lastc = ilaslr_reimpl_Float16(m, lastv, C, ldc) + 1; // +1 para incluir la columna 0
             
         }
 

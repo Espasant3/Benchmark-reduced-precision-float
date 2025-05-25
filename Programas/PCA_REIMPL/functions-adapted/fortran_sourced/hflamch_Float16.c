@@ -37,16 +37,16 @@
  * - El valor 0.0F16 se retorna para opciones no implementadas
  * 
  * \example
- * _Float16 eps = hflamch('E');       // 0.0009765625 (2^-10)
- * _Float16 safe_min = hflamch('s');  // ≈1.5273e-05 (depende de FP16_MAX)
- * _Float16 invalid = hflamch('X');   // 0.0F16
+ * _Float16 eps = hflamch_Float16('E');       // 0.0009765625 (2^-10)
+ * _Float16 safe_min = hflamch_Float16('s');  // ≈1.5273e-05 (depende de FP16_MAX)
+ * _Float16 invalid = hflamch_Float16('X');   // 0.0F16
  * 
  * \ingroup IEEE754_FP16
  * \see FP16_SAFE_MIN  Para detalles del cálculo del mínimo seguro
  * \see hflamch_reimpl  Versión con validación extendida
  */
 
-_Float16 hflamch(const char cmach) {
+_Float16 hflamch_Float16(const char cmach) {
     const char c = toupper(cmach);
     
     switch(c) {

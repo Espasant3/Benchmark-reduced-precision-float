@@ -61,7 +61,7 @@
  * int info;
  * hflascl('G', 0, 0, 2.0F16, 4.0F16, 4, 4, A[0], 4, &info); // Escala x2
  * 
- * \see hflamch Para obtención de constantes máquina
+ * \see hflamch_Float16 Para obtención de constantes máquina
  * \see LAPACKE_xerbla Para manejo de errores
  * \see LAPACK_SISNAN Para detección de NaN
  */
@@ -134,7 +134,7 @@ switch (TYPE) {
     if (N == 0 || M == 0)
         return;
 
-    SMLNUM = hflamch('S');
+    SMLNUM = hflamch_Float16('S');
     BIGNUM = 1.0F16 / SMLNUM;
 
     do {

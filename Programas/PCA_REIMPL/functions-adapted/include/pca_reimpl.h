@@ -36,9 +36,6 @@
  * - Asignación dinámica de memoria para workspace óptimo
  * - Compatible con matrices row-major mediante transformación interna
  * 
- * \see LAPACKE_hfsyev_work  Para versión con workspace explícito
- * \see LAPACKE_xerbla       Para manejo de errores
- * \see LAPACKE_hfsy_nancheck Para verificación de NaN
  */
 
 lapack_int LAPACKE_hfsyev( int matrix_layout, char jobz, char uplo, lapack_int n,

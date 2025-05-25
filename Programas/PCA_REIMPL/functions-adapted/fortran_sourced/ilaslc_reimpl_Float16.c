@@ -2,7 +2,7 @@
 #include "../include/lapacke_utils_reimpl.h"
 
 /**
- * \file ilaslc_reimpl_hf.c
+ * \file ilaslc_reimpl_Float16.c
  * \brief Implementación de la función ilaslc para matrices de media precisión (_Float16).
  */
 
@@ -32,11 +32,11 @@
  * Ejemplo para una matriz 3x3 con última columna nula:
  * \code
  * _Float16 mat[9] = {1,0,0, 0,1,0, 0,0,0};  // Column-major
- * int idx = ilaslc_reimpl_hf(3, 3, mat, 3);  // Retorna 1 (segunda columna)
+ * int idx = ilaslc_reimpl_Float16(3, 3, mat, 3);  // Retorna 1 (segunda columna)
  * \endcode
  */
 
-int ilaslc_reimpl_hf(int m, int n, _Float16 *a, int lda) {
+int ilaslc_reimpl_Float16(int m, int n, _Float16 *a, int lda) {
     const _Float16 ZERO = 0.0f16;
 
 

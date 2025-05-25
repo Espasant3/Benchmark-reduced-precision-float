@@ -191,18 +191,6 @@ void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, _Float16 *eigenv
         exit(EXIT_FAILURE);
     }
 
-    printf("Eigenvalues:\n");
-    for (int i = 0; i < n; i++) {
-        printf("%f ", (float)eigenvalues[i]);
-    }
-    printf("\nEigenvectors:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            printf("%f ", (float)eigenvectors[i * n + j]);
-        }
-        printf("\n");
-    }
-
     // Ordenar valores propios y vectores propios
     sort_eigenvalues_and_eigenvectors(n, eigenvalues, eigenvectors);
 
@@ -452,7 +440,7 @@ int main(int argc, char *argv[]) {
     /* 
         Código del programa cuyo tiempo quiero medir
     */
-    //do_pca(matriz);
+    do_pca(matriz);
 
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;

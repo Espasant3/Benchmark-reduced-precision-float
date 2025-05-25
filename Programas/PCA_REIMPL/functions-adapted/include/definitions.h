@@ -88,28 +88,12 @@
 #ifndef MIN
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 #endif
-#ifndef MAX3
-#define MAX3(x,y,z) (((x) > MAX(y,z)) ? (x) : MAX(y,z))
-#endif
-#ifndef MIN3
-#define MIN3(x,y,z) (((x) < MIN(y,z)) ? (x) : MIN(y,z))
-#endif
-#ifndef SAFE_SCALE
-#define SAFE_SCALE(a, mul) ((_Float16)((float)(a) * (mul)))
-#endif
-
-/* -------------------------------------------------------------------------- */
-/* Non-zero checkers */
-/* -------------------------------------------------------------------------- */
-
-#define IS_HF_NONZERO(x) ( (x) < 0 || (x) > 0 )
 
 /* -------------------------------------------------------------------------- */
 /* NaN checkers */
 /* -------------------------------------------------------------------------- */
 
 #define LAPACK_HFISNAN( x ) ( x != x )
-#define LAPACK_SISNAN( x ) ( x != x )
 
 /* -------------------------------------------------------------------------- */
 /* Tipos personalizados LAPACK*/
