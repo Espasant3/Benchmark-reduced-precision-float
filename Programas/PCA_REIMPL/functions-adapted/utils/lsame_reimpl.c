@@ -1,5 +1,5 @@
 
-#include "../include/lapacke_utils_reimpl.h" 
+#include "lapacke_utils_reimpl.h" 
 
 /**
  * \brief Verifica si dos caracteres son iguales, ignorando mayúsculas/minúsculas

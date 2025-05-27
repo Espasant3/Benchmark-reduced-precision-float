@@ -1,19 +1,19 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfgemm(char transa, char transb, int m, int n, int k,
-           _Float16 alpha, const _Float16 *a, int lda,
-           const _Float16 *b, int ldb, _Float16 beta,
-           _Float16 *c, int ldc) {
+void hfgemm(char transa, char transb, int m, int n, int k, lapack_float alpha, const lapack_float *a, 
+            int lda, const lapack_float *b, int ldb, lapack_float beta, lapack_float *c, int ldc) {
+
+    // Constantes
+
+    const lapack_float ZERO = (lapack_float)0.0;
+    const lapack_float ONE = (lapack_float)1.0;
 
     lapack_logical nota, notb;
     int nrowa, nrowb;
     int info = 0;
     int i, j, l;
-    _Float16 temp;
-
-    const _Float16 one = 1.0F16;
-    const _Float16 zero = 0.0F16;
+    lapack_float temp;
 
     nota = lsame_reimpl(transa, 'N');
     notb = lsame_reimpl(transb, 'N');
@@ -46,16 +46,16 @@ void hfgemm(char transa, char transb, int m, int n, int k,
     }
 
     // Retorno rápido (igual que antes)
-    if (m == 0 || n == 0 || ((alpha == zero || k == 0) && beta == one)) {
+    if (m == 0 || n == 0 || ((alpha == ZERO || k == 0) && beta == ONE)) {
         return;
     }
 
-    // Manejo de alpha == zero (igual que antes)
-    if (alpha == zero) {
-        if (beta == zero) {
+    // Manejo de alpha == ZERO (igual que antes)
+    if (alpha == ZERO) {
+        if (beta == ZERO) {
             for (j = 0; j < n; j++) {
                 for (i = 0; i < m; i++) {
-                    c[i + j * ldc] = zero;
+                    c[i + j * ldc] = ZERO;
                 }
             }
         } else {
@@ -73,11 +73,11 @@ void hfgemm(char transa, char transb, int m, int n, int k,
         if (nota) {
             // C = alpha*A*B + beta*C
             for (j = 0; j < n; j++) {
-                if (beta == zero) {
+                if (beta == ZERO) {
                     for (i = 0; i < m; i++) {
-                        c[i + j * ldc] = zero;
+                        c[i + j * ldc] = ZERO;
                     }
-                } else if (beta != one) {
+                } else if (beta != ONE) {
                     for (i = 0; i < m; i++) {
                         c[i + j * ldc] *= beta;
                     }
@@ -93,11 +93,11 @@ void hfgemm(char transa, char transb, int m, int n, int k,
             // C = alpha*A^T*B + beta*C
             for (j = 0; j < n; j++) {
                 for (i = 0; i < m; i++) {
-                    temp = zero;
+                    temp = ZERO;
                     for (l = 0; l < k; l++) {
                         temp += a[l + i * lda] * b[l + j * ldb];
                     }
-                    if (beta == zero) {
+                    if (beta == ZERO) {
                         c[i + j * ldc] = alpha * temp;
                     } else {
                         c[i + j * ldc] = alpha * temp + beta * c[i + j * ldc];
@@ -109,11 +109,11 @@ void hfgemm(char transa, char transb, int m, int n, int k,
         if (nota) {
             // C = alpha*A*B^T + beta*C
             for (j = 0; j < n; j++) {
-                if (beta == zero) {
+                if (beta == ZERO) {
                     for (i = 0; i < m; i++) {
-                        c[i + j * ldc] = zero;
+                        c[i + j * ldc] = ZERO;
                     }
-                } else if (beta != one) {
+                } else if (beta != ONE) {
                     for (i = 0; i < m; i++) {
                         c[i + j * ldc] *= beta;
                     }
@@ -129,11 +129,11 @@ void hfgemm(char transa, char transb, int m, int n, int k,
             // C = alpha*A^T*B^T + beta*C
             for (j = 0; j < n; j++) {
                 for (i = 0; i < m; i++) {
-                    temp = zero;
+                    temp = ZERO;
                     for (l = 0; l < k; l++) {
                         temp += a[l + i * lda] * b[j + l * ldb];
                     }
-                    if (beta == zero) {
+                    if (beta == ZERO) {
                         c[i + j * ldc] = alpha * temp;
                     } else {
                         c[i + j * ldc] = alpha * temp + beta * c[i + j * ldc];

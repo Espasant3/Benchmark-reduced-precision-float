@@ -1,22 +1,22 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflapy2.c
- * \brief Cálculo seguro de la norma euclídea en _Float16
+ * \brief Cálculo seguro de la norma euclídea en lapack_float
  */
 
 /**
- * \brief Calcula sqrt(x² + y²) evitando desbordamientos en _Float16
+ * \brief Calcula sqrt(x² + y²) evitando desbordamientos en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's SLAPY2. Implementa:
+ * \details Versión lapack_float de LAPACK's SLAPY2. Implementa:
  *          - Manejo de NaN: Si x o y es NaN, retorna inmediatamente NaN
  *          - Evita overflow mediante escalado: sqrt(w²*(1 + (z/w)²)) donde w = max(|x|, |y|)
  *          - Precisión mejorada para valores pequeños
  * 
- * \param[in] x Primer valor _Float16
- * \param[in] y Segundo valor _Float16
- * \return _Float16 Resultado de sqrt(x² + y²)
+ * \param[in] x Primer valor lapack_float
+ * \param[in] y Segundo valor lapack_float
+ * \return lapack_float Resultado de sqrt(x² + y²)
  * 
  * \note
  * - Implementación numéricamente estable:
@@ -29,8 +29,8 @@
  * - Mayor precisión que cálculo directo para |x| ≫ |y| o viceversa
  * 
  * \warning
- * - Requiere que custom_sqrtf16 maneje entradas en rango [1, 2]
- * - No verifica overflow en custom_sqrtf16 (asume w <= FP16_MAX)
+ * - Requiere que custom_sqrtf_half_precision maneje entradas en rango [1, 2]
+ * - No verifica overflow en custom_sqrtf_half_precision (asume w <= FP16_MAX)
  * 
  * \par Algoritmo:
  * 1. Detección temprana de NaN
@@ -39,15 +39,14 @@
  * 4. Cálculo seguro de 1 + (z/w)²
  * 
  * \example
- * _Float16 norm = hflapy2(3.0F16, 4.0F16); // 5.0F16
- * _Float16 nan_res = hflapy2(NAN_Float16, 1.0F16); // NAN_Float16
+ * lapack_float norm = hflapy2(3.0F16, 4.0F16); // 5.0F16
+ * lapack_float nan_res = hflapy2(NAN_Float16, 1.0F16); // NAN_Float16
  * 
- * \see custom_sqrtf16 Para implementación de raíz cuadrada en _Float16
- * \see LAPACK_HFISNAN Macro para detección de NaN en _Float16
- * \see FP16_MAX Valor máximo representable en _Float16
+ * \see custom_sqrtf_half_precision Para implementación de raíz cuadrada en _Float16
+ * \see LAPACK_HFISNAN Macro para detección de NaN en lapack_float
  */
 
-_Float16 hflapy2(_Float16 x, _Float16 y) {
+lapack_float hflapy2(lapack_float x, lapack_float y) {
     if (LAPACK_HFISNAN(x)) {
         return x;
     }
@@ -55,15 +54,20 @@ _Float16 hflapy2(_Float16 x, _Float16 y) {
         return y;
     }
 
-    _Float16 xabs = ABS_Float16(x);
-    _Float16 yabs = ABS_Float16(y);
-    _Float16 w = MAX(xabs, yabs);
-    _Float16 z = MIN(xabs, yabs);
+    lapack_float xabs = ABS_half_precision(x);
+    lapack_float yabs = ABS_half_precision(y);
+    lapack_float w = MAX(xabs, yabs);
+    lapack_float z = MIN(xabs, yabs);
 
-    if (z == 0.0F16 || w > FP16_MAX) {
+    #ifndef USE_BF16
+    if (z == (lapack_float)0.0 || w > (lapack_float)FP16_MAX) {
+    #else
+    if (z == (lapack_float)0.0 || w > (lapack_float)BF16_MAX) {
+    #endif
+    
         return w;
     } else {
-        _Float16 ratio = z / w;
-        return w * custom_sqrtf16(1.0F16 + ratio * ratio);
+        lapack_float ratio = z / w;
+        return w * custom_sqrtf_half_precision((lapack_float)1.0 + ratio * ratio);
     }
 }

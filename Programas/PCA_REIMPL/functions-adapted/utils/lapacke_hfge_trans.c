@@ -30,15 +30,15 @@
 * Author: Intel Corporation
 *****************************************************************************/
 
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h" 
 
 /* Converts input general matrix from row-major(C) to column-major(Fortran)
  * layout or vice versa.
  */
 
 void LAPACKE_hfge_trans( int matrix_layout, lapack_int m, lapack_int n,
-                        const _Float16* in, lapack_int ldin,
-                        _Float16* out, lapack_int ldout )
+                        const lapack_float* in, lapack_int ldin,
+                        lapack_float* out, lapack_int ldout )
 {
     lapack_int i, j, x, y;
 

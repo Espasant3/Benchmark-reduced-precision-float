@@ -1,15 +1,15 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflaev2.c
- * \brief Calcula autovalores y autovectores para matrices simétricas 2x2 en _Float16
+ * \brief Cálculo de autovalores y autovectores para matrices simétricas 2x2 en lapack_float
  */
 
 /**
- * \brief Calcula autovalores y autovectores de una matriz simétrica 2x2 en _Float16
+ * \brief Calcula autovalores y autovectores de una matriz simétrica 2x2 en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's SLAEV2. Resuelve:
+ * \details Versión lapack_float de LAPACK's SLAEV2. Resuelve:
  *          \f[
  *          \begin{pmatrix} a & b \\ b & c \end{pmatrix} \cdot \begin{pmatrix} cs1 \\ sn1 \end{pmatrix} = rt1 \cdot \begin{pmatrix} cs1 \\ sn1 \end{pmatrix}
  *          \f]
@@ -33,8 +33,8 @@
  * 
  * \warning
  * - No maneja entradas NaN (comportamiento indefinido)
- * - Precisión limitada en _Float16 puede afectar ortogonalidad
- * - Requiere custom_sqrtf16 para raíz cuadrada en _Float16
+ * - Precisión limitada en lapack_float puede afectar ortogonalidad
+ * - Requiere custom_sqrtf_half_precision para raíz cuadrada en _Float16
  * 
  * \par Algoritmo clave:
  * 1. Cálculo de términos intermedios:
@@ -45,26 +45,32 @@
  * 3. Cálculo del autovector mediante relaciones trigonométricas
  * 
  * \example
- * _Float16 rt1, rt2, cs1, sn1;
+ * lapack_float rt1, rt2, cs1, sn1;
  * hflaev2(2.0F16, 1.0F16, 3.0F16, &rt1, &rt2, &cs1, &sn1);
  * // rt1 ≈ 4.0F16, rt2 ≈ 1.0F16
  * // cs1 ≈ 0.707F16, sn1 ≈ 0.707F16
  * 
  * \see LAPACK SLAEV2 Para versión en precisión simple
- * \see custom_sqrtf16 Implementación de raíz cuadrada en _Float16
- * \see ABS_Float16 Macro para valor absoluto en _Float16
+ * \see custom_sqrtf_half_precision Implementación de raíz cuadrada en _Float16
+ * \see ABS_half_precision Macro para valor absoluto en lapack_float
  */
 
-void hflaev2(_Float16 a, _Float16 b, _Float16 c, _Float16 *rt1, _Float16 *rt2, _Float16 *cs1, _Float16 *sn1) {
-    _Float16 sm = a + c;
-    _Float16 df = a - c;
-    _Float16 adf = ABS_Float16(df);
-    _Float16 tb = 2.0F16 * b;
-    _Float16 ab = ABS_Float16(tb);
-    _Float16 acmx, acmn;
+void hflaev2(lapack_float a, lapack_float b, lapack_float c, lapack_float *rt1, lapack_float *rt2, lapack_float *cs1, lapack_float *sn1) {
+    
+    // Constantes
+    const lapack_float ONE = (lapack_float)1.0;
+    const lapack_float TWO = (lapack_float)2.0;
+    const lapack_float HALF = (lapack_float)0.5;
+    
+    lapack_float sm = a + c;
+    lapack_float df = a - c;
+    lapack_float adf = ABS_half_precision(df);
+    lapack_float tb = TWO * b;
+    lapack_float ab = ABS_half_precision(tb);
+    lapack_float acmx, acmn;
 
     // Determine the larger and smaller of |A| and |C|
-    if (ABS_Float16(a) > ABS_Float16(c)) {
+    if (ABS_half_precision(a) > ABS_half_precision(c)) {
         acmx = a;
         acmn = c;
     } else {
@@ -72,38 +78,38 @@ void hflaev2(_Float16 a, _Float16 b, _Float16 c, _Float16 *rt1, _Float16 *rt2, _
         acmn = a;
     }
 
-    _Float16 rt;
+    lapack_float rt;
     if (adf > ab) {
-        rt = adf * custom_sqrtf16(1.0F16 + (ab / adf) * (ab / adf));
+        rt = adf * custom_sqrtf_half_precision(ONE + (ab / adf) * (ab / adf));
     } else if (adf < ab) {
-        rt = ab * custom_sqrtf16(1.0F16 + (adf / ab) * (adf / ab));
+        rt = ab * custom_sqrtf_half_precision(ONE + (adf / ab) * (adf / ab));
     } else {
-        rt = ab * custom_sqrtf16(2.0F16);
+        rt = ab * custom_sqrtf_half_precision(TWO);
     }
 
     int sgn1, sgn2;
 
     // Compute eigenvalues
-    if (sm < 0.0F16) {
-        *rt1 = 0.5F16 * (sm - rt);
+    if (sm < (lapack_float)0.0) {
+        *rt1 = HALF * (sm - rt);
         sgn1 = -1;
-        _Float16 rt1_val = *rt1;
+        lapack_float rt1_val = *rt1;
         *rt2 = (acmx / rt1_val) * acmn - (b / rt1_val) * b;
-    } else if (sm > 0.0F16) {
-        *rt1 = 0.5F16 * (sm + rt);
+    } else if (sm > (lapack_float)0.0) {
+        *rt1 = HALF * (sm + rt);
         sgn1 = 1;
-        _Float16 rt1_val = *rt1;
+        lapack_float rt1_val = *rt1;
         *rt2 = (acmx / rt1_val) * acmn - (b / rt1_val) * b;
     } else {
         // Handle case where sm is zero
-        *rt1 = 0.5F16 * rt;
-        *rt2 = -0.5F16 * rt;
+        *rt1 = HALF * rt;
+        *rt2 = -HALF * rt;
         sgn1 = 1;
     }
 
     // Compute eigenvector
-    _Float16 cs;
-    if (df >= 0.0F16) {
+    lapack_float cs;
+    if (df >= (lapack_float)0.0) {
         cs = df + rt;
         sgn2 = 1;
     } else {
@@ -111,25 +117,25 @@ void hflaev2(_Float16 a, _Float16 b, _Float16 c, _Float16 *rt1, _Float16 *rt2, _
         sgn2 = -1;
     }
 
-    _Float16 acs = ABS_Float16(cs);
+    lapack_float acs = ABS_half_precision(cs);
     if (acs > ab) {
-        _Float16 ct = -tb / cs;
-        *sn1 = 1.0F16 / custom_sqrtf16(1.0F16 + ct * ct);
+        lapack_float ct = -tb / cs;
+        *sn1 = ONE / custom_sqrtf_half_precision(ONE + ct * ct);
         *cs1 = ct * (*sn1);
     } else {
-        if (ab == 0.0F16) {
-            *cs1 = 1.0F16;
-            *sn1 = 0.0F16;
+        if (ab == (lapack_float)0.0) {
+            *cs1 = ONE;
+            *sn1 = (lapack_float)0.0;
         } else {
-            _Float16 tn = -cs / tb;
-            *cs1 = 1.0F16 / custom_sqrtf16(1.0F16 + tn * tn);
+            lapack_float tn = -cs / tb;
+            *cs1 = ONE / custom_sqrtf_half_precision(ONE + tn * tn);
             *sn1 = tn * (*cs1);
         }
     }
 
     // Adjust eigenvector signs if necessary
     if (sgn1 == sgn2) {
-        _Float16 temp = *cs1;
+        lapack_float temp = *cs1;
         *cs1 = -(*sn1);
         *sn1 = temp;
     }

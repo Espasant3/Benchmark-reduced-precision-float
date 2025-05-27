@@ -31,15 +31,15 @@
 * Author: Intel Corporation
 *****************************************************************************/
 
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h"
 
 lapack_int LAPACKE_hfsyev( int matrix_layout, char jobz, char uplo, lapack_int n,
-                          _Float16* a, lapack_int lda, _Float16* w )
+                          lapack_float* a, lapack_int lda, lapack_float* w )
 {
     lapack_int info = 0;
     lapack_int lwork = -1;
-    _Float16* work = NULL;
-    _Float16 work_query;
+    lapack_float* work = NULL;
+    lapack_float work_query;
     if( matrix_layout != LAPACK_COL_MAJOR && matrix_layout != LAPACK_ROW_MAJOR ) {
         LAPACKE_xerbla( "LAPACKE_hfsyev", -1 );
         return -1;
@@ -60,7 +60,7 @@ lapack_int LAPACKE_hfsyev( int matrix_layout, char jobz, char uplo, lapack_int n
     }
     lwork = (lapack_int)work_query;
     /* Allocate memory for work arrays */
-    work = (_Float16*)LAPACKE_calloc(lwork ,sizeof(_Float16));
+    work = (lapack_float*)LAPACKE_calloc(lwork ,sizeof(lapack_float));
     if( work == NULL ) {
         info = LAPACK_WORK_MEMORY_ERROR;
         goto exit_level_0;

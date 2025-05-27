@@ -1,10 +1,14 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
- * \brief Calcula la norma de una matriz tridiagonal simétrica en _Float16
+ * \file hflanst.c
+*/
+
+/**
+ * \brief Calcula la norma de una matriz tridiagonal simétrica en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's slanst. Soporta múltiples tipos de norma:
+ * \details Versión lapack_float de LAPACK's slanst. Soporta múltiples tipos de norma:
  *          - Máximo absoluto ('M')
  *          - Norma 1/Infinito ('1', 'O', 'I')
  *          - Norma Frobenius/Euclídea ('F', 'E')
@@ -15,10 +19,10 @@
  *                - 'I': Norma Infinito (suma máxima por filas)
  *                - 'F', 'E': Norma Frobenius (sqrt(Σ|A(i,j)|²))
  * \param[in] n    Orden de la matriz (n >= 0)
- * \param[in] d    Array _Float16[n] con elementos diagonales
- * \param[in] e    Array _Float16[n-1] con elementos sub/superdiagonales
+ * \param[in] d    Array lapack_float[n] con elementos diagonales
+ * \param[in] e    Array lapack_float[n-1] con elementos sub/superdiagonales
  * 
- * \return _Float16 Valor de la norma solicitada
+ * \return lapack_float Valor de la norma solicitada
  * 
  * \note
  * - Para n=0 retorna 0 inmediatamente
@@ -28,7 +32,7 @@
  * \warning
  * - No valida punteros d/e (comportamiento indefinido si son NULL)
  * - No verifica consistencia entre n y tamaño de d/e
- * - El cálculo de Frobenius depende de custom_sqrtf16
+ * - El cálculo de Frobenius depende de custom_sqrtf_half_precision
  * 
  * \par Algoritmo por tipo de norma:
  * 1. 'M': Máximo de |d[i]| y |e[i]| ∀i
@@ -36,72 +40,79 @@
  * 3. 'F'/'E': sqrt(Σ|d[i]|² + 2Σ|e[i]|²) con escalado numérico
  * 
  * \example
- * _Float16 d[3] = {1.5F16, 2.3F16, 0.7F16};
- * _Float16 e[2] = {0.5F16, -1.2F16};
+ * lapack_float d[3] = {1.5F16, 2.3F16, 0.7F16};
+ * lapack_float e[2] = {0.5F16, -1.2F16};
  * 
- * _Float16 max_norm = hflanst('M', 3, d, e);        // 2.3
- * _Float16 frob_norm = hflanst('F', 3, d, e);       // sqrt(1.5² + 2*(0.5² + 1.2²) + 2.3² + 0.7²)
+ * lapack_float max_norm = hflanst('M', 3, d, e);        // 2.3
+ * lapack_float frob_norm = hflanst('F', 3, d, e);       // sqrt(1.5² + 2*(0.5² + 1.2²) + 2.3² + 0.7²)
  * 
  * \see lsame_reimpl Para comparación case-insensitive de caracteres
- * \see custom_sqrtf16 Implementación de raíz cuadrada en _Float16
- * \see LAPACK_HFISNAN Macro para detección de NaN en _Float16
+ * \see custom_sqrtf_half_precision Implementación de raíz cuadrada en _Float16
+ * \see LAPACK_HFISNAN Macro para detección de NaN en lapack_float
  */
 
-_Float16 hflanst(char norm, int n, const _Float16 *d, const _Float16 *e) {
-    _Float16 anorm = 0.0F16;
+lapack_float hflanst(char norm, int n, const lapack_float *d, const lapack_float *e) {
+    
+    // Constantes
+    const lapack_float ZERO = (lapack_float)0.0;
+    const lapack_float ONE = (lapack_float)1.0;
+    const lapack_float TWO = (lapack_float)2.0;
+
+    
+    lapack_float anorm = ZERO;
     if (n <= 0) return anorm;
 
     if (lsame_reimpl(norm, 'M')) {
         /* Norma Máximo */
-        anorm = ABS_Float16(d[n-1]);
+        anorm = ABS_half_precision(d[n-1]);
         for (int i = 0; i < n-1; ++i) {
-            _Float16 current = ABS_Float16(d[i]);
+            lapack_float current = ABS_half_precision(d[i]);
             if (current > anorm || LAPACK_HFISNAN(current)) anorm = current;
             
-            current = ABS_Float16(e[i]);
+            current = ABS_half_precision(e[i]);
             if (current > anorm || LAPACK_HFISNAN(current)) anorm = current;
         }
     } 
     else if (lsame_reimpl(norm, '1') || lsame_reimpl(norm, 'O') || lsame_reimpl(norm, 'I')) {
         /* Normas 1/Infinito */
         if (n == 1) {
-            anorm = ABS_Float16(d[0]);
+            anorm = ABS_half_precision(d[0]);
         } else {
-            anorm = ABS_Float16(d[0]) + ABS_Float16(e[0]);
-            _Float16 sum = ABS_Float16(e[n-2]) + ABS_Float16(d[n-1]);
+            anorm = ABS_half_precision(d[0]) + ABS_half_precision(e[0]);
+            lapack_float sum = ABS_half_precision(e[n-2]) + ABS_half_precision(d[n-1]);
             if (sum > anorm || LAPACK_HFISNAN(sum)) anorm = sum;
             
             for (int i = 1; i < n-1; ++i) {
-                sum = ABS_Float16(d[i]) + ABS_Float16(e[i]) + ABS_Float16(e[i-1]);
+                sum = ABS_half_precision(d[i]) + ABS_half_precision(e[i]) + ABS_half_precision(e[i-1]);
                 if (sum > anorm || LAPACK_HFISNAN(sum)) anorm = sum;
             }
         }
     } 
     else if (lsame_reimpl(norm, 'F') || lsame_reimpl(norm, 'E')) {
         /* Norma Frobenius */
-        _Float16 scale = 0.0F16;
-        _Float16 sum = 1.0F16;
+        lapack_float scale = ZERO;
+        lapack_float sum = ONE;
         
         if (n > 1) {
             for (int i = 0; i < n-1; ++i) {
-                _Float16 absxi = ABS_Float16(e[i]);
-                if (absxi != 0.0F16) {
+                lapack_float absxi = ABS_half_precision(e[i]);
+                if (absxi != ZERO) {
                     if (scale < absxi) {
-                        sum = 1.0F16 + sum * (scale/absxi) * (scale/absxi);
+                        sum = ONE + sum * (scale/absxi) * (scale/absxi);
                         scale = absxi;
                     } else {
                         sum += (absxi/scale) * (absxi/scale);
                     }
                 }
             }
-            sum *= 2.0F16;
+            sum *= TWO;
         }
         
         for (int i = 0; i < n; ++i) {
-            _Float16 absxi = ABS_Float16(d[i]);
-            if (absxi != 0.0F16) {
+            lapack_float absxi = ABS_half_precision(d[i]);
+            if (absxi != ZERO) {
                 if (scale < absxi) {
-                    sum = 1.0F16 + sum * (scale/absxi) * (scale/absxi);
+                    sum = ONE + sum * (scale/absxi) * (scale/absxi);
                     scale = absxi;
                 } else {
                     sum += (absxi/scale) * (absxi/scale);
@@ -109,7 +120,7 @@ _Float16 hflanst(char norm, int n, const _Float16 *d, const _Float16 *e) {
             }
         }
         
-        anorm = scale * custom_sqrtf16(sum);
+        anorm = scale * custom_sqrtf_half_precision(sum);
     }
     
     return anorm;

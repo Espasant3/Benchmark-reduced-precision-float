@@ -1,11 +1,11 @@
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssyev_reimpl.c
+#include "lapacke_utils_reimpl.h" 
 
 /* Check a matrix for NaN entries. */
 
 lapack_logical LAPACKE_hfgb_nancheck( int matrix_layout, lapack_int m,
                                       lapack_int n, lapack_int kl,
                                       lapack_int ku,
-                                      const _Float16 *ab,
+                                      const lapack_float *ab,
                                       lapack_int ldab )
 {
     lapack_int i, j;

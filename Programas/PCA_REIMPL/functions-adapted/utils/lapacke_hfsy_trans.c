@@ -30,15 +30,15 @@
 * Author: Intel Corporation
 *****************************************************************************/
 
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h" 
 
 /* Converts input symmetric matrix from row-major(C) to column-major(Fortran)
  * layout or vice versa.
  */
 
 void LAPACKE_hfsy_trans( int matrix_layout, char uplo, lapack_int n,
-                        const _Float16 *in, lapack_int ldin,
-                        _Float16 *out, lapack_int ldout )
+                        const lapack_float *in, lapack_int ldin,
+                        lapack_float *out, lapack_int ldout )
 {
     LAPACKE_hftr_trans( matrix_layout, uplo, 'n', n, in, ldin, out, ldout );
 }

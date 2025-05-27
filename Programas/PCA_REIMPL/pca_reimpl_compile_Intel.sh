@@ -14,7 +14,7 @@ FILES=()
 collect_files() {
   FILES=()  # Reinicia el array FILES
   for dir in "${DIRECTORIOS[@]}"; do
-    for file in ./functions-adapted/"$dir"/*; do
+    for file in ./functions-adapted/"$dir"/*.c; do
       [ -e "$file" ] && FILES+=("$file")
     done
   done
@@ -63,7 +63,9 @@ OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer 
 
 LINK_FLAGS="-lm -llapacke -llapack -lblas"
 
-DIRECTORIOS=("include" "src" "utils" "fortran_sourced")
+INCLUDE_DIR="-I./functions-adapted/include"
+
+DIRECTORIOS=("src" "utils" "fortran_sourced")
 
 
 # Llama a la función antes de usar la variable en la compilación
@@ -85,7 +87,7 @@ cd "$script_dir"
 if grep -q "sse2" /proc/cpuinfo; then
     echo "SSE2 support detected. Compiling programs with _Float16 data."
 
-    gcc-14 $COMMON_FLAGS pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
+    gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16 -DUSE_Float16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
 
 
     if grep -q "avx512fp16" /proc/cpuinfo; then
@@ -94,11 +96,11 @@ if grep -q "sse2" /proc/cpuinfo; then
         COMMON_FLAGS+=" -mavx512fp16"
 
         # Compilar el programa optimizado con AVX512 (nativo)
-        gcc-14 $COMMON_FLAGS pca_reimpl_FP16.c -o pca_reimpl_FP16_native-base $OPT_FLAGS $LINK_FLAGS
+        gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16_native-base -DUSE_Float16 $OPT_FLAGS $LINK_FLAGS
         # Compilar el programa optimizado con AVX512 y precisión de 16 bits
-        gcc-14 $COMMON_FLAGS pca_reimpl_FP16.c -o pca_reimpl_FP16_avx512_precision -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
+        gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16_avx512_precision -DUSE_Float16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
         # Compilar el programa con máxima optimización
-        gcc-14 $COMMON_FLAGS pca_reimpl_FP16.c -o pca_reimpl_FP16_max_performance -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS $LINK_FLAGS
+        gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16_max_performance -DUSE_Float16 -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS $LINK_FLAGS
 
         # Eliminar los flags específicos de esta sección
         COMMON_FLAGS="${COMMON_FLAGS/-mavx512fp16/}" 

@@ -1,8 +1,11 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda,
-           _Float16 *x, lapack_int incx, _Float16 beta, _Float16 *y, lapack_int incy) {
+void hfsymv(char uplo, lapack_int n, lapack_float alpha, lapack_float *A, lapack_int lda,
+           lapack_float *x, lapack_int incx, lapack_float beta, lapack_float *y, lapack_int incy) {
+    
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
 
     lapack_int info = 0;
     if (!lsame_reimpl(uplo, 'U') && !lsame_reimpl(uplo, 'L')) {
@@ -21,16 +24,16 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
         return;
     }
 
-    if (n == 0 || (alpha == 0.0F16 && beta == 1.0F16)) {
+    if (n == 0 || (alpha == ZERO && beta == ONE)) {
         return;
     }
 
-    // Escalado de Y con beta (operaciones directas en _Float16)
-    if (beta != 1.0F16) {
+    // Escalado de Y con beta (operaciones directas en lapack_float)
+    if (beta != ONE) {
         if (incy == 1) {
-            if (beta == 0.0F16) {
+            if (beta == ZERO) {
                 for (lapack_int i = 0; i < n; i++) {
-                    y[i] = 0.0F16;
+                    y[i] = ZERO;
                 }
             } else {
                 for (lapack_int i = 0; i < n; i++) {
@@ -39,9 +42,9 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
             }
         } else {
             lapack_int iy = (incy > 0) ? 0 : ((n - 1) * ABS(incy));
-            if (beta == 0.0F16) {
+            if (beta == ZERO) {
                 for (lapack_int i = 0; i < n; i++) {
-                    y[iy] = 0.0F16;
+                    y[iy] = ZERO;
                     iy += incy;
                 }
             } else {
@@ -53,7 +56,7 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
         }
     }
 
-    if (alpha == 0.0F16) {
+    if (alpha == ZERO) {
         return;
     }
 
@@ -61,13 +64,13 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
     if (lsame_reimpl(uplo, 'U')) {
         if (incx == 1 && incy == 1) {
             for (lapack_int j = 0; j < n; j++) {
-                _Float16 xj = x[j];                // Eliminada conversión a float
-                _Float16 temp1 = alpha * xj;        // Operación directa en _Float16
-                _Float16 temp2 = 0.0F16;
+                lapack_float xj = x[j];                
+                lapack_float temp1 = alpha * xj;
+                lapack_float temp2 = ZERO;
 
                 // Parte triangular superior
                 for (lapack_int i = 0; i < j; i++) {
-                    _Float16 A_ij = A[i + j * lda];
+                    lapack_float A_ij = A[i + j * lda];
                     y[i] += temp1 * A_ij;
                     temp2 += A_ij * x[i];
                 }
@@ -82,14 +85,14 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
             lapack_int jy = ky;
 
             for (lapack_int j = 0; j < n; j++) {
-                _Float16 xj = x[jx];
-                _Float16 temp1 = alpha * xj;
-                _Float16 temp2 = 0.0F16;
+                lapack_float xj = x[jx];
+                lapack_float temp1 = alpha * xj;
+                lapack_float temp2 = ZERO;
                 lapack_int ix = kx;
                 lapack_int iy = ky;
 
                 for (lapack_int i = 0; i < j; i++) {
-                    _Float16 A_ij = A[i + j * lda];
+                    lapack_float A_ij = A[i + j * lda];
                     y[iy] += temp1 * A_ij;
                     temp2 += A_ij * x[ix];
                     ix += incx;
@@ -104,15 +107,15 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
     } else {
         if (incx == 1 && incy == 1) {
             for (lapack_int j = 0; j < n; j++) {
-                _Float16 temp1 = alpha * x[j];      // Conversión eliminada
-                _Float16 temp2 = 0.0F16;
+                lapack_float temp1 = alpha * x[j];      // Conversión eliminada
+                lapack_float temp2 = ZERO;
 
                 // Diagonal
                 y[j] += temp1 * A[j + j * lda];
 
                 // Parte triangular inferior
                 for (lapack_int i = j + 1; i < n; i++) {
-                    _Float16 A_ij = A[i + j * lda];
+                    lapack_float A_ij = A[i + j * lda];
                     y[i] += temp1 * A_ij;
                     temp2 += A_ij * x[i];
                 }
@@ -126,8 +129,8 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
             lapack_int jy = ky;
 
             for (lapack_int j = 0; j < n; j++) {
-                _Float16 temp1 = alpha * x[jx];
-                _Float16 temp2 = 0.0F16;
+                lapack_float temp1 = alpha * x[jx];
+                lapack_float temp2 = ZERO;
 
                 // Diagonal
                 y[jy] += temp1 * A[j + j * lda];
@@ -137,7 +140,7 @@ void hfsymv(char uplo, lapack_int n, _Float16 alpha, _Float16 *A, lapack_int lda
 
                 // Parte triangular inferior
                 for (lapack_int i = j + 1; i < n; i++) {
-                    _Float16 A_ij = A[i + j * lda];
+                    lapack_float A_ij = A[i + j * lda];
                     y[iy_val] += temp1 * A_ij;
                     temp2 += A_ij * x[ix];
                     ix += incx;

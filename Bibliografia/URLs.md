@@ -36,6 +36,18 @@ Guía de instalación y uso de las bibliotecas de alto rendimiento de ARM (ARMPL
 ### [Advanced Matrix Extensions (AMX)](https://en.wikipedia.org/wiki/Advanced_Matrix_Extensions)
 Información sobre las Advanced Matrix Extensions (AMX), una tecnología de hardware desarrollada por Intel para acelerar operaciones matriciales en procesadores modernos, ampliamente utilizada en aplicaciones de aprendizaje automático y computación de alto rendimiento.
 
+### [Half-precision floating-point format](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
+Información sobre los tipos de datos flotantes de media precisión, incluyendo información como el exponente mínimo y máximo posible (en base 10)
+
+### [bfloat16 floating-point format](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format)
+Información sobre los tipos de datos flotantes bfloat16, incluyendo información como el exponente mínimo y máximo posible (en base 10). Contiene además una comparativa gráfica entre los distintos formatos de almacenamiento.
+
+### [GCC Predefined Macros: __FLT16_ and __BFLT16_](https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html)
+Se han consultado las macros de GCC para _Float16 y bfloat16 mediante el siguiente comando: 
+```bash
+{ echo | gcc -dM -E - | grep '^#define __FLT16_'; echo | gcc -dM -E - | grep '^#define __BFLT16_'; }
+```
+
 ## Soporte de hardware
 
 ### [Half-precision floating-point format](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)

@@ -1,13 +1,15 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
-           _Float16 *x, lapack_int incx, _Float16 beta, _Float16 *y, lapack_int incy) {
-    // Parameters
-    const _Float16 one = 1.0F16, zero = 0.0F16;
+void hfgemv(char trans, int m, int n, lapack_float alpha, lapack_float *a, int lda,
+           lapack_float *x, lapack_int incx, lapack_float beta, lapack_float *y, lapack_int incy) {
+    
+    // Constantes
+    const lapack_float ZERO = (lapack_float)0.0;
+    const lapack_float ONE = (lapack_float)1.0;
 
     // Local variables
-    _Float16 temp;
+    lapack_float temp;
     int i, j, ix, iy, jx, jy, kx, ky, lenx, leny;
 
     // Test input parameters (igual que antes)
@@ -27,12 +29,12 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
     }
 
     if (info != 0) {
-        c_xerbla("HFGEMV ", info);
+        c_xerbla("HFGEMV", info);
         return;
     }
 
     // Quick return if possible
-    if (m == 0 || n == 0 || (alpha == zero && beta == one)) {
+    if (m == 0 || n == 0 || (alpha == ZERO && beta == ONE)) {
         return;
     }
 
@@ -58,11 +60,11 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
     }
 
     // Handle beta scaling of Y
-    if (beta != one) {
+    if (beta != ONE) {
         if (incy == 1) {
-            if (beta == zero) {
+            if (beta == ZERO) {
                 for (i = 0; i < leny; i++) {
-                    y[i] = zero;
+                    y[i] = ZERO;
                 }
             } else {
                 for (i = 0; i < leny; i++) {
@@ -71,9 +73,9 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
             }
         } else {
             iy = ky;
-            if(beta == zero) {
+            if(beta == ZERO) {
                 for (i = 0; i < leny; i++) {
-                    y[iy] = zero;
+                    y[iy] = ZERO;
                     iy += incy;
                 }
             } else {
@@ -85,11 +87,10 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
         }
     }
 
-    if (alpha == zero) {
+    if (alpha == ZERO) {
         return;
     }
 
-    // Perform matrix-vector multiplication (igual que antes, con _Float16)
     if (lsame_reimpl(trans, 'N')) {  // y = alpha*A*x + y
         jx = kx;
         if(incy == 1) {
@@ -115,7 +116,7 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
         jy = ky;
         if (incy == 1) {
             for (j = 0; j < n; j++) {
-                temp = zero;
+                temp = ZERO;
                 for (i = 0; i < m; i++) {
                     temp += a[i + j * lda] * x[i];
                 }
@@ -124,7 +125,7 @@ void hfgemv(char trans, int m, int n, _Float16 alpha, _Float16 *a, int lda,
             }
         } else {
             for (j = 0; j < n; j++) {
-                temp = zero;
+                temp = ZERO;
                 ix = kx;
                 for (i = 0; i < m; i++) {
                     temp += a[i + j * lda] * x[ix];

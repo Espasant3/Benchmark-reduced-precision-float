@@ -1,14 +1,14 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hflasrt(char id, lapack_int n, _Float16 *d, lapack_int *info) {
+void hflasrt(char id, lapack_int n, lapack_float *d, lapack_int *info) {
     const int SELECT = 20;
     int dir;
     int stack[2][32];
     int stkpnt = 0;
     int start, endd, i, j;
     int went_back_full = 1;
-    _Float16 d1, d2, d3, dmnmx, tmp;
+    lapack_float d1, d2, d3, dmnmx, tmp;
 
     *info = 0;
     dir = -1;

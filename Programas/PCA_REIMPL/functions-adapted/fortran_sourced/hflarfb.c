@@ -1,5 +1,5 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflarfb.c
@@ -9,7 +9,7 @@
 /**
  * \brief Aplica un reflector de bloque H a una matriz C desde la izquierda/derecha
  * 
- * \details Implementación FP16 de la función LAPACK \c dlarfb. Aplica el reflector de bloque Householder:
+ * \details Implementación FP16 de la función LAPACK \c slarfb. Aplica el reflector de bloque Householder:
  *          \f[ H = I - V T V^T \f]
  *          Donde:
  *          - V: Matriz de vectores Householder
@@ -42,7 +42,7 @@
  * \param[in] ldwork Leading dimension de la matriz de trabajo
  *
  * \note 
- * - Implementación adaptada para precisión media (_Float16)
+ * - Implementación adaptada para precisión media (lapack_float)
  * - Maneja 8 combinaciones principales de parámetros (side x trans x direct x storev)
  * - Las rutinas hfcopy/hftrmm/hfgemm deben estar correctamente implementadas
  *
@@ -62,12 +62,13 @@
  */
 
 void hflarfb(char side, char trans, char direct, char storev, int m, int n, int k,
-            _Float16 *v, int ldv, _Float16 *t, int ldt, _Float16 *c, int ldc, _Float16 *work, int ldwork) {
+            lapack_float *v, int ldv, lapack_float *t, int ldt, lapack_float *c, int ldc, lapack_float *work, int ldwork) {
 
     if (m <= 0 || n <= 0) return;
 
     char transt = lsame_reimpl(trans, 'N') ? 'T' : 'N';
     int i, j;
+    const lapack_float ONE = (lapack_float) 1.0;
 
     if (lsame_reimpl(storev, 'C')) {
         if (lsame_reimpl(direct, 'F')) {
@@ -81,31 +82,31 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V1
-                hftrmm('R', 'L', 'N', 'U', n, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'L', 'N', 'U', n, k, ONE, v, ldv, work, ldwork);
                 
                 if (m > k) {
                     // W += C2 * V2
-                    hfgemm('T', 'N', n, k, m - k, 1.0F16,
+                    hfgemm('T', 'N', n, k, m - k, ONE,
                           &c[k], ldc,
                           &v[k], ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T or W * T^T
 
-                hftrmm('R', 'U', transt, 'N', n, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'U', transt, 'N', n, k, ONE, t, ldt, work, ldwork);
 
                 if(m > k) {
                     // C2 -= V2^T * W
-                    hfgemm('N', 'T', m - k, n, k, -1.0F16,
+                    hfgemm('N', 'T', m - k, n, k, -ONE,
                           &v[k], ldv,
                           work, ldwork,
-                          1.0F16, &c[k], ldc);
+                          ONE, &c[k], ldc);
                 }
 
                 // W := W * V1^T
 
-                hftrmm('R', 'L', 'T', 'U', n, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'L', 'T', 'U', n, k, ONE, v, ldv, work, ldwork);
 
                 // C1 = C1 - W**T
 
@@ -125,31 +126,31 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
 
                 // W := W * V1
 
-                hftrmm('R', 'L', 'N', 'U', m, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'L', 'N', 'U', m, k, ONE, v, ldv, work, ldwork);
 
                 if(n > k) {
                     // W += C2 * V2
-                    hfgemm('N', 'N', m, k, n - k, 1.0F16,
+                    hfgemm('N', 'N', m, k, n - k, ONE,
                         &c[k*ldc], ldc,
                         &v[k], ldv,
-                        1.0F16, work, ldwork);
+                        ONE, work, ldwork);
                 }
 
                 // W := W * T or W * T^T
 
-                hftrmm('R', 'U', trans, 'N', m, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'U', trans, 'N', m, k, ONE, t, ldt, work, ldwork);
 
                 if(n > k) {
                     // C2 -= W * V2^T
-                    hfgemm('N', 'T', m, n - k, k, -1.0F16,
+                    hfgemm('N', 'T', m, n - k, k, -ONE,
                         work, ldwork,
                         &v[k], ldv,
-                        1.0F16, &c[k*ldc], ldc);
+                        ONE, &c[k*ldc], ldc);
                 }
 
                 // W := W * V1^T
 
-                hftrmm('R', 'L', 'T', 'U', m, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'L', 'T', 'U', m, k, ONE, v, ldv, work, ldwork);
 
                 // C1 -= W
 
@@ -174,29 +175,29 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V2
-                hftrmm('R', 'U', 'N', 'U', n, k, 1.0F16, &v[m - k], ldv, work, ldwork);
+                hftrmm('R', 'U', 'N', 'U', n, k, ONE, &v[m - k], ldv, work, ldwork);
                 
                 if (m > k) {
                     // W += C1^T * V1
-                    hfgemm('T', 'N', n, k, m - k, 1.0F16,
+                    hfgemm('T', 'N', n, k, m - k, ONE,
                           c, ldc,
                           v, ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T^T or W * T
-                hftrmm('R', 'L', transt, 'N', n, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'L', transt, 'N', n, k, ONE, t, ldt, work, ldwork);
                 
                 if (m > k) {
                     // C1 -= V1 * W^T
-                    hfgemm('N', 'T', m - k, n, k, -1.0F16,
+                    hfgemm('N', 'T', m - k, n, k, -ONE,
                           v, ldv,
                           work, ldwork,
-                          1.0F16, c, ldc);
+                          ONE, c, ldc);
                 }
                 
                 // W := W * V2^T
-                hftrmm('R', 'U', 'T', 'U', n, k, 1.0F16, &v[m - k], ldv, work, ldwork);
+                hftrmm('R', 'U', 'T', 'U', n, k, ONE, &v[m - k], ldv, work, ldwork);
                 
                 // C2 -= W^T
                 for (j = 0; j < k; j++) {
@@ -214,29 +215,29 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V2
-                hftrmm('R', 'U', 'N', 'U', m, k, 1.0F16, &v[n - k], ldv, work, ldwork);
+                hftrmm('R', 'U', 'N', 'U', m, k, ONE, &v[n - k], ldv, work, ldwork);
                 
                 if (n > k) {
                     // W += C1 * V1
-                    hfgemm('N', 'N', m, k, n - k, 1.0F16,
+                    hfgemm('N', 'N', m, k, n - k, ONE,
                           c, ldc,
                           v, ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T or W * T^T
-                hftrmm('R', 'L', trans, 'N', m, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'L', trans, 'N', m, k, ONE, t, ldt, work, ldwork);
                 
                 if (n > k) {
                     // C1 -= W * V1^T
-                    hfgemm('N', 'T', m, n - k, k, -1.0F16,
+                    hfgemm('N', 'T', m, n - k, k, -ONE,
                           work, ldwork,
                           v, ldv,
-                          1.0F16, c, ldc);
+                          ONE, c, ldc);
                 }
                 
                 // W := W * V2^T
-                hftrmm('R', 'U', 'T', 'U', m, k, 1.0F16, &v[n - k], ldv, work, ldwork);
+                hftrmm('R', 'U', 'T', 'U', m, k, ONE, &v[n - k], ldv, work, ldwork);
                 
                 // C2 -= W
                 for (j = 0; j < k; j++) {
@@ -260,29 +261,29 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V1^T
-                hftrmm('R', 'U', 'T', 'U', n, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'U', 'T', 'U', n, k, ONE, v, ldv, work, ldwork);
                 
                 if (m > k) {
                     // W += C2^T * V2^T
-                    hfgemm('T', 'T', n, k, m - k, 1.0F16,
+                    hfgemm('T', 'T', n, k, m - k, ONE,
                           &c[k], ldc,
                           &v[k*ldv], ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T^T or W * T
-                hftrmm('R', 'U', transt, 'N', n, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'U', transt, 'N', n, k, ONE, t, ldt, work, ldwork);
                 
                 if (m > k) {
                     // C2 -= V2^T * W^T
-                    hfgemm('T', 'T', m - k, n, k, -1.0F16,
+                    hfgemm('T', 'T', m - k, n, k, -ONE,
                           &v[k*ldv], ldv,
                           work, ldwork,
-                          1.0F16, &c[k], ldc);
+                          ONE, &c[k], ldc);
                 }
                 
                 // W := W * V1
-                hftrmm('R', 'U', 'N', 'U', n, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'U', 'N', 'U', n, k, ONE, v, ldv, work, ldwork);
                 
                 // C1 -= W^T
                 for (j = 0; j < k; j++) {
@@ -300,29 +301,29 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V1^T
-                hftrmm('R', 'U', 'T', 'U', m, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'U', 'T', 'U', m, k, ONE, v, ldv, work, ldwork);
                 
                 if (n > k) {
                     // W += C2 * V2^T
-                    hfgemm('N', 'T', m, k, n - k, 1.0F16,
+                    hfgemm('N', 'T', m, k, n - k, ONE,
                           &c[k*ldc], ldc,
                           &v[k*ldv], ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T or W * T^T
-                hftrmm('R', 'U', trans, 'N', m, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'U', trans, 'N', m, k, ONE, t, ldt, work, ldwork);
                 
                 if (n > k) {
                     // C2 -= W * V2
-                    hfgemm('N', 'N', m, n - k, k, -1.0F16,
+                    hfgemm('N', 'N', m, n - k, k, -ONE,
                           work, ldwork,
                           &v[k*ldv], ldv,
-                          1.0F16, &c[k*ldc], ldc);
+                          ONE, &c[k*ldc], ldc);
                 }
                 
                 // W := W * V1
-                hftrmm('R', 'U', 'N', 'U', m, k, 1.0F16, v, ldv, work, ldwork);
+                hftrmm('R', 'U', 'N', 'U', m, k, ONE, v, ldv, work, ldwork);
                 
                 // C1 -= W
                 for (j = 0; j < k; j++) {
@@ -344,29 +345,29 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V2^T
-                hftrmm('R', 'L', 'T', 'U', n, k, 1.0F16, &v[(m - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'L', 'T', 'U', n, k, ONE, &v[(m - k)*ldv], ldv, work, ldwork);
                 
                 if (m > k) {
                     // W += C1^T * V1^T
-                    hfgemm('T', 'T', n, k, m - k, 1.0F16,
+                    hfgemm('T', 'T', n, k, m - k, ONE,
                           c, ldc,
                           v, ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T^T or W * T
-                hftrmm('R', 'L', transt, 'N', n, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'L', transt, 'N', n, k, ONE, t, ldt, work, ldwork);
                 
                 if (m > k) {
                     // C1 -= V1^T * W^T
-                    hfgemm('T', 'T', m - k, n, k, -1.0F16,
+                    hfgemm('T', 'T', m - k, n, k, -ONE,
                           v, ldv,
                           work, ldwork,
-                          1.0F16, c, ldc);
+                          ONE, c, ldc);
                 }
                 
                 // W := W * V2
-                hftrmm('R', 'L', 'N', 'U', n, k, 1.0F16, &v[(m - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'L', 'N', 'U', n, k, ONE, &v[(m - k)*ldv], ldv, work, ldwork);
                 
                 // C2 -= W^T
                 for (j = 0; j < k; j++) {
@@ -384,29 +385,29 @@ void hflarfb(char side, char trans, char direct, char storev, int m, int n, int 
                 }
                 
                 // W := W * V2^T
-                hftrmm('R', 'L', 'T', 'U', m, k, 1.0F16, &v[(n - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'L', 'T', 'U', m, k, ONE, &v[(n - k)*ldv], ldv, work, ldwork);
                 
                 if (n > k) {
                     // W += C1 * V1^T
-                    hfgemm('N', 'T', m, k, n - k, 1.0F16,
+                    hfgemm('N', 'T', m, k, n - k, ONE,
                           c, ldc,
                           v, ldv,
-                          1.0F16, work, ldwork);
+                          ONE, work, ldwork);
                 }
                 
                 // W := W * T or W * T^T
-                hftrmm('R', 'L', trans, 'N', m, k, 1.0F16, t, ldt, work, ldwork);
+                hftrmm('R', 'L', trans, 'N', m, k, ONE, t, ldt, work, ldwork);
                 
                 if (n > k) {
                     // C1 -= W * V1
-                    hfgemm('N', 'N', m, n - k, k, -1.0F16,
+                    hfgemm('N', 'N', m, n - k, k, -ONE,
                           work, ldwork,
                           v, ldv,
-                          1.0F16, c, ldc);
+                          ONE, c, ldc);
                 }
                 
                 // W := W * V2
-                hftrmm('R', 'L', 'N', 'U', m, k, 1.0F16, &v[(n - k)*ldv], ldv, work, ldwork);
+                hftrmm('R', 'L', 'N', 'U', m, k, ONE, &v[(n - k)*ldv], ldv, work, ldwork);
                 
                 // C2 -= W
                 for (j = 0; j < k; j++) {

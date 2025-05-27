@@ -1,8 +1,8 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
- * \file ilaenv_reimpl_Float16.c
+ * \file ilaenv_reimpl_half_precision.c
  * \brief Implementación de ilaenv en lenguaje C para obtener parámetros de entorno LAPACK
  */
 
@@ -51,11 +51,11 @@
  * 3. Detección de precisión (S/D/C/Z) y tipo de rutina
  * 
  * 
- * \see ieeeck_reimpl Para verificaciones IEEE 754
+ * \see ieeeck_reimpl_half_precision Para verificaciones IEEE 754
  * \see iparmq_reimpl Para parámetros 12-17
  */
 
-int ilaenv_reimpl_Float16(int ispec, char* name, char* opts, int n1, int n2, int n3, int n4) {
+int ilaenv_reimpl_half_precision(int ispec, char* name, char* opts, int n1, int n2, int n3, int n4) {
     int ilaenv = 0;
     char subnam[17]; // 16 caracteres + terminador nulo
     char c1, c2[3], c3[4], c4[3];
@@ -397,17 +397,17 @@ int ilaenv_reimpl_Float16(int ispec, char* name, char* opts, int n1, int n2, int
             }
         case 10: // Verificación IEEE NaN
             {
-                _Float16 zero = 0.0F16;
-                _Float16 one = 1.0F16;
-                ilaenv = ieeeck_reimpl_Float16(1, &zero, &one);
+                lapack_float zero = (lapack_float) 0.0;
+                lapack_float one = (lapack_float) 1.0;
+                ilaenv = ieeeck_reimpl_half_precision(1, &zero, &one);
             }
             break;
 
         case 11: // Verificación de infinito
             {
-                _Float16 zero = 0.0F16;
-                _Float16 one = 1.0F16;
-                ilaenv = ieeeck_reimpl_Float16(0, &zero, &one);
+                lapack_float zero = (lapack_float) 0.0;
+                lapack_float one = (lapack_float) 1.0;
+                ilaenv = ieeeck_reimpl_half_precision(0, &zero, &one);
             }
             break;
         

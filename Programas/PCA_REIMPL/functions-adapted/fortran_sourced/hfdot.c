@@ -1,22 +1,22 @@
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
- * \brief Calcula el producto punto (dot product) de dos vectores de tipo _Float16.
+ * \brief Calcula el producto punto (dot product) de dos vectores de tipo lapack_float.
  * 
  * \param[in] n Número de elementos en los vectores.
  * \param[in] sx Array del primer vector (0-based).
  * \param[in] incx Incremento de índice para el vector SX.
  * \param[in] sy Array del segundo vector (0-based).
  * \param[in] incy Incremento de índice para el vector SY.
- * \return _Float16 Resultado del producto punto acumulado.
+ * \return lapack_float Resultado del producto punto acumulado.
  * 
  * Esta función calcula el producto punto entre los vectores SX y SY. Optimiza
  * el cálculo para incrementos unitarios procesando bloques de 5 elementos,
  * y maneja incrementos arbitrarios ajustando los índices según los incrementos
- * especificados. Si n <= 0, retorna 0.0F16.
+ * especificados. Si n <= 0, retorna 0.0.
  */
-_Float16 hfdot(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
-    _Float16 stemp = 0.0F16;
+lapack_float hfdot(int n, lapack_float *sx, int incx, lapack_float *sy, int incy) {
+    lapack_float stemp = (lapack_float)0.0;
     int i, ix, iy, m;
 
     if (n <= 0) {

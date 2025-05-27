@@ -1,14 +1,14 @@
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflaset.c
- * \brief Inicializa una matriz en _Float16 con valores específicos
+ * \brief Inicializa una matriz en lapack_float con valores específicos
  */
 
 /**
- * \brief Configura una matriz con valores constantes en _Float16 según el triángulo especificado
+ * \brief Configura una matriz con valores constantes en lapack_float según el triángulo especificado
  * 
- * \details Versión _Float16 de LAPACK's SLASET. Inicializa:
+ * \details Versión lapack_float de LAPACK's SLASET. Inicializa:
  *          - Elementos fuera de la diagonal: alpha
  *          - Elementos diagonales: beta
  *          según la región especificada por uplo.
@@ -19,9 +19,9 @@
  *                 - Otro: Toda la matriz
  * \param[in] m     Número de filas de la matriz (m >= 0)
  * \param[in] n     Número de columnas de la matriz (n >= 0)
- * \param[in] alpha Valor _Float16 para elementos no diagonales
- * \param[in] beta  Valor _Float16 para elementos diagonales
- * \param[in,out] a Matriz _Float16 column-major (lda >= max(1,m))
+ * \param[in] alpha Valor lapack_float para elementos no diagonales
+ * \param[in] beta  Valor lapack_float para elementos diagonales
+ * \param[in,out] a Matriz lapack_float column-major (lda >= max(1,m))
  * \param[in] lda   Leading dimension de la matriz
  * 
  * \note
@@ -38,7 +38,7 @@
  * 
  * \example
  * // Matriz 3x3 con diagonal 1 y triángulo superior 0.5
- * _Float16 A[9];
+ * lapack_float A[9];
  * hflaset('U', 3, 3, 0.5F16, 1.0F16, A, 3);
  * // A = [[1, 0.5, 0.5],
  * //      [0,   1, 0.5],
@@ -53,7 +53,7 @@
  * \see lsame_reimpl Para comparación case-insensitive de caracteres
  */
 
-void hflaset(char uplo, int m, int n, _Float16 alpha, _Float16 beta, _Float16* a, int lda) {
+void hflaset(char uplo, int m, int n, lapack_float alpha, lapack_float beta, lapack_float* a, int lda) {
     int i, j;
 
     if (lsame_reimpl(uplo, 'U')) {

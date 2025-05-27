@@ -1,45 +1,47 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hforgqr.c
- * \brief Implementación de generación de matriz Q ortogonal en _Float16
+ * \brief Implementación de generación de matriz Q ortogonal en lapack_float
  */
 
 /**
- * \brief Genera la matriz Q completa de una factorización QR en _Float16
+ * \brief Genera la matriz Q completa de una factorización QR en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's SORGQR. Genera las primeras n columnas de Q
+ * \details Versión lapack_float de LAPACK's SORGQR. Genera las primeras n columnas de Q
  *          a partir de una factorización QR computada por hgeqrf.
  * 
- * \param[in] m     Filas de la matriz A (_Float16[m][lda])
+ * \param[in] m     Filas de la matriz A (lapack_float[m][lda])
  * \param[in] n     Columnas de Q a generar (0 <= n <= m)
  * \param[in] k     Número de reflectores elementales de Householder (0 <= k <= n)
- * \param[in,out] a Matriz _Float16 column-major (lda >= m)
+ * \param[in,out] a Matriz lapack_float column-major (lda >= m)
  * \param[in] lda   Leading dimension de A 
- * \param[in] tau   Factores escalares _Float16 de los reflectores
- * \param[out] work Workspace _Float16 (tamaño >= max(1, lwork))
+ * \param[in] tau   Factores escalares lapack_float de los reflectores
+ * \param[out] work Workspace lapack_float (tamaño >= max(1, lwork))
  * \param[in] lwork Dimensión del workspace (usar -1 para query)
  * \param[out] info Código de retorno (0 = éxito)
  * 
  * \note
- * - Implementación específica para _Float16 (IEEE 754-2008 binary16)
+ * - Implementación específica para lapack_float (IEEE 754-2008 binary16)
  * - Diferencias clave vs __fp16:
- *   + _Float16 tiene garantizada la aritmética IEEE
+ *   + lapack_float tiene garantizada la aritmética IEEE
  *   + __fp16 es solo tipo almacenamiento en algunas arquitecturas
  * 
  * \warning
- * - Requiere soporte hardware/emulación de operaciones _Float16
+ * - Requiere soporte hardware/emulación de operaciones lapack_float
  * - No compatible con tipos half/floats16 de otros estándares
  */
 
-void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 *work, int lwork, int *info) {
+void hforgqr(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, lapack_float *work, int lwork, int *info) {
     int nb, lwkopt, lquery;
     int nbmin, nx, iws, ldwork;
     int ki, kk, i, ib, j, l, iinfo;
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
 
     *info = 0;
-    nb = ilaenv_reimpl_Float16(1, "SORGQR", " ", m, n, k, -1);
+    nb = ilaenv_reimpl_half_precision(1, "SORGQR", " ", m, n, k, -1);
     lwkopt = MAX(1, n)*nb;
     work[0] = hfroundup_lwork(lwkopt);
     lquery = (lwork == -1);
@@ -64,7 +66,7 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
     }
 
     if (n <= 0) {
-        work[0] = 1.0F16;
+        work[0] = ONE;
         return;
     }
 
@@ -72,13 +74,13 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
     nx = 0;
     iws = n;
     if (nb > 1 && nb < k) {
-        nx = MAX(0, ilaenv_reimpl_Float16(3, "SORGQR", " ", m, n, k, -1));
+        nx = MAX(0, ilaenv_reimpl_half_precision(3, "SORGQR", " ", m, n, k, -1));
         if (nx < k) {
             ldwork = n;
             iws = ldwork * nb;
             if (lwork < iws) {
                 nb = lwork / ldwork;
-                nbmin = MAX(2, ilaenv_reimpl_Float16(2, "SORGQR", " ", m, n, k, -1));
+                nbmin = MAX(2, ilaenv_reimpl_half_precision(2, "SORGQR", " ", m, n, k, -1));
             }
         }
     }
@@ -89,7 +91,7 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
 
         for (j = kk; j < n; j++) {
             for (i = 0; i < kk; i++) {
-                a[i + j * lda] = 0.0F16;
+                a[i + j * lda] = ZERO;
             }
         }
     } else {
@@ -115,7 +117,7 @@ void hforgqr(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
 
             for (j = i; j < i + ib - 1; j++) {
                 for (l = 0; l < i - 1; l++) {
-                    a[j + l * lda] = 0.0F16;
+                    a[j + l * lda] = ZERO;
                 }
             }
         }

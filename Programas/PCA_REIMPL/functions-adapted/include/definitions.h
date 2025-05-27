@@ -17,7 +17,7 @@
 
 
 /* -------------------------------------------------------------------------- */
-/* Constantes IEEE 754 para _Float16 (binary16/half-precision) */
+/* Constantes IEEE 754 para _Float16 y __fp16 (binary16/half-precision) */
 /* -------------------------------------------------------------------------- */
 /**
  * \defgroup IEEE754_FP16 Constantes IEEE 754-2008 para formato binary16 (half-precision)
@@ -50,6 +50,40 @@
 
 /** \} */ // Fin de grupo IEEE754_FP16
 
+
+/* -------------------------------------------------------------------------- */
+/* Constantes IEEE 754 para bfloat16 (brain floating point) */
+/* -------------------------------------------------------------------------- */
+/**
+ * \defgroup IEEE754_BF16 Constantes IEEE 754-2019 para formato bfloat16 (16-bit brain floating point)
+ * \{
+ */
+
+/** \brief Épsilon de la máquina: diferencia entre 1.0 y el siguiente valor representable (2^-7) */
+#define BF16_EPSILON  __BFLT16_EPSILON__          // 7.8125e-03F16 (2^-7) 
+
+/** \brief Mínimo valor normalizado positivo (2^-126) */
+#define BF16_MIN         __BFLT16_MIN__           // 1.17549435e-38F16 (2^-126)
+
+/** \brief Mínimo valor subnormal positivo (2^-133)  */
+#define BF16_TRUE_MIN    __BFLT16_DENORM_MIN__    // 9.1835496e-41F16 (2^-133)
+
+/** \brief Máximo valor representable finito (3.3895314e+38) */
+#define BF16_MAX         __BFLT16_MAX__           // 3.3895314e+38F16 (2^127*(2-2^-7))
+
+/** \brief Base del sistema de numeración (binario) */
+#define BF16_RADIX       2            
+
+/** \brief Número de dígitos significativos (precisión de 8 bits) */
+#define BF16_MANT_DIG    __BFLT16_MANT_DIG__      // 8 bits (7 almacenados + 1 implícito)
+
+/** \brief Exponente mínimo normalizado (base 2) */
+#define BF16_MIN_EXP    (-126)                    // Hardcodeado según IEEE 754
+
+/** \brief Exponente máximo normalizado (base 2) */
+#define BF16_MAX_EXP     127                      // Hardcodeado según IEEE 754
+
+/** \} */ // Fin de grupo IEEE754_BF16
 
 /* -------------------------------------------------------------------------- */
 /* Configuración y macros globales */
@@ -102,29 +136,54 @@
 typedef int32_t lapack_int;
 typedef lapack_int lapack_logical;
 
+#if defined(USE_FP16) && defined(USE_BF16)
+  #error "Sólo se puede definir una de las macros: USE_FP16 o USE_BF16."
+#endif
 
-/* Opcional: control de características */
-#define ENABLE_NAN_CHECK 1
+
+#ifdef USE_FP16
+  typedef __fp16 lapack_float;
+#elif defined(USE_BF16)
+  typedef __bf16 lapack_float;
+#else
+  // Si ninguna de las opciones se define, usamos _Float16 por defecto
+  typedef _Float16 lapack_float;
+#endif
+
 
 /* -------------------------------------------------------------------------- */
 /* Auxiliar functions */
 /* -------------------------------------------------------------------------- */
 
 /**
- * \brief Calcula el valor absoluto de un número _Float16 a nivel de bits
+ * \brief Calcula el valor absoluto de un número lapack_float mediante manipulación binaria.
  * 
- * Esta función evita problemas de precisión en operaciones con coma flotante manipulando
- * directamente la representación binaria del número según el estándar IEEE 754.
+ * Esta función obtiene el valor absoluto de `x` borrando directamente el bit de signo (bit 15),
+ * evitando operaciones aritméticas y garantizando precisión bit a bit según IEEE 754.
  * 
- * \param x Número de tipo _Float16 del que se obtendrá el valor absoluto
- * \return _Float16 Valor absoluto del parámetro sin signo
+ * \param[in] x Número lapack_float de entrada (puede ser negativo, positivo, cero, NaN o infinito).
+ * \return lapack_float Valor absoluto de `x` (sin signo). Conserva NaN/infinitos pero con bit de signo en 0.
  * 
- * \note La función opera directamente sobre los bits del número:
- *       - Utiliza memcpy para evitar problemas de aliasing estricto
- *       - Elimina el bit de signo (bit 15, el más significativo en 16 bits)
- *       - No modifica los bits de mantisa o exponente
+ * \note **Detalles de implementación**:
+ * - Usa `memcpy` para copiar bits entre tipos, evitando violaciones de aliasing estricto (C11 Standard §6.5/7).
+ * - Máscara aplicada: `0x7FFF` (borra el bit 15, preserva exponente y mantisa).
+ * - Endianness-agnóstica: Funciona en arquitecturas little-endian y big-endian.
+ * 
+ * \warning La posición del bit de signo (15) asume compliance con IEEE 754-2008 para lapack_float (que puede ser _Float16, __fp16 o __bf16).
+ *          No usar en formatos no estándar donde el signo esté en otra posición.
+ * 
+ * \example
+ * \code
+ * lapack_float a = (lapack_float) -3.14;   // Valor negativo
+ * lapack_float b = ABS_half_precision(a); // b = 3.14 (bit de signo en 0)
+ * \endcode
+ * 
+ * \test Casos verificados:
+ * - Cero negativo (`-0.0f` → `0.0f`).
+ * - NaN de entrada → NaN sin signo (payload preservado).
+ * - Infinito negativo (`-Inf` → `Inf`).
  */
-static inline _Float16 ABS_Float16(_Float16 x) {
+static inline lapack_float ABS_half_precision(lapack_float x) {
     uint16_t bits;
     memcpy(&bits, &x, sizeof(bits));
     bits &= 0x7FFF; // Borra el bit de signo (bit 15)
@@ -155,18 +214,18 @@ static inline _Float16 ABS_Float16(_Float16 x) {
  * 
  * \see [IEEE 754-2008 Standard](https://ieeexplore.ieee.org/document/4610935)
  */
-static inline _Float16 custom_sqrtf16(_Float16 x) {
+static inline _Float16 custom_sqrtf_half_precision(_Float16 x) {
     // Verifica NaN usando el estándar C (isnan no soporta _Float16 directamente)
     if (LAPACK_HFISNAN(x)) return x;         // NaN → NaN
-    if (x < 0.0F16) return NAN;   // sqrt(negativo) = NaN
-    if (x == 0.0F16) return 0.0F16;
-    if (x == INFINITY) return INFINITY; // sqrt(Inf) = Inf
+    if (x < (lapack_float)0.0) return (lapack_float)NAN;   // sqrt(negativo) = NaN
+    if (x == (lapack_float)0.0) return (lapack_float)0.0;
+    if (x == (lapack_float)INFINITY) return (lapack_float)INFINITY; // sqrt(Inf) = Inf
 
     // Fallback portable para todas las arquitecturas
-    return (_Float16)sqrtf((float)x);
+    return (lapack_float)sqrtf((float)x);
 }
 
-static inline void hfaxpy(int n, _Float16 alpha, _Float16 *x, int incx, _Float16 *y, int incy) {
+static inline void hfaxpy(int n, lapack_float alpha, lapack_float *x, int incx, lapack_float *y, int incy) {
     for (int i = 0; i < n; i++) {
         y[i * incy] += alpha * x[i * incx];
     }

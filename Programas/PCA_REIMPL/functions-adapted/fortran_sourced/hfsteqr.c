@@ -1,26 +1,20 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfswap_columns(int n, _Float16 *z, int ldz, int col1, int col2) {
-    for (int row = 0; row < n; row++) {
-        // Acceso row-major: fila "row", columnas "col1" y "col2"
-        _Float16 temp = z[row * ldz + col1];
-        z[row * ldz + col1] = z[row * ldz + col2];
-        z[row * ldz + col2] = temp;
-    }
-}
-
-
-void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int ldz, _Float16 *work, int *info) {
+void hfsteqr(const char compz, int n, lapack_float *d, lapack_float *e, lapack_float *z, int ldz, lapack_float *work, int *info) {
     // Declaracion de constantes
     int MAXIT = 30;
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
+    const lapack_float TWO = (lapack_float) 2.0;
+    const lapack_float THREE = (lapack_float) 3.0;
 
     // Declarar todas las variables locales al principio
     int icompz, jtot = 0, iscale, i, k;
     int l, l1 = 1, lm1, lend, lendm1, lendp1, lsv, lendsv;
     int m, mm, mm1, nm1, nmaxit;
-    _Float16 anorm, eps, eps2, safmin, safmax, ssfmax, ssfmin, tst, rt1, rt2;
-    _Float16 p = 0.0F16, g = 0.0F16, r = 0.0F16, c = 0.0F16, s = 0.0F16, f = 0.0F16, b = 0.0F16;
+    lapack_float anorm, eps, eps2, safmin, safmax, ssfmax, ssfmin, tst, rt1, rt2;
+    lapack_float p = ZERO, g = ZERO, r = ZERO, c = ZERO, s = ZERO, f = ZERO, b = ZERO;
 
     // Check COMPZ
     if (lsame_reimpl(compz, 'N')) icompz = 0;
@@ -40,20 +34,20 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
     // Quick return for n=0 or n=1
     if (n == 0) return;
     if (n == 1) {
-        if (icompz == 2) z[0] = 1.0F16;
+        if (icompz == 2) z[0] = ONE;
         return;
     }
 
     // Machine constants
-    eps = hflamch_Float16('E');
+    eps = hflamch_half_precision('E');
     eps2 = eps * eps;
-    safmin = hflamch_Float16('S');
-    safmax = 1.0F16 / safmin;
-    ssfmax = custom_sqrtf16(safmax) / 3.0F16;
-    ssfmin = custom_sqrtf16(safmin) / eps2;
+    safmin = hflamch_half_precision('S');
+    safmax = ONE / safmin;
+    ssfmax = custom_sqrtf_half_precision(safmax) / THREE;
+    ssfmin = custom_sqrtf_half_precision(safmin) / eps2;
 
     // Initialize Z to identity if needed
-    if (icompz == 2) hflaset('F', n, n, 0.0F16, 1.0F16, z, ldz); // 'F' for full matrix
+    if (icompz == 2) hflaset('F', n, n, ZERO, ONE, z, ldz); // 'F' for full matrix
 
     nmaxit = n * MAXIT;
     jtot = 0;
@@ -88,7 +82,6 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                             d[i - 1] = p;
                             
                             hfswap(n, &z[(i - 1) * ldz], 1, &z[(k - 1) * ldz], 1); // Column-major
-                            //hfswap(n, &z[i - 1], n, &z[k - 1], n); // Row-major
 
                         }
                     }
@@ -96,15 +89,15 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                 return;
                 // END 160
             } 
-            if(l1 > 1) e[l1-2] = 0.0F16; // Ajustar índices
+            if(l1 > 1) e[l1-2] = ZERO; // Ajustar índices
             if(l1 <= nm1){
                 for(m = l1; m <= nm1; m++){
-                    tst = ABS_Float16(e[m-1]);
+                    tst = ABS_half_precision(e[m-1]);
 
-                    if(tst == 0.0F16) break;
+                    if(tst == ZERO) break;
 
-                    if(tst <= custom_sqrtf16(ABS_Float16(d[m-1])) * custom_sqrtf16(ABS_Float16(d[m])) * eps) {
-                        e[m-1] = 0.0F16;
+                    if(tst <= custom_sqrtf_half_precision(ABS_half_precision(d[m-1])) * custom_sqrtf_half_precision(ABS_half_precision(d[m])) * eps) {
+                        e[m-1] = ZERO;
                         break;
                     }
                 }
@@ -124,7 +117,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
             
             anorm = hflanst('M', lend - l + 1, &d[l-1], &e[l-1]);
             iscale = 0;
-            if(anorm == 0.0F16) continue;
+            if(anorm == ZERO) continue;
             break;
 
         } //////// FIN WHILE 1
@@ -141,7 +134,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
 
         // Choose between QL and QR iteration
 
-        if(ABS_Float16(d[lend-1]) < ABS_Float16(d[l-1])) {
+        if(ABS_half_precision(d[lend-1]) < ABS_half_precision(d[l-1])) {
             lend = lsv;
             l = lendsv;
         }
@@ -153,8 +146,8 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                 if(l != lend){ //  Look for small subdiagonal element.
                     lendm1 = lend - 1;
                     for(m = l; m <= lendm1; m++){
-                        tst = ABS_Float16(e[m-1]) * ABS_Float16(e[m-1]);
-                        if(tst <= eps2 * ABS_Float16(d[m-1]) * ABS_Float16(d[m]) + safmin) break;
+                        tst = ABS_half_precision(e[m-1]) * ABS_half_precision(e[m-1]);
+                        if(tst <= eps2 * ABS_half_precision(d[m-1]) * ABS_half_precision(d[m]) + safmin) break;
                     }
                     if(m > lendm1) m = lend;
 
@@ -162,7 +155,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                     m = lend;
                 }
 
-                if(m < lend) e[m-1] = 0.0F16;
+                if(m < lend) e[m-1] = ZERO;
                 p = d[l-1];
                 if(m == l){ // Eigenvalue found
                     // 80
@@ -184,7 +177,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                     }
                     d[l-1] = rt1;
                     d[l] = rt2;
-                    e[l-1] = 0.0F16;
+                    e[l-1] = ZERO;
                     l += 2;
                     if(l <= lend) continue;
                     break;
@@ -195,14 +188,14 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
 
                 // Form shift
 
-                g = (d[l] - p) / (2.0F16 * e[l-1]);
-                r = hflapy2(g, 1.0F16);
-                //g = d[m-1] - p + (e[l-1] / (g + (g > 0.0F16 ? r : -r)));
-                g = d[m-1] - p + (e[l-1] / (g + (_Float16)copysignf((float)r, (float)g)));
+                g = (d[l] - p) / (TWO * e[l-1]);
+                r = hflapy2(g, ONE);
+                //g = d[m-1] - p + (e[l-1] / (g + (g > ZERO ? r : -r)));
+                g = d[m-1] - p + (e[l-1] / (g + (lapack_float)copysignf((float)r, (float)g)));
 
-                s = 1.0F16;
-                c = 1.0F16;
-                p = 0.0F16;
+                s = ONE;
+                c = ONE;
+                p = ZERO;
 
                 // Inner loop
 
@@ -215,7 +208,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                         e[i] = r;
                     }
                     g = d[i] - p;
-                    r = (d[i - 1] - g) * s + 2.0F16 * c * b;
+                    r = (d[i - 1] - g) * s + TWO * c * b;
                     p = s * r;
                     d[i] = g + p;
                     g = c * r - b;
@@ -249,15 +242,15 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                 if(l <= lend){ // Look for small superdiagonal element.
                     lendp1 = lend + 1;
                     for(m = l; m >= lendp1; m--){
-                        tst = ABS_Float16(e[m-2]) * ABS_Float16(e[m-2]);
-                        if(tst<= (eps2 * ABS_Float16(d[m-1]) * ABS_Float16(d[m-2]) + safmin)) break;
+                        tst = ABS_half_precision(e[m-2]) * ABS_half_precision(e[m-2]);
+                        if(tst<= (eps2 * ABS_half_precision(d[m-1]) * ABS_half_precision(d[m-2]) + safmin)) break;
                     }
                     if(m < lendp1) m = lend;
                 } else{
                     m = lend;
                 }
                 // 110
-                if(m < lend) e[m-2] = 0.0F16;
+                if(m < lend) e[m-2] = ZERO;
                 p = d[l-1];
 
                 if(m == l){ // Eigenvalue found
@@ -279,7 +272,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
 
                     d[l - 2] = rt1;
                     d[l - 1] = rt2;
-                    e[l - 2] = 0.0F16;
+                    e[l - 2] = ZERO;
                     l -= 2;
                     if(l >= lend) continue;
                     break;
@@ -290,13 +283,13 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
 
                 // Form shift
 
-                g = (d[l-2] - p) / (2.0F16 * e[l-2]);
-                r = hflapy2(g, 1.0F16);
-                g = d[m-1] - p + (e[l-2] / (g + (_Float16)copysignf((float)r, (float)g)));
+                g = (d[l-2] - p) / (TWO * e[l-2]);
+                r = hflapy2(g, ONE);
+                g = d[m-1] - p + (e[l-2] / (g + (lapack_float)copysignf((float)r, (float)g)));
 
-                s = 1.0F16;
-                c = 1.0F16;
-                p = 0.0F16;
+                s = ONE;
+                c = ONE;
+                p = ZERO;
 
                 // Inner loop
 
@@ -310,7 +303,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
                         e[i-2] = r;
                     }
                     g = d[i-1] - p;
-                    r = (d[i] - g) * s + 2.0F16 * c * b;
+                    r = (d[i] - g) * s + TWO * c * b;
                     p = s * r;
                     d[i-1] = g + p;
                     g = c * r - b;
@@ -353,7 +346,7 @@ void hfsteqr(const char compz, int n, _Float16 *d, _Float16 *e, _Float16 *z, int
     }while(1);
 
     for(i = 1; i <= n - 1; i++){
-        if(e[i-1] != 0.0F16){
+        if(e[i-1] != ZERO){
             info++;
         }
     }

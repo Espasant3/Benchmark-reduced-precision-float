@@ -31,11 +31,11 @@
 * Author: Intel Corporation
 *****************************************************************************/
 
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h"
 
 lapack_int LAPACKE_hfsyev_work( int matrix_layout, char jobz, char uplo,
-                               lapack_int n, _Float16* a, lapack_int lda, _Float16* w,
-                               _Float16* work, lapack_int lwork )
+                               lapack_int n, lapack_float* a, lapack_int lda, lapack_float* w,
+                               lapack_float* work, lapack_int lwork )
 {
     lapack_int info = 0;
     if( matrix_layout == LAPACK_COL_MAJOR ) {
@@ -46,7 +46,7 @@ lapack_int LAPACKE_hfsyev_work( int matrix_layout, char jobz, char uplo,
         }
     } else if( matrix_layout == LAPACK_ROW_MAJOR ) {
         lapack_int lda_t = MAX(1,n);
-        _Float16* a_t = NULL;
+        lapack_float* a_t = NULL;
         /* Check leading dimension(s) */
         if( lda < n ) {
             info = -6;
@@ -59,7 +59,7 @@ lapack_int LAPACKE_hfsyev_work( int matrix_layout, char jobz, char uplo,
             return (info < 0) ? (info - 1) : info;
         }
         /* Allocate memory for temporary array(s) */
-        a_t = (_Float16*)LAPACKE_malloc( sizeof(_Float16) * lda_t * MAX(1,n) );
+        a_t = (lapack_float*)LAPACKE_malloc( sizeof(lapack_float) * lda_t * MAX(1,n) );
         if( a_t == NULL ) {
             info = LAPACK_TRANSPOSE_MEMORY_ERROR;
             goto exit_level_0;

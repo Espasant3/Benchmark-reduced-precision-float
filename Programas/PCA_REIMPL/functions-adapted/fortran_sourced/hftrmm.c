@@ -1,16 +1,16 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 void hftrmm(const char side, const char uplo, const char transa, const char diag,
-           const int m, const int n, const _Float16 alpha, const _Float16 *a, const int lda,
-           _Float16 *b, const int ldb) {
+           const int m, const int n, const lapack_float alpha, const lapack_float *a, const int lda,
+           lapack_float *b, const int ldb) {
 
     lapack_logical lside, nounit, upper;
     int info, nrowa, i, j, k;
-    _Float16 temp;
+    lapack_float temp;
 
-    const _Float16 one = 1.0F16;
-    const _Float16 zero = 0.0F16;
+    const lapack_float ONE = (lapack_float)1.0;
+    const lapack_float ZERO = (lapack_float)0.0;
 
     // Determinar parámetros y validar entradas
     lside = lsame_reimpl(side, 'L');
@@ -49,10 +49,10 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
     if (m == 0 || n == 0) return;
 
     // Caso alpha = 0
-    if (alpha == zero) {
+    if (alpha == ZERO) {
         for (j = 0; j < n; ++j) {
             for (i = 0; i < m; ++i) {
-                b[i + j * ldb] = zero;
+                b[i + j * ldb] = ZERO;
             }
         }
         return;
@@ -65,7 +65,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
             if (upper) {
                 for (j = 0; j < n; ++j) {
                     for (k = 0; k < m; ++k) {
-                        if (b[k + j * ldb] != zero) {
+                        if (b[k + j * ldb] != ZERO) {
                             temp = alpha * b[k + j * ldb];
                             for (i = 0; i < k; ++i) {
                                 b[i + j * ldb] += temp * a[i + k * lda];
@@ -80,9 +80,9 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
             } else {
                 for (j = 0; j < n; ++j) {
                     for (k = m - 1; k >= 0; --k) {
-                        if (b[k + j * ldb] != zero) {
+                        if (b[k + j * ldb] != ZERO) {
                             temp = alpha * b[k + j * ldb];
-                            _Float16 temp_update = temp;
+                            lapack_float temp_update = temp;
                             if (nounit) {
                                 temp *= a[k + k * lda];
                             }
@@ -137,7 +137,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
                         b[i + j * ldb] *= temp;
                     }
                     for (k = 0; k < j; ++k) {
-                        if (a[k + j * lda] != zero) {
+                        if (a[k + j * lda] != ZERO) {
                             temp = alpha * a[k + j * lda];
                             for (i = 0; i < m; ++i) {
                                 b[i + j * ldb] += temp * b[i + k * ldb];
@@ -155,7 +155,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
                         b[i + j * ldb] *= temp;
                     }
                     for (k = j + 1; k < n; ++k) {
-                        if (a[k + j * lda] != zero) {
+                        if (a[k + j * lda] != ZERO) {
                             temp = alpha * a[k + j * lda];
                             for (i = 0; i < m; ++i) {
                                 b[i + j * ldb] += temp * b[i + k * ldb];
@@ -169,7 +169,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
             if (upper) {
                 for (k = 0; k < n; ++k) {
                     for (j = 0; j < k; ++j) {
-                        if (a[j + k * lda] != zero) {
+                        if (a[j + k * lda] != ZERO) {
                             temp = alpha * a[j + k * lda];
                             for (i = 0; i < m; ++i) {
                                 b[i + j * ldb] += temp * b[i + k * ldb];
@@ -180,7 +180,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
                     if (nounit) {
                         temp *= a[k + k * lda];
                     }
-                    if (temp != one) {
+                    if (temp != ONE) {
                         for (i = 0; i < m; ++i) {
                             b[i + k * ldb] *= temp;
                         }
@@ -189,7 +189,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
             } else {
                 for (k = n - 1; k >= 0; --k) {
                     for (j = k + 1; j < n; ++j) {
-                        if (a[j + k * lda] != zero) {
+                        if (a[j + k * lda] != ZERO) {
                             temp = alpha * a[j + k * lda];
                             for (i = 0; i < m; ++i) {
                                 b[i + j * ldb] += temp * b[i + k * ldb];
@@ -200,7 +200,7 @@ void hftrmm(const char side, const char uplo, const char transa, const char diag
                     if (nounit) {
                         temp *= a[k + k * lda];
                     }
-                    if (temp != one) {
+                    if (temp != ONE) {
                         for (i = 0; i < m; ++i) {
                             b[i + k * ldb] *= temp;
                         }

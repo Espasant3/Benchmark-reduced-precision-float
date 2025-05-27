@@ -1,11 +1,10 @@
 
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h" 
 
-
-//Opera todo en float y al final convierte a _Float16
-_Float16 hfnrm2(int n, _Float16 *x, int incx) { 
+//Opera todo en float y al final convierte a lapack_float
+lapack_float hfnrm2(int n, lapack_float *x, int incx) { 
     if (n <= 0) {
-        return 0.0F16;
+        return (lapack_float) 0.0;
     }
 
     const float tsml = powf(FP16_RADIX, ceilf((FP16_MIN_EXP - 1) * 0.5f));
@@ -59,5 +58,5 @@ _Float16 hfnrm2(int n, _Float16 *x, int incx) {
         sumsq = amed;
     }
 
-    return (_Float16)(scl * sqrtf(sumsq)); // Cast final a _Float16
+    return (lapack_float)(scl * sqrtf(sumsq)); // Cast final a lapack_float
 }

@@ -1,8 +1,8 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
- * \file ieeeck_reimpl_Float16.c
+ * \file ieeeck_reimpl_less_precision.c
  * \brief Implementación de la verificación de cumplimiento IEEE 754 en C
  */
 
@@ -37,8 +37,8 @@
  * 
  * \par Ejemplo de uso:
  * \code
- * _Float16 zero = 0.0F16, one = 1.0F16;
- * int ieee_ok = ieeeck_reimpl(1, &zero, &one);  // Verificación completa
+ * lapack_float zero = 0.0F16, one = 1.0F16;
+ * int ieee_ok = ieeeck_reimpl_half_precision(1, &zero, &one);  // Verificación completa
  * \endcode
  * 
  * \par Pruebas realizadas:
@@ -54,11 +54,11 @@
  * \see ilaenv_reimpl Para selección de algoritmos dependientes de IEEE
  */
 
-int ieeeck_reimpl_Float16(int ispec, _Float16 *zero, _Float16 *one) {
-    volatile _Float16 zero_val = *zero;  // Evita optimizaciones
-    volatile _Float16 one_val = *one;
-    volatile _Float16 posinf, neginf, negzro, newzro;
-    volatile _Float16 nan1, nan2, nan3, nan4, nan5, nan6;
+int ieeeck_reimpl_half_precision(int ispec, lapack_float *zero, lapack_float *one) {
+    volatile lapack_float zero_val = *zero;  // Evita optimizaciones
+    volatile lapack_float one_val = *one;
+    volatile lapack_float posinf, neginf, negzro, newzro;
+    volatile lapack_float nan1, nan2, nan3, nan4, nan5, nan6;
 
     // Verificar infinitos
     posinf = one_val / zero_val;

@@ -1,13 +1,13 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hforg2r.c
- * \brief Genera una matriz ortogonal Q a partir de una factorización QR en precisión media (_Float16).
+ * \brief Genera una matriz ortogonal Q a partir de una factorización QR en precisión media (lapack_float).
  */
 
 /**
- * \brief Genera una matriz ortogonal Q a partir de reflectores Householder en precisión media (_Float16).
+ * \brief Genera una matriz ortogonal Q a partir de reflectores Householder en precisión media (lapack_float).
  * 
  * \param[in] m      Número de filas de la matriz A.
  * \param[in] n      Número de columnas de la matriz A (debe cumplir 0 <= n <= m).
@@ -23,14 +23,14 @@
  *                   - <0: Error en el parámetro de entrada (-i indica el i-ésimo parámetro inválido).
  * 
  * \note
- * - Esta versión utiliza el tipo _Float16 para operaciones en media precisión.
+ * - Esta versión utiliza el tipo lapack_float para operaciones en media precisión.
  * - Inicializa las columnas desde k hasta n-1 con la matriz identidad.
  * - Aplica los reflectores Householder en orden inverso para construir Q.
- * - Las funciones auxiliares hflarf1f() y hfscal() deben soportar _Float16.
+ * - Las funciones auxiliares hflarf1f() y hfscal() deben soportar lapack_float.
  * 
  * \warning
  * - Los literales flotantes usan el sufijo `f16` (requiere soporte del compilador).
- * - La precisión reducida de _Float16 puede afectar la estabilidad numérica.
+ * - La precisión reducida de lapack_float puede afectar la estabilidad numérica.
  * - Las dimensiones de la matriz deben cumplir las restricciones especificadas.
  * 
  * \see LAPACKE_xerbla
@@ -38,8 +38,11 @@
  * \see hfscal
  */
 
-void hforg2r(int m, int n, int k, _Float16 *A, int lda, _Float16 *tau, _Float16 *work, int *info) {
+void hforg2r(int m, int n, int k, lapack_float *A, int lda, lapack_float *tau, lapack_float *work, int *info) {
    
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
+
     *info = 0;
 
     // Validación de parámetros
@@ -60,12 +63,11 @@ void hforg2r(int m, int n, int k, _Float16 *A, int lda, _Float16 *tau, _Float16 
     if (n <= 0) return;
 
     // Inicializar columnas k..n-1 como identidad
-    for (int j = k; j < n; ++j) {
-        for (int l = 0; l < m; ++l) {
-            // Formato column-major: A[i + j*lda]
-            A[l + j*lda] = (l == j) ? 1.0F16 : 0.0F16;
+    for (int j = k; j < n; j++) {
+        for (int l = 0; l < m; l++) {
+            A[l + j * lda] = ZERO;
         }
-
+        A[j + j * lda] = ONE;
     }
     // --- Paso 2: Aplicar reflectores en orden inverso (k-1 a 0) ---
     // Aplicar reflectores en orden inverso
@@ -77,10 +79,10 @@ void hforg2r(int m, int n, int k, _Float16 *A, int lda, _Float16 *tau, _Float16 
         if(i < m){
             hfscal(m-i-1, -tau[i], &A[i+1 + i*lda], 1);
         }
-        A[i + i*lda] = 1.0F16 - tau[i];
+        A[i + i*lda] = ONE - tau[i];
 
-        for(int l = 0; l < i; l++) {
-            A[l + i*lda] = 0.0F16;
+        for(int l = 0; l < i - 1; l++) {
+            A[l + i*lda] = ZERO;
         }
     }
     return;

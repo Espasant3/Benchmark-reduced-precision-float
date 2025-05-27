@@ -1,7 +1,7 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hflassq(int n, const _Float16 *x, int incx, _Float16 *scale, _Float16 *sumsq) {
+void hflassq(int n, const lapack_float *x, int incx, lapack_float *scale, lapack_float *sumsq) {
     if (n <= 0 || LAPACK_HFISNAN(*scale) || LAPACK_HFISNAN(*sumsq) || *sumsq < 0.0F16) return;
 
     float scale_f = (float)(*scale);
@@ -35,6 +35,6 @@ void hflassq(int n, const _Float16 *x, int incx, _Float16 *scale, _Float16 *sums
         scale_f = 1.0f;
     }
 
-    *scale = (_Float16)scale_f;
-    *sumsq = (_Float16)sumsq_f;
+    *scale = (lapack_float)scale_f;
+    *sumsq = (lapack_float)sumsq_f;
 }

@@ -1,15 +1,15 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflasr.c
- * \brief Aplica rotaciones planas a una matriz en _Float16
+ * \brief Aplica rotaciones planas a una matriz en lapack_float
  */
 
 /**
- * \brief Aplica una secuencia de rotaciones planas a una matriz en _Float16
+ * \brief Aplica una secuencia de rotaciones planas a una matriz en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's SLASR. Aplica rotaciones definidas por los
+ * \details Versión lapack_float de LAPACK's SLASR. Aplica rotaciones definidas por los
  *          ángulos c[i] = cos(theta_i) y s[i] = sin(theta_i) desde la izquierda/derecha
  *          según los parámetros de configuración.
  * 
@@ -25,9 +25,9 @@
  *                 - 'B': (Backward) De último a primero elemento
  * \param[in] m     Número de filas de la matriz A
  * \param[in] n     Número de columnas de la matriz A
- * \param[in] c     Array _Float16 de cosenos (longitud m-1 si side='L', n-1 si side='R')
- * \param[in] s     Array _Float16 de senos (misma dimensión que c)
- * \param[in,out] a Matriz _Float16 column-major (lda >= max(1,m))
+ * \param[in] c     Array lapack_float de cosenos (longitud m-1 si side='L', n-1 si side='R')
+ * \param[in] s     Array lapack_float de senos (misma dimensión que c)
+ * \param[in,out] a Matriz lapack_float column-major (lda >= max(1,m))
  * \param[in] lda   Leading dimension de la matriz A
  * 
  * \note
@@ -62,12 +62,12 @@
  */
 
 void hflasr(char side, char pivot, char direct, lapack_int m, lapack_int n,
-           const _Float16* c, const _Float16* s, _Float16* a, lapack_int lda) {
+           const lapack_float* c, const lapack_float* s, lapack_float* a, lapack_int lda) {
 
-    const _Float16 ONE = 1.0F16;
-    const _Float16 ZERO = 0.0F16;
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;    
     lapack_int i, j;
-    _Float16 ctemp, stemp, temp;
+    lapack_float ctemp, stemp, temp;
     lapack_int info = 0;
 
     // Validación de parámetros

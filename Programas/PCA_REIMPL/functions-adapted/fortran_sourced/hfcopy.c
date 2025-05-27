@@ -1,5 +1,5 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \brief Copia un vector SX a un vector SY.
@@ -14,7 +14,7 @@
  * diferentes incrementos y optimización para incrementos unitarios.
  */
 
-void hfcopy(int n, const _Float16 *sx, int incx, _Float16 *sy, int incy) {
+void hfcopy(int n, const lapack_float *sx, int incx, lapack_float *sy, int incy) {
     int i, m;
     int ix, iy;
 

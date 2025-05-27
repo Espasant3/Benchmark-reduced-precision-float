@@ -1,5 +1,5 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hforgql.c
@@ -28,8 +28,8 @@
  *                  - <0: parámetro i tenía valor ilegal
  * 
  * \note
- * - Adaptación directa del código Fortran usando _Float16
- * - Usa bloqueo dinámico con tamaño de bloque determinado por ilaenv_reimpl_Float16
+ * - Adaptación directa del código Fortran usando lapack_float
+ * - Usa bloqueo dinámico con tamaño de bloque determinado por ilaenv_reimpl_half_precision
  * - Si lwork = -1, calcula tamaño óptimo y retorna en work[0]
  * 
  * \warning
@@ -47,7 +47,7 @@
  * 
  * \example
  * int m = 4, n = 3, lwork;
- * _Float16 a[12], tau[3];
+ * lapack_float a[12], tau[3];
  * lapack_int info;
  * 
  * // Factorización QL con hgeqlf...
@@ -56,22 +56,22 @@
  * lwork = -1;
  * hforgql(m, n, n, a, 4, tau, work, lwork, &info); // Consulta tamaño
  * lwork = (int)work[0];
- * _Float16* work = malloc(lwork * sizeof(_Float16));
+ * lapack_float* work = malloc(lwork * sizeof(lapack_float));
  * hforgql(m, n, n, a, 4, tau, work, lwork, &info);
  * 
  * \see hgeqlf Para la factorización QL inicial
  * \see hflarfb Para aplicación de reflectores bloqueados
- * \see ilaenv_reimpl_Float16 Para determinar parámetros de bloqueo
+ * \see ilaenv_reimpl_half_precision Para determinar parámetros de bloqueo
  * \see hfroundup_lwork Para ajuste de workspace en FP16
  */
 
-void hforgql(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 *work, int lwork, lapack_int *info) {
+void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, lapack_float *work, int lwork, lapack_int *info) {
     // Constantes y variables locales
     const int c__1 = 1;
     const int c_n1 = -1;
     const int c__3 = 3;
     const int c__2 = 2;
-    const _Float16 ZERO = 0.0F16;
+    const lapack_float ZERO = (lapack_float) 0.0;
     
     *info = 0;
     int lquery = (lwork == -1);
@@ -92,7 +92,7 @@ void hforgql(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
         if (n == 0) {
             lwkopt = 1;
         } else {
-            int nb = ilaenv_reimpl_Float16(c__1, "SORGQL", " ", m, n, k, c_n1);
+            int nb = ilaenv_reimpl_half_precision(c__1, "SORGQL", " ", m, n, k, c_n1);
             lwkopt = n * nb;
         }
         work[0] = hfroundup_lwork(lwkopt);
@@ -115,16 +115,16 @@ void hforgql(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
     int nbmin = 2;
     int nx = 0;
     int iws = n;
-    int nb = ilaenv_reimpl_Float16(c__1, "SORGQL", " ", m, n, k, c_n1);
+    int nb = ilaenv_reimpl_half_precision(c__1, "SORGQL", " ", m, n, k, c_n1);
     
     if (nb > 1 && nb < k) {
-        nx = MAX(0, ilaenv_reimpl_Float16(c__3, "SORGQL", " ", m, n, k, c_n1));
+        nx = MAX(0, ilaenv_reimpl_half_precision(c__3, "SORGQL", " ", m, n, k, c_n1));
         if (nx < k) {
             int ldwork = n;
             iws = ldwork * nb;
             if (lwork < iws) {
                 nb = lwork / ldwork;
-                nbmin = MAX(2, ilaenv_reimpl_Float16(c__2, "SORGQL", " ", m, n, k, c_n1));
+                nbmin = MAX(2, ilaenv_reimpl_half_precision(c__2, "SORGQL", " ", m, n, k, c_n1));
             }
         }
     }
@@ -160,7 +160,7 @@ void hforgql(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
                 // Formar factor triangular T
                 int len = m - k + i + ib;
                 int ldwork = ib;
-                _Float16 *a_col = &a[start_col * lda];
+                lapack_float *a_col = &a[start_col * lda];
                 
                 hflarft('B', 'C', len, ib, a_col, lda, &tau[i], work, ldwork);
 
@@ -173,7 +173,7 @@ void hforgql(int m, int n, int k, _Float16 *a, int lda, _Float16 *tau, _Float16 
 
             // Generar vectores de Householder
             int len = m - k + i + ib;
-            _Float16 *current_a = &a[start_col * lda];
+            lapack_float *current_a = &a[start_col * lda];
             hforg2l(len, ib, ib, current_a, lda, &tau[i], work, info);
 
             // Poner a cero las filas inferiores

@@ -1,8 +1,8 @@
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfscal(int n, _Float16 sa, _Float16 *sx, int incx) {
+void hfscal(int n, lapack_float sa, lapack_float *sx, int incx) {
     /* Verificación de parámetros */
-    if (n <= 0 || incx == 0 || sa == 1.0F16) return;
+    if (n <= 0 || incx == 0 || sa == (lapack_float)1.0) return;
 
     /* Caso para incremento unitario (optimizado) */
     if (incx == 1) {

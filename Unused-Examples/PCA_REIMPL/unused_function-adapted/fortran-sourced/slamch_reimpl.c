@@ -1,5 +1,5 @@
 
-#include "../include/lapacke_utils_reimpl.h" // Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h" 
 
 float slamch_reimpl(const char *cmach) {
     float rnd = 1.0f, eps = FLT_EPSILON * 0.5f, result; 

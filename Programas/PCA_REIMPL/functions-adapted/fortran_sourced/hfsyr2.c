@@ -1,7 +1,9 @@
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfsyr2(char uplo, lapack_int n, _Float16 alpha, const _Float16 *x, lapack_int incx,
-           const _Float16 *y, lapack_int incy, _Float16 *a, lapack_int lda) {
+void hfsyr2(char uplo, lapack_int n, lapack_float alpha, const lapack_float *x, lapack_int incx,
+           const lapack_float *y, lapack_int incy, lapack_float *a, lapack_int lda) {
+
+    const lapack_float ZERO = (lapack_float)0.0;
 
     if (!lsame_reimpl(uplo, 'U') && !lsame_reimpl(uplo, 'L')) {
         c_xerbla("HFSYR2 ", 1);
@@ -24,7 +26,7 @@ void hfsyr2(char uplo, lapack_int n, _Float16 alpha, const _Float16 *x, lapack_i
         return;
     }
 
-    if (n == 0 || alpha == 0.0F16) {
+    if (n == 0 || alpha == ZERO) {
         return;
     }
 
@@ -41,20 +43,20 @@ void hfsyr2(char uplo, lapack_int n, _Float16 alpha, const _Float16 *x, lapack_i
     if (lsame_reimpl(uplo, 'U')) {
         if (!non_unit_inc) {
             for (lapack_int j = 0; j < n; ++j) {
-                _Float16 xj = x[j], yj = y[j];
-                if (xj == 0.0f && yj == 0.0f) continue;
-                _Float16 tmp1 = yj * alpha;
-                _Float16 tmp2 = xj * alpha;
+                lapack_float xj = x[j], yj = y[j];
+                if (xj == ZERO && yj == ZERO) continue;
+                lapack_float tmp1 = yj * alpha;
+                lapack_float tmp2 = xj * alpha;
                 for (lapack_int i = 0; i <= j; ++i) {
                     a[i + j * lda] += x[i] * tmp1 + y[i] * tmp2;
                 }
             }
         } else {
             for (lapack_int j = 0; j < n; ++j) {
-                _Float16 x_val = x[jx], y_val = y[jy];
-                if (x_val != 0.0f || y_val != 0.0f) {
-                    _Float16 tmp1 = y_val * alpha;
-                    _Float16 tmp2 = x_val * alpha;
+                lapack_float x_val = x[jx], y_val = y[jy];
+                if (x_val != ZERO || y_val != ZERO) {
+                    lapack_float tmp1 = y_val * alpha;
+                    lapack_float tmp2 = x_val * alpha;
                     lapack_int ix = kx, iy = ky;
                     for (lapack_int i = 0; i <= j; ++i) {
                         a[i + j * lda] += x[ix] * tmp1 + y[iy] * tmp2;
@@ -69,20 +71,20 @@ void hfsyr2(char uplo, lapack_int n, _Float16 alpha, const _Float16 *x, lapack_i
     } else {
         if (!non_unit_inc) {
             for (lapack_int j = 0; j < n; ++j) {
-                _Float16 xj = x[j], yj = y[j];
-                if (xj == 0.0f && yj == 0.0f) continue;
-                _Float16 tmp1 = yj * alpha;
-                _Float16 tmp2 = xj * alpha;
+                lapack_float xj = x[j], yj = y[j];
+                if (xj == ZERO && yj == ZERO) continue;
+                lapack_float tmp1 = yj * alpha;
+                lapack_float tmp2 = xj * alpha;
                 for (lapack_int i = j; i < n; ++i) {
                     a[i + j * lda] += x[i] * tmp1 + y[i] * tmp2;
                 }
             }
         } else {
             for (lapack_int j = 0; j < n; ++j) {
-                _Float16 x_val = x[jx], y_val = y[jy];
-                if (x_val != 0.0f || y_val != 0.0f) {
-                    _Float16 tmp1 = y_val * alpha;
-                    _Float16 tmp2 = x_val * alpha;
+                lapack_float x_val = x[jx], y_val = y[jy];
+                if (x_val != ZERO || y_val != ZERO) {
+                    lapack_float tmp1 = y_val * alpha;
+                    lapack_float tmp2 = x_val * alpha;
                     lapack_int ix = jx, iy = jy;
                     for (lapack_int i = j; i < n; ++i) {
                         a[i + j * lda] += x[ix] * tmp1 + y[iy] * tmp2;

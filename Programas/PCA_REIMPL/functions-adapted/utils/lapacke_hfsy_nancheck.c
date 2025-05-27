@@ -29,13 +29,13 @@
 * Contents: Native C interface to LAPACK utility function
 * Author: Intel Corporation
 *****************************************************************************/
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_ssy_nancheck_reimpl.c
+#include "lapacke_utils_reimpl.h"
 
 /* Check a matrix for NaN entries. */
 
 lapack_logical LAPACKE_hfsy_nancheck( int matrix_layout, char uplo,
                                       lapack_int n,
-                                      const _Float16 *a,
+                                      const lapack_float *a,
                                       lapack_int lda )
 {
     return LAPACKE_hftr_nancheck( matrix_layout, uplo, 'n', n, a, lda );

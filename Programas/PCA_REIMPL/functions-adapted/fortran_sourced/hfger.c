@@ -1,9 +1,12 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx, 
-         const _Float16 *y, int incy, _Float16 *a, int lda) 
-{
+void hfger(int m, int n, lapack_float alpha, const lapack_float *x, int incx, 
+         const lapack_float *y, int incy, lapack_float *a, int lda) {
+
+    // Constantes
+    const lapack_float ZERO = (lapack_float)0.0;
+
     int info = 0;
     if (m < 0) {
         info = 1;
@@ -23,7 +26,7 @@ void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx,
     }
 
     // Cambiar constante 0.0f por conversión explícita
-    if (m == 0 || n == 0 || alpha == 0.0F16) {
+    if (m == 0 || n == 0 || alpha == ZERO) {
         return;
     }
 
@@ -31,9 +34,9 @@ void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx,
 
     if (incx == 1) {
         for (int j = 0; j < n; j++) {
-            const _Float16 y_val = y[jy];
-            if (y_val != 0.0F16) {
-                const _Float16 temp = alpha * y_val;
+            const lapack_float y_val = y[jy];
+            if (y_val != ZERO) {
+                const lapack_float temp = alpha * y_val;
                 for (int i = 0; i < m; i++) {
                     a[i + j * lda] += x[i] * temp;
                 }
@@ -44,9 +47,9 @@ void hfger(int m, int n, _Float16 alpha, const _Float16 *x, int incx,
         const int kx = (incx > 0) ? 0 : (m - 1) * (-incx);
         
         for (int j = 0; j < n; j++) {
-            const _Float16 y_val = y[jy];
-            if (y_val != 0.0F16) {
-                const _Float16 temp = alpha * y_val;
+            const lapack_float y_val = y[jy];
+            if (y_val != ZERO) {
+                const lapack_float temp = alpha * y_val;
                 int ix = kx;
                 for (int i = 0; i < m; i++) {
                     a[i + j * lda] += x[ix] * temp;

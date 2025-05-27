@@ -1,8 +1,11 @@
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hfsytrd(char uplo, lapack_int n, _Float16 *a, lapack_int lda, _Float16 *d,
-             _Float16 *e, _Float16 *tau, _Float16 *work, lapack_int lwork, lapack_int *info) {
-    // Parámetros y variables locales (cambiados a lapack_int)
+void hfsytrd(char uplo, lapack_int n, lapack_float *a, lapack_int lda, lapack_float *d,
+             lapack_float *e, lapack_float *tau, lapack_float *work, lapack_int lwork, lapack_int *info) {
+    // Constantes
+    const lapack_float ONE = (lapack_float)1.0;
+    
+    // Parámetros y variables locales
     lapack_logical upper = lsame_reimpl(uplo, 'U');
     lapack_logical lquery = (lwork == -1);
     lapack_int i, iinfo, iws, j, kk, ldwork = 1, lwkopt, nb, nbmin, nx;
@@ -21,7 +24,7 @@ void hfsytrd(char uplo, lapack_int n, _Float16 *a, lapack_int lda, _Float16 *d,
 
     if (*info == 0) { 
         // Consultar espacio de trabajo óptimo y lwkopt
-        nb = ilaenv_reimpl_Float16(1, "SSYTRD", " ", n, -1, -1, -1);
+        nb = ilaenv_reimpl_half_precision(1, "SSYTRD", " ", n, -1, -1, -1);
         lwkopt = MAX(1, n * nb); 
         work[0] = hfroundup_lwork(lwkopt); // Asignar work[0] aquí también
     }
@@ -34,7 +37,7 @@ void hfsytrd(char uplo, lapack_int n, _Float16 *a, lapack_int lda, _Float16 *d,
     }
 
     if (n == 0) {
-        work[0] = 1.0F16;
+        work[0] = ONE;
         return;
     }
 
@@ -42,13 +45,13 @@ void hfsytrd(char uplo, lapack_int n, _Float16 *a, lapack_int lda, _Float16 *d,
     nx = n;
     iws = 1;
     if (nb > 1 && nb < n) {
-        nx = MAX(3, ilaenv_reimpl_Float16(3, "SSYTRD", "U", n, -1, -1, -1));
+        nx = MAX(3, ilaenv_reimpl_half_precision(3, "SSYTRD", "U", n, -1, -1, -1));
         if (nx < n) {
             ldwork = n;
             iws = ldwork * nb;
             if (lwork < iws) {
                 nb = MAX(lwork / ldwork, 1); 
-                nbmin = ilaenv_reimpl_Float16(2, "SSYTRD", "U", n, -1, -1, -1);
+                nbmin = ilaenv_reimpl_half_precision(2, "SSYTRD", "U", n, -1, -1, -1);
                 if (nb < nbmin) nx = n;
             }
         } else {
@@ -68,7 +71,7 @@ void hfsytrd(char uplo, lapack_int n, _Float16 *a, lapack_int lda, _Float16 *d,
             hflatrd(uplo, i + nb, nb, a, lda, e, tau, work, ldwork);
 
             /* Actualizar submatriz A(1:i-1,1:i-1) con A := A - V*W^T - W*V^T */
-            hfsyr2k(uplo, 'N', i, nb, -1.0F16, &a[i * lda], lda, work, ldwork, 1.0F16, a, lda);
+            hfsyr2k(uplo, 'N', i, nb, -ONE, &a[i * lda], lda, work, ldwork, ONE, a, lda);
 
             /* Copiar elementos superdiagonales y diagonales */
             for (j = i; j < i + nb; j++) {
@@ -87,8 +90,8 @@ void hfsytrd(char uplo, lapack_int n, _Float16 *a, lapack_int lda, _Float16 *d,
             
             // Actualizar submatriz restante
 
-            hfsyr2k(uplo, 'N', n - i - nb, nb, -1.0F16, &a[(i + nb) + i * lda],
-                lda, &work[nb], ldwork, 1.0F16, &a[(i + nb) + (i + nb) * lda], lda);
+            hfsyr2k(uplo, 'N', n - i - nb, nb, -ONE, &a[(i + nb) + i * lda],
+                lda, &work[nb], ldwork, ONE, &a[(i + nb) + (i + nb) * lda], lda);
             
             // Copiar elementos subdiagonales y diagonales
             for (j = i; j < i + nb; j++) {

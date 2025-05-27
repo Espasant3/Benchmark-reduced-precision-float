@@ -1,23 +1,23 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hfswap.c
- * \brief Implementación de intercambio (SSWAP) de vectores en _Float16
+ * \brief Implementación de intercambio (SSWAP) de vectores en lapack_float
  */
 
 /**
- * \brief Intercambia los elementos de dos vectores _Float16
+ * \brief Intercambia los elementos de dos vectores lapack_float
  * 
- * \details Versión optimizada para _Float16 de BLAS SSWAP. Implementa:
+ * \details Versión optimizada para lapack_float de BLAS SSWAP. Implementa:
  *          - Caso optimizado para incrementos unitarios con desenrollado de bucle
  *          - Manejo eficiente de incrementos negativos/arbitrarios
  *          - Operación in-place sin uso de memoria temporal adicional
  * 
  * \param[in] n         Número de elementos a intercambiar (n >= 0)
- * \param[in,out] sx    Array _Float16 de origen/destino (tamaño >= |incx|*(n-1) + 1)
+ * \param[in,out] sx    Array lapack_float de origen/destino (tamaño >= |incx|*(n-1) + 1)
  * \param[in] incx      Incremento entre elementos en sx (0 para n=0, ≠0 para n>0)
- * \param[in,out] sy    Array _Float16 de origen/destino (tamaño >= |incy|*(n-1) + 1)
+ * \param[in,out] sy    Array lapack_float de origen/destino (tamaño >= |incy|*(n-1) + 1)
  * \param[in] incy      Incremento entre elementos en sy (0 para n=0, ≠0 para n>0)
  * 
  * \note
@@ -51,17 +51,17 @@
  *    \endcode
  * 
  * \example
- * _Float16 x[5] = {1.0F16, 2.0F16, 3.0F16, 4.0F16, 5.0F16};
- * _Float16 y[5] = {6.0F16, 7.0F16, 8.0F16, 9.0F16, 10.0F16};
+ * lapack_float x[5] = {1.0F16, 2.0F16, 3.0F16, 4.0F16, 5.0F16};
+ * lapack_float y[5] = {6.0F16, 7.0F16, 8.0F16, 9.0F16, 10.0F16};
  * 
  * // Intercambiar primeros 3 elementos con incremento 2
  * hfswap(3, x, 2, y, 2);  // x[0,2,4] ↔ y[0,2,4]
  * 
  * \see BLAS SSWAP Para la versión en precisión simple
- * \see _Float16 Para detalles del tipo de datos
+ * \see _Float16, __fp16, __bf16 Para detalles del tipo de datos
  */
 
-void hfswap(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
+void hfswap(int n, lapack_float *sx, int incx, lapack_float *sy, int incy) {
     if (n <= 0) return;
 
     if (incx == 1 && incy == 1) {
@@ -69,7 +69,7 @@ void hfswap(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
         int m = n % 3;
         if (m != 0) {
             for (int i = 0; i < m; i++) {
-                _Float16 temp = sx[i];
+                lapack_float temp = sx[i];
                 sx[i] = sy[i];
                 sy[i] = temp;
             }
@@ -77,7 +77,7 @@ void hfswap(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
         }
         // Bucle desenrollado para bloques de 3 elementos
         for (int i = m; i < n; i += 3) {
-            _Float16 temp;
+            lapack_float temp;
             temp = sx[i];
             sx[i] = sy[i];
             sy[i] = temp;
@@ -96,7 +96,7 @@ void hfswap(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
         int iy = (incy >= 0) ? 0 : (-n + 1) * incy;
 
         for (int i = 0; i < n; i++) {
-            _Float16 temp = sx[ix];
+            lapack_float temp = sx[ix];
             sx[ix] = sy[iy];
             sy[iy] = temp;
 
@@ -104,53 +104,4 @@ void hfswap(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
             iy += incy;
         }
     }
-}
-
-/**
- * \brief Intercambia columnas en matrices cuadradas row-major
- * 
- * \param[in] n       Dimensión de la matriz (N x N) y número de elementos a intercambiar
- * \param[in,out] sx  Puntero al primer elemento de la primera columna
- * \param[in] incx    Incremento lógico (original para column-major)
- * \param[in,out] sy  Puntero al primer elemento de la segunda columna
- * \param[in] incy    Incremento lógico (original para column-major)
- * 
- * \note
- * - Asume que la matriz es cuadrada (n = número de filas = número de columnas).
- * - Ajusta los incrementos multiplicando por `n` (saltos entre filas en row-major).
- * 
- * \warning
- * - incx/incy deben corresponder al espaciado real en memoria
- * - Comportamiento indefinido si sx/sy se solapan parcialmente
- */
-
-void hfswap_row_major(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) { // Esta implementación es dudosa y no se ha probado, para column-major es fiable
-    // Ajuste para row-major: incx *= n (solo aplica a matrices n*n que son las que recibe lapacke)
-    //hfswap(n, sx, incx * n, sy, incy * n); 
-    hfswap(n, sx, incx, sy, incy);
-
-}
-
-/**
- * \brief Intercambia columnas en matrices almacenadas en formato column-major
- * 
- * \param[in] n       Número de elementos a intercambiar (longitud de las columnas)
- * \param[in,out] sx  Puntero al primer elemento de la columna origen
- * \param[in] incx    Incremento entre elementos de la columna origen (=1 para columnas contiguas)
- * \param[in,out] sy  Puntero al primer elemento de la columna destino
- * \param[in] incy    Incremento entre elementos de la columna destino (=1 para columnas contiguas)
- * 
- * \note
- * - Diseñado para matrices column-major (formato Fortran/LAPACK)
- * - Para matrices 2D, incx/incy deben ser la leading dimension (número de filas)
- * - Wrapper directo de hfswap sin ajuste de incrementos
- * 
- * \warning
- * - incx/incy deben corresponder al espaciado real en memoria
- * - Comportamiento indefinido si sx/sy se solapan parcialmente
- */
-
-void hfswap_column_major(int n, _Float16 *sx, int incx, _Float16 *sy, int incy) {
-    
-    hfswap(n, sx, incx, sy, incy);
 }

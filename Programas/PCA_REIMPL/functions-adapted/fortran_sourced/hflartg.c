@@ -1,15 +1,15 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflartg.c
- * \brief Genera una rotación de Givens en _Float16
+ * \brief Genera una rotación de Givens en lapack_float
  */
 
 /**
- * \brief Calcula los parámetros de una rotación de Givens en _Float16
+ * \brief Calcula los parámetros de una rotación de Givens en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's SLARTG. Calcula valores c, s, r tales que:
+ * \details Versión lapack_float de LAPACK's SLARTG. Calcula valores c, s, r tales que:
  *          \f[
  *          \begin{pmatrix} c & s \\ -s & c \end{pmatrix}^T \begin{pmatrix} f \\ g \end{pmatrix} = \begin{pmatrix} r \\ 0 \end{pmatrix}
  *          \f]
@@ -28,8 +28,8 @@
  * 
  * \warning
  * - No maneja NaN/Inf en f o g (comportamiento indefinido)
- * - custom_sqrtf16 debe ser precisa en rango [0, FP16_MAX]
- * - La precisión de _Float16 puede afectar la ortogonalidad para valores extremos
+ * - custom_sqrtf_half_precision debe ser precisa en rango [0, FP16_MAX]
+ * - La precisión de lapack_float puede afectar la ortogonalidad para valores extremos
  * 
  * \par Algoritmo:
  * 1. Casos triviales (g=0 o f=0)
@@ -40,62 +40,65 @@
  *    \f[ r = \text{sign}(f) \cdot d \cdot u \f]
  * 
  * \example
- * _Float16 c, s, r;
+ * lapack_float c, s, r;
  * hflartg(3.0F16, 4.0F16, &c, &s, &r);
  * // c ≈ 0.6F16, s ≈ 0.8F16, r = 5.0F16
  * 
- * \see hflamch_Float16 Para obtención de constantes máquina
- * \see custom_sqrtf16 Implementación de raíz cuadrada en _Float16
- * \see ABS_Float16 Macro para valor absoluto en _Float16
+ * \see hflamch_half_precision Para obtención de constantes máquina
+ * \see custom_sqrtf_half_precision Implementación de raíz cuadrada en _Float16
+ * \see ABS_half_precision Macro para valor absoluto en lapack_float
  */
 
-void hflartg(_Float16 f, _Float16 g, _Float16 *c, _Float16 *s, _Float16 *r) {
-    _Float16 safmin = hflamch_Float16('S');
-    _Float16 safmax = 1.0F16 / safmin;
-    
-    _Float16 f1 = ABS_Float16(f);
-    _Float16 g1 = ABS_Float16(g);
+void hflartg(lapack_float f, lapack_float g, lapack_float *c, lapack_float *s, lapack_float *r) {
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
 
-    if (g == 0.0F16) {
-        *c = 1.0F16;
-        *s = 0.0F16;
+    lapack_float safmin = hflamch_half_precision('S');
+    lapack_float safmax = ONE / safmin;
+    
+    lapack_float f1 = ABS_half_precision(f);
+    lapack_float g1 = ABS_half_precision(g);
+
+    if (g == ZERO) {
+        *c = ONE;
+        *s = ZERO;
         *r = f;
         return;
-    } else if (f == 0.0F16) {
-        *c = 0.0F16;
-        *s = (g > 0.0F16) ? 1.0F16 : -1.0F16;
+    } else if (f == ZERO) {
+        *c = ZERO;
+        *s = (g > ZERO) ? ONE : -ONE;
         *r = g1;
         return;
     } else {
-        _Float16 rtmin = custom_sqrtf16(safmin);
-        _Float16 rtmax = custom_sqrtf16(safmax / 2.0F16);
+        lapack_float rtmin = custom_sqrtf_half_precision(safmin);
+        lapack_float rtmax = custom_sqrtf_half_precision(safmax / 2.0F16);
 
         if (f1 > rtmin && f1 < rtmax && g1 > rtmin && g1 < rtmax) {
             // Cálculo estable de la hipotenusa usando el método de LAPACK
-            _Float16 a = MAX(f1, g1);
-            _Float16 b = MIN(f1, g1);
-            _Float16 ratio = (a == 0.0F16) ? 0.0F16 : b / a;
-            _Float16 d = a * custom_sqrtf16(1.0F16 + ratio * ratio);
-            *c = (a == 0.0F16) ? 1.0F16 : f1 / d;
-            *r = (f >= 0.0F16) ? d : -d;
+            lapack_float a = MAX(f1, g1);
+            lapack_float b = MIN(f1, g1);
+            lapack_float ratio = (a == ZERO) ? ZERO : b / a;
+            lapack_float d = a * custom_sqrtf_half_precision(ONE + ratio * ratio);
+            *c = (a == ZERO) ? ONE : f1 / d;
+            *r = (f >= ZERO) ? d : -d;
             *s = g / (*r);
         } else {
             // Escalar f y g para evitar underflow/overflow
-            _Float16 u = MAX(f1, g1);
+            lapack_float u = MAX(f1, g1);
             u = MAX(u, rtmin);  // Asegurar que u ≥ rtmin
             u = MIN(u, safmax);
 
-            _Float16 fs = f / u;
-            _Float16 gs = g / u;
+            lapack_float fs = f / u;
+            lapack_float gs = g / u;
 
             // Cálculo estable de la hipotenusa para fs y gs
-            _Float16 a = MAX(ABS_Float16(fs), ABS_Float16(gs));
-            _Float16 b = MIN(ABS_Float16(fs), ABS_Float16(gs));
-            _Float16 ratio = (a == 0.0F16) ? 0.0F16 : b / a;
-            _Float16 d = a * custom_sqrtf16(1.0F16 + ratio * ratio);
+            lapack_float a = MAX(ABS_half_precision(fs), ABS_half_precision(gs));
+            lapack_float b = MIN(ABS_half_precision(fs), ABS_half_precision(gs));
+            lapack_float ratio = (a == ZERO) ? ZERO : b / a;
+            lapack_float d = a * custom_sqrtf_half_precision(ONE + ratio * ratio);
 
-            *c = (a == 0.0F16) ? 1.0F16 : ABS_Float16(fs) / d;
-            *r = (f >= 0.0F16) ? d : -d;
+            *c = (a == ZERO) ? ONE : ABS_half_precision(fs) / d;
+            *r = (f >= ZERO) ? d : -d;
             *s = gs / (*r);
             *r *= u;  // Re-escalar r
         }

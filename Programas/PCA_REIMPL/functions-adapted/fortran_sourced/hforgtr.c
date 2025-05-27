@@ -1,26 +1,26 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hforgtr.c
- * \brief Implementación de la generación de matriz Q ortogonal en _Float16 para matrices tridiagonales
+ * \brief Implementación de la generación de matriz Q ortogonal en lapack_float para matrices tridiagonales
  */
 
 /**
- * \brief Genera la matriz Q ortogonal completa a partir de una factorización tridiagonal en _Float16
+ * \brief Genera la matriz Q ortogonal completa a partir de una factorización tridiagonal en lapack_float
  * 
- * \details Versión _Float16 de LAPACK's SORGTR. Genera la matriz Q ortogonal a partir de una descomposición
+ * \details Versión lapack_float de LAPACK's SORGTR. Genera la matriz Q ortogonal a partir de una descomposición
  *          tridiagonal simétrica computada por hsteqr. Implementa dos variantes según el triángulo almacenado.
  * 
  * \param[in] uplo  'U': Almacena matriz triangular superior
  *                  'L': Almacena matriz triangular inferior
  * \param[in] n     Orden de la matriz Q (n >= 0)
- * \param[in,out] a Matriz _Float16 column-major (lda, n):
+ * \param[in,out] a Matriz lapack_float column-major (lda, n):
  *                  - Entrada: Vectores de Householder de hsteqr
  *                  - Salida:  Matriz Q completa
  * \param[in] lda   Leading dimension de A (lda >= max(1,n))
- * \param[in] tau   Factores escalares _Float16 de los reflectores (tamaño n-1)
- * \param[out] work Workspace _Float16 (tamaño >= max(1,lwork))
+ * \param[in] tau   Factores escalares lapack_float de los reflectores (tamaño n-1)
+ * \param[out] work Workspace lapack_float (tamaño >= max(1,lwork))
  * \param[in] lwork Dimensión de work:
  *                  - lwork = -1: Consulta tamaño óptimo
  *                  - lwork >= max(1, n-1) para óptimo rendimiento
@@ -29,7 +29,7 @@
  *                  - <0: parámetro (-i) incorrecto
  *
  * \note
- * - Implementación específica para _Float16 (IEEE 754-2008 binary16)
+ * - Implementación específica para lapack_float (IEEE 754-2008 binary16)
  * - Diferencias clave vs versión double:
  *   + Uso de hfroundup_lwork para ajuste seguro de workspace
  *   + Optimizaciones para precisión reducida
@@ -55,26 +55,28 @@
  *
  * \example
  * int n = 4, lwork;
- * _Float16 a[16], tau[3];
+ * lapack_float a[16], tau[3];
  * lapack_int info;
  * 
  * // Factorización tridiagonal con hsteqr...
  * lwork = -1;
  * hforgtr('U', n, a, n, tau, work, lwork, &info); // Consulta tamaño
  * lwork = (int)work[0];
- * _Float16* work = malloc(lwork * sizeof(_Float16));
+ * lapack_float* work = malloc(lwork * sizeof(lapack_float));
  * hforgtr('U', n, a, n, tau, work, lwork, &info);
  *
  * \see hsteqr     Para la factorización tridiagonal inicial
- * \see hforgql    Para generación QL en _Float16
- * \see hforgqr    Para generación QR en _Float16
- * \see ilaenv_reimpl_Float16  Para determinación de parámetros de bloqueo
+ * \see hforgql    Para generación QL en lapack_float
+ * \see hforgqr    Para generación QR en lapack_float
+ * \see ilaenv_reimpl_half_precision  Para determinación de parámetros de bloqueo
  * \see hfroundup_lwork  Para ajuste preciso de workspace
- * \see IEEE754_FP16  Para constantes numéricas de _Float16
+ * \see IEEE754_FP16  Para constantes numéricas de media precisión
  */
 
-void hforgtr(char uplo, int n, _Float16 *a, int lda, _Float16 *tau, _Float16 *work, lapack_int lwork, lapack_int *info) {
+void hforgtr(char uplo, int n, lapack_float *a, int lda, lapack_float *tau, lapack_float *work, lapack_int lwork, lapack_int *info) {
     int upper, i, j, lquery, nb, lwkopt, iinfo;
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
 
     *info = 0;
     lquery = (lwork == -1);
@@ -94,9 +96,9 @@ void hforgtr(char uplo, int n, _Float16 *a, int lda, _Float16 *tau, _Float16 *wo
     // Cálculo de tamaño óptimo de WORK
     if (*info == 0) {
         if (upper) {
-            nb = ilaenv_reimpl_Float16(1, "SORGQL", " ", n-1, n-1, n-1, -1);
+            nb = ilaenv_reimpl_half_precision(1, "SORGQL", " ", n-1, n-1, n-1, -1);
         } else {
-            nb = ilaenv_reimpl_Float16(1, "SORGQR", " ", n-1, n-1, n-1, -1);
+            nb = ilaenv_reimpl_half_precision(1, "SORGQR", " ", n-1, n-1, n-1, -1);
         }
         lwkopt = MAX(1, n-1) * nb;
         work[0] = hfroundup_lwork(lwkopt);
@@ -110,7 +112,7 @@ void hforgtr(char uplo, int n, _Float16 *a, int lda, _Float16 *tau, _Float16 *wo
     }
 
     if (n == 0) {
-        work[0] = 1.0F16;
+        work[0] = ONE;
         return;
     }
 
@@ -120,28 +122,28 @@ void hforgtr(char uplo, int n, _Float16 *a, int lda, _Float16 *tau, _Float16 *wo
             for (i = 0; i < j-1; i++) {
                 a[i + j*lda] = a[i + (j+1)*lda];
             }
-            a[(n-1) + j*lda] = 0.0F16; 
+            a[(n-1) + j*lda] = ZERO; 
         }
 
         for (i = 0; i < n-1; i++) {
-            a[i + (n-1)*lda] = 0.0F16;
+            a[i + (n-1)*lda] = ZERO;
         }
-        a[(n-1) + (n-1)*lda] = 1.0F16;
+        a[(n-1) + (n-1)*lda] = ONE;
 
         hforgql(n-1, n-1, n-1, a, lda, tau, work, lwork, &iinfo);
 
     } else {
         // ---- Caso LOWER (UPLO = 'L') ----
         for (j = n-1; j >= 1; j--) {
-            a[j*lda] = 0.0F16; 
+            a[j*lda] = ZERO; 
             for (i = j+1; i < n; i++) {
                 a[i + j*lda] = a[i + (j-1)*lda];
             }
         }
 
-        a[0] = 1.0F16;
+        a[0] = ONE;
         for (i = 1; i < n; i++) {
-            a[i] = 0.0F16; 
+            a[i] = ZERO; 
         }
 
         if (n > 1) {

@@ -1,13 +1,17 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-/* Constantes */
-#define MAXIT 30
+void hfsterf(lapack_int n, lapack_float *d, lapack_float *e, int *info) {
+    // Declaración de constantes
+    int MAXIT = 30;
+    lapack_float ZERO = (lapack_float) 0.0;
+    lapack_float ONE = (lapack_float) 1.0;
+    lapack_float TWO = (lapack_float) 2.0;
+    lapack_float THREE = (lapack_float) 3.0;
 
-void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
     int i, iscale, jtot, l, l1, lend, lendsv, lsv, m, nmaxit;
-    _Float16 alpha, anorm, bb, c, eps, eps2, gamma, oldc, oldgam, p, r;
-    _Float16 rt1, rt2, rte, s, safmax, safmin, sigma, ssfmax, ssfmin;
+    lapack_float alpha, anorm, bb, c, eps, eps2, gamma, oldc, oldgam, p, r;
+    lapack_float rt1, rt2, rte, s, safmax, safmin, sigma, ssfmax, ssfmin;
 
     int condition_for = 0;
 
@@ -21,15 +25,15 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
 
     // Determine the unit roundoff for this environment.
 
-    eps = hflamch_Float16('E');
+    eps = hflamch_half_precision('E');
     eps2 = eps * eps;
-    safmin = hflamch_Float16('S');
-    safmax = 1.0F16 / safmin;
-    ssfmax = custom_sqrtf16(safmax) / 3.0F16;
-    ssfmin = custom_sqrtf16(safmin) / eps2;
+    safmin = hflamch_half_precision('S');
+    safmax = ONE / safmin;
+    ssfmax = custom_sqrtf_half_precision(safmax) / THREE;
+    ssfmin = custom_sqrtf_half_precision(safmin) / eps2;
 
     nmaxit = n * MAXIT;
-    sigma = 0.0F16;
+    sigma = ZERO;
     jtot = 0;
     l1 = 1;
 
@@ -38,11 +42,11 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
             hflasrt('I', n, d, info);
             return;
         }
-        if (l1 > 1) e[l1-2] = 0.0F16;
+        if (l1 > 1) e[l1-2] = ZERO;
 
         for (m = l1 - 1; m < n-1; m++) {
-            if (ABS_Float16(e[m]) <= (custom_sqrtf16(ABS_Float16(d[m])) * sqrtf(ABS_Float16(d[m+1]))) * eps) {
-                e[m] = 0.0F16;
+            if (ABS_half_precision(e[m]) <= (custom_sqrtf_half_precision(ABS_half_precision(d[m])) * sqrtf(ABS_half_precision(d[m+1]))) * eps) {
+                e[m] = ZERO;
                 condition_for = 1;
                 break;
             }
@@ -61,7 +65,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
 
         anorm = hflanst('M', lend-l+1, &d[l-1], &e[l-1]);
         iscale = 0;
-        if (anorm == 0.0F16) continue;
+        if (anorm == ZERO) continue;
 
         if (anorm > ssfmax) {
             iscale = 1;
@@ -76,7 +80,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
         for (i = l-1; i < lend-1; i++)
             e[i] *= e[i];
 
-        if (ABS_Float16(d[lend-1]) < ABS_Float16(d[l-1])) {
+        if (ABS_half_precision(d[lend-1]) < ABS_half_precision(d[l-1])) {
             lend = lsv;
             l = lendsv;
         }
@@ -89,7 +93,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
 
                 if (l != lend){
                     for (m = l - 1; m < lend - 1; m++) {
-                        if (ABS_Float16(e[m]) <= eps2 * ABS_Float16(d[m] * d[m+1])){
+                        if (ABS_half_precision(e[m]) <= eps2 * ABS_half_precision(d[m] * d[m+1])){
                             condition_for = 1;
                             break;
                         }
@@ -101,7 +105,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
 
                 condition_for = 0;
                
-                if (m < lend) e[m-1] = 0.0F16;
+                if (m < lend) e[m-1] = ZERO;
                 p = d[l-1];
                 if (m == l){
                     // Go to 90
@@ -112,11 +116,11 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
                 }
 
                 if (m == l+1) {
-                    rte = custom_sqrtf16(e[l-1]);
+                    rte = custom_sqrtf_half_precision(e[l-1]);
                     hflae2(d[l-1], rte, d[l], &rt1, &rt2);
                     d[l-1] = rt1;
                     d[l] = rt2;
-                    e[l-1] = 0.0F16;
+                    e[l-1] = ZERO;
                     l += 2;
                     if(l <= lend) {
                         continue;
@@ -130,13 +134,13 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
 
                 // Form shift
 
-                rte = custom_sqrtf16(e[l-1]);
-                sigma = (d[l] - p) / (2.0F16 * rte);
-                r = hflapy2(sigma, 1.0F16);
-                sigma = p - (rte / (sigma + (_Float16) copysignf((float)r, (float)sigma)));
+                rte = custom_sqrtf_half_precision(e[l-1]);
+                sigma = (d[l] - p) / (TWO * rte);
+                r = hflapy2(sigma, ONE);
+                sigma = p - (rte / (sigma + (lapack_float) copysignf((float)r, (float)sigma)));
 
-                c = 1.0F16;
-                s = 0.0F16;
+                c = ONE;
+                s = ZERO;
                 gamma = d[m-1] - sigma;
                 p = gamma * gamma;
 
@@ -153,7 +157,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
                     alpha = d[i];
                     gamma = c * (alpha - sigma) - s * oldgam;
                     d[i+1] = oldgam + (alpha - gamma);
-                    if(c != 0.0F16){
+                    if(c != ZERO){
                         p = (gamma * gamma) / c;
                     } else{
                         p = oldc * bb;
@@ -168,7 +172,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
             while (1) {
 
                 for(m = l-1; m > lend + 1; m--) {
-                    if (ABS_Float16(e[m-1]) <= eps2 * ABS_Float16(d[m] * d[m-1])) {
+                    if (ABS_half_precision(e[m-1]) <= eps2 * ABS_half_precision(d[m] * d[m-1])) {
                         condition_for = 1;
                         break;
                     }
@@ -179,7 +183,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
                 condition_for = 0;
 
                 if (m > lend){
-                    e[m-2] = 0.0F16;   
+                    e[m-2] = ZERO;   
                 }
 
                 p = d[l-1];
@@ -195,11 +199,11 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
                 // If remaining matrix is 2 by 2
 
                 if (m == l-1) {
-                    rte = custom_sqrtf16(e[l-2]);
+                    rte = custom_sqrtf_half_precision(e[l-2]);
                     hflae2(d[l-1], rte, d[l-2], &rt1, &rt2);
                     d[l-1] = rt1;
                     d[l-2] = rt2;
-                    e[l-2] = 0.0F16;
+                    e[l-2] = ZERO;
                     l -= 2;
                     if(l >= lend){
                         continue;
@@ -212,13 +216,13 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
 
                 // Form shift
 
-                rte = custom_sqrtf16(e[l-2]);
-                sigma = (d[l-2] - p) / (2.0F16 * rte);
-                r = hflapy2(sigma, 1.0F16);
-                sigma = p - (rte / (sigma + (_Float16) copysignf((float)r, (float)sigma)));
+                rte = custom_sqrtf_half_precision(e[l-2]);
+                sigma = (d[l-2] - p) / (TWO * rte);
+                r = hflapy2(sigma, ONE);
+                sigma = p - (rte / (sigma + (lapack_float) copysignf((float)r, (float)sigma)));
 
-                c = 1.0F16;
-                s = 0.0F16;
+                c = ONE;
+                s = ZERO;
                 gamma = d[m-1] - sigma;
                 p = gamma * gamma;
 
@@ -233,7 +237,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
                     alpha = d[i+1];
                     gamma = c * (alpha - sigma) - s * oldgam;
                     d[i] = oldgam + (alpha - gamma);
-                    if(c != 0.0F16){
+                    if(c != ZERO){
                         p = (gamma * gamma) / c;
                     } else{
                         p = oldc * bb;
@@ -259,7 +263,7 @@ void hfsterf(lapack_int n, _Float16 *d, _Float16 *e, int *info) {
         break;
     } while(1);
     for(int i = 0; i < n-1; i++) {
-        if (e[i] != 0.0F16) {
+        if (e[i] != ZERO) {
             *info += 1;
         }
     }

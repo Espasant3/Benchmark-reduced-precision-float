@@ -1,18 +1,20 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hforg2l(lapack_int m, lapack_int n, lapack_int k, _Float16 *a, lapack_int lda,
-            _Float16 *tau, _Float16 *work, lapack_int *info) {
-    lapack_int i, j, l;
+void hforg2l(lapack_int m, lapack_int n, lapack_int k, lapack_float *a, lapack_int lda,
+            lapack_float *tau, lapack_float *work, lapack_int *info) {
+    
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
 
     *info = 0;
     if (m < 0) {
         *info = -1;
-    } else if (n < m) {
+    } else if (n < 0 || n > m) {
         *info = -2;
-    } else if (k < 0 || k > m) {
+    } else if (k < 0 || k > n) {
         *info = -3;
-    } else if (lda < (m > 0 ? m : 1)) {
+    } else if (lda < MAX(1, m)) {
         *info = -5;
     }
     if (*info != 0) {
@@ -20,49 +22,26 @@ void hforg2l(lapack_int m, lapack_int n, lapack_int k, _Float16 *a, lapack_int l
         return;
     }
 
-    if (m == 0) {
-        return;
-    }
+    if (n <= 0) return;
 
-    // Inicializar filas k:m-1 (equivale a k+1:m en Fortran)
-    if (k < m) {
-        for (j = 0; j < n; j++) {
-            for (l = k; l < m; l++) {
-                a[j * lda + l] = 0.0F16;
-            }
-            if (j >= k && j < m) {
-                a[j * lda + j] = 1.0F16;
-            }
+    for(int j = 0; j < n - k - 1; j++){
+        for(int l = 0; l < m - 1; l++){
+            a[l + j * lda] = ZERO;
         }
+        a[m - n + j + j * lda] = ONE;
     }
+    
+    for(int i = 1; i <= k; i++){
+        int ii = n - k + i; 
+        a[m - n + (ii - 1) + (ii - 1) * lda] = ONE;
 
-    // Aplicar reflectores inversos (i desde k-1 hasta 0)
-    for (i = k - 1; i >= 0; i--) {
-        if (i < n - 1) {
-            if (i < m - 1) {
-                char side = 'R';
-                int num_rows = m - i - 1;
-                int num_cols = n - i;
-                _Float16 *v = &a[i * lda + i];
-                int incv = 1;
-                _Float16 tau_i = tau[i];
-                _Float16 *c_matrix = &a[i * lda + (i + 1)];
+        hflarf1l('L', m - n + ii, ii - 1, &a[(ii - 1) * lda], 1, tau[i - 1],
+                        a, lda, work);
+        hfscal(m - n + ii - 1, -tau[i - 1], &a[(ii - 1) * lda], 1);
+        a[m - n + (ii - 1) + (ii - 1) * lda] = ONE - tau[i - 1];
 
-                hflarf1f(side, num_rows, num_cols, v, incv, tau_i,
-                         c_matrix, lda, work);
-            }
-
-            // Escalar A(i, i+1:n) por -tau[i]
-            int scal_len = n - i - 1;
-            _Float16 alpha = -tau[i];
-            int incx = lda;
-            hfscal(scal_len, alpha, &a[(i + 1) * lda + i], incx);
-        }
-
-        // Actualizar diagonal y ceros a la izquierda
-        a[i * lda + i] = 1.0F16 - tau[i];
-        for (l = 0; l < i; l++) {
-            a[l * lda + i] = 0.0F16;
+        for(int l = m - n + ii; l < m; l++){
+            a[l + (ii - 1) * lda] = ZERO;
         }
     }
 }

@@ -1,15 +1,15 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
 /**
  * \file hflascl.c
- * \brief Escalado de matrices en _Float16 con tipos y estructuras variadas
+ * \brief Escalado de matrices en lapack_float con tipos y estructuras variadas
  */
 
 /**
- * \brief Escala una matriz en _Float16 para cambiar su rango numérico
+ * \brief Escala una matriz en lapack_float para cambiar su rango numérico
  * 
- * \details Versión _Float16 de LAPACK's SLASCL. Escala elementos de la matriz:
+ * \details Versión lapack_float de LAPACK's SLASCL. Escala elementos de la matriz:
  *          \f[ A := (CTO/CFROM) \cdot A \f]
  *          Soporta múltiples tipos de matriz con manejo seguro de overflow/underflow.
  * 
@@ -27,7 +27,7 @@
  * \param[in] CTO   Factor de escala objetivo (≠NaN)
  * \param[in] M     Filas de la matriz
  * \param[in] N     Columnas de la matriz
- * \param[in,out] A Matriz _Float16 a escalar
+ * \param[in,out] A Matriz lapack_float a escalar
  * \param[in] LDA   Leading dimension de A
  * \param[out] INFO Código de salida:
  *                 - 0: éxito
@@ -57,22 +57,25 @@
  * | Z    | j-KL <= i <= j+KU          | Banda general   |
  * 
  * \example
- * _Float16 A[4][4] = {...}; // Matriz 4x4
+ * lapack_float A[4][4] = {...}; // Matriz 4x4
  * int info;
- * hflascl('G', 0, 0, 2.0F16, 4.0F16, 4, 4, A[0], 4, &info); // Escala x2
+ * hflascl('G', 0, 0, 2.0, 4.0, 4, 4, A[0], 4, &info); // Escala x2
  * 
- * \see hflamch_Float16 Para obtención de constantes máquina
+ * \see hflamch_half_precision Para obtención de constantes máquina
  * \see LAPACKE_xerbla Para manejo de errores
- * \see LAPACK_SISNAN Para detección de NaN
+ * \see LAPACK_HFISNAN Para detección de NaN
  */
 
-void hflascl(char TYPE, lapack_int KL, lapack_int KU, _Float16 CFROM, _Float16 CTO,
-             lapack_int M, lapack_int N, _Float16 *A, lapack_int LDA, lapack_int *INFO) {
+void hflascl(char TYPE, lapack_int KL, lapack_int KU, lapack_float CFROM, lapack_float CTO,
+             lapack_int M, lapack_int N, lapack_float *A, lapack_int LDA, lapack_int *INFO) {
                 
     bool DONE = false;
     int ITYPE, I, J;
     int K1, K2, K3, K4;
-    _Float16 BIGNUM, CFROM1, CFROMC = CFROM, CTO1, CTOC = CTO, MUL, SMLNUM;
+    lapack_float BIGNUM, CFROM1, CFROMC = CFROM, CTO1, CTOC = CTO, MUL, SMLNUM;
+
+    const lapack_float ZERO = (lapack_float) 0.0;
+    const lapack_float ONE = (lapack_float) 1.0;
 
     /* Validación de parámetros */
     *INFO = 0;
@@ -105,7 +108,7 @@ switch (TYPE) {
 
     if (ITYPE == -1)
         *INFO = -1;
-    else if (CFROM == 0.0F16 || LAPACK_HFISNAN(CFROM))
+    else if (CFROM == ZERO || LAPACK_HFISNAN(CFROM))
         *INFO = -4;
     else if (LAPACK_HFISNAN(CTO))
         *INFO = -5;
@@ -134,8 +137,8 @@ switch (TYPE) {
     if (N == 0 || M == 0)
         return;
 
-    SMLNUM = hflamch_Float16('S');
-    BIGNUM = 1.0F16 / SMLNUM;
+    SMLNUM = hflamch_half_precision('S');
+    BIGNUM = ONE / SMLNUM;
 
     do {
         CFROM1 = CFROMC * SMLNUM;
@@ -148,26 +151,26 @@ switch (TYPE) {
             if (CTO1 == CTOC) {  // CTOC es cero o infinito
                 MUL = CTOC;
                 DONE = true;
-                CFROMC = 1.0F16;
-            } else if (ABS_Float16(CFROM1) > ABS_Float16(CTOC) && CTOC != 0.0F16) {
+                CFROMC = ONE;
+            } else if (ABS_half_precision(CFROM1) > ABS_half_precision(CTOC) && CTOC != ZERO) {
                 MUL = SMLNUM;
                 DONE = false;
                 CFROMC = CFROM1;
-            } else if (ABS_Float16(CTO1) > ABS_Float16(CFROMC)) {
+            } else if (ABS_half_precision(CTO1) > ABS_half_precision(CFROMC)) {
                 MUL = BIGNUM;
                 DONE = false;
                 CTOC = CTO1;
             } else {
                 MUL = CTOC / CFROMC;
                 DONE = true;
-                if(MUL == 1.0F16){
+                if(MUL == ONE){
                     return;
                 }
             }
         }
         
         /* Aplicar escalado si es necesario */
-        if (!DONE || MUL != 1.0F16) {
+        if (!DONE || MUL != ONE) {
             switch (ITYPE) {
                 case 0:  // Matriz completa
                     for (J = 0; J < N; J++)

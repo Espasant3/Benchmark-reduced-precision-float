@@ -1,18 +1,17 @@
 
-#include "../include/lapacke_utils_reimpl.h"
-/*
-void hfaxpy(int n, _Float16 alpha, _Float16 *x, int incx, _Float16 *y, int incy) {
-    for (int i = 0; i < n; i++) {
-        y[i * incy] += alpha * x[i * incx];
-    }
-}
-*/
-void hfsytd2(char uplo, lapack_int n, _Float16 *a, int lda, _Float16 *d, _Float16 *e, _Float16 *tau, lapack_int *info) {
+#include "lapacke_utils_reimpl.h"
+
+void hfsytd2(char uplo, lapack_int n, lapack_float *a, int lda, lapack_float *d, lapack_float *e, lapack_float *tau, lapack_int *info) {
     
+    // Constantes
+    const lapack_float ZERO = (lapack_float)0.0;
+    const lapack_float ONE = (lapack_float)1.0;
+    const lapack_float HALF = (lapack_float)0.5;
+
     // Variables locales
     lapack_logical upper = lsame_reimpl(uplo, 'U');
     int i;
-    _Float16 alpha, taui;
+    lapack_float alpha, taui;
     
     // Verificar parámetros de entrada
     *info = 0;
@@ -37,20 +36,20 @@ void hfsytd2(char uplo, lapack_int n, _Float16 *a, int lda, _Float16 *d, _Float1
             hflarfg(i + 1, &a[i + (i + 1) * lda], &a[(i + 1) * lda], 1, &taui);
 
             
-            if (taui != 0.0F16) {
-                a[i + (i + 1) * lda] = 1.0F16;
+            if (taui != ZERO) {
+                a[i + (i + 1) * lda] = ONE;
                 
                 // Calcular x = tau * A * v
-                hfsymv(uplo, i + 1, taui, a, lda, &a[(i + 1) * lda], 1, 0.0F16, tau, 1);
+                hfsymv(uplo, i + 1, taui, a, lda, &a[(i + 1) * lda], 1, ZERO, tau, 1);
                 
                 // Calcular alpha = -1/2 * tau * v^T * x
-                alpha = -0.5F16 * taui * hfdot(i + 1, tau, 1, &a[(i + 1) * lda], 1);
+                alpha = -HALF * taui * hfdot(i + 1, tau, 1, &a[(i + 1) * lda], 1);
                 
                 // Actualizar x = x - alpha * v
                 hfaxpy(i + 1, alpha, &a[(i + 1) * lda], 1, tau, 1);
                 
                 // Aplicar transformación como rank-2 update
-                hfsyr2(uplo, i + 1, -1.0F16, &a[(i + 1) * lda], 1, tau, 1, a, lda);
+                hfsyr2(uplo, i + 1, -ONE, &a[(i + 1) * lda], 1, tau, 1, a, lda);
                 
                 // Restaurar valor original
                 a[i + (i + 1) * lda] = e[i];
@@ -69,21 +68,21 @@ void hfsytd2(char uplo, lapack_int n, _Float16 *a, int lda, _Float16 *d, _Float1
 
             e[i] = a[(i + 1) + i * lda];
             
-            if (taui != 0.0F16) {
-                a[(i + 1) + i * lda] = 1.0F16;
+            if (taui != ZERO) {
+                a[(i + 1) + i * lda] = ONE;
                 
                 // Calcular x = tau * A * v
                 hfsymv(uplo, n - i - 1, taui, &a[(i + 1) + (i + 1) * lda], lda, 
-                       &a[(i + 1) + i * lda], 1, 0.0F16, &tau[i], 1);
+                       &a[(i + 1) + i * lda], 1, ZERO, &tau[i], 1);
                 
                 // Calcular alpha = -1/2 * tau * v^T * x
-                alpha = -0.5F16 * taui * hfdot(n - i - 1, &tau[i], 1, &a[(i + 1) + i * lda], 1);
+                alpha = -HALF * taui * hfdot(n - i - 1, &tau[i], 1, &a[(i + 1) + i * lda], 1);
                 
                 // Actualizar x = x - alpha * v
                 hfaxpy(n - i - 1, alpha, &a[(i + 1) + i * lda], 1, &tau[i], 1);
                 
                 // Aplicar transformación como rank-2 update
-                hfsyr2(uplo, n - i - 1, -1.0F16, &a[(i + 1) + i * lda], 1, &tau[i], 1, &a[(i + 1) + (i + 1) * lda], lda);
+                hfsyr2(uplo, n - i - 1, -ONE, &a[(i + 1) + i * lda], 1, &tau[i], 1, &a[(i + 1) + (i + 1) * lda], lda);
                 
                 // Restaurar valor original
                 a[(i + 1) + i * lda] = e[i];

@@ -1,7 +1,7 @@
 
-#include "../include/lapacke_utils_reimpl.h"
+#include "lapacke_utils_reimpl.h"
 
-void hflacpy(char uplo, int m, int n, const _Float16 *a, int lda, _Float16 *b, int ldb) {
+void hflacpy(char uplo, int m, int n, const lapack_float *a, int lda, lapack_float *b, int ldb) {
     int i, j;
     
     if (lsame_reimpl(uplo, 'U')) {

@@ -1,7 +1,12 @@
 
-#include "../include/lapacke_utils_reimpl.h" //Se puede evitar poner la ruta completa si se configura el compilador con algo como gcc -I./include -o programa utils/lapacke_slascl_reimpl.c
+#include "lapacke_utils_reimpl.h" 
 
-void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Float16* w, _Float16* work, lapack_int lwork, lapack_int* info) {
+void hfsyev(char jobz, char uplo, lapack_int n, lapack_float* a, lapack_int lda, lapack_float* w, lapack_float* work, lapack_int lwork, lapack_int* info) {
+
+    // Constantes y variables
+    const lapack_float ZERO = (lapack_float)0.0;
+    const lapack_float ONE = (lapack_float)1.0;
+    const lapack_float TWO = (lapack_float)2.0;
 
     // Flags lógicos
     lapack_int wantz = lsame_reimpl(jobz, 'V');
@@ -26,7 +31,7 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     if(*info == 0) {
         // ========= Cálculo del workspace óptimo =========
 
-        lapack_int nb = ilaenv_reimpl_Float16(1, "SSYTRD", "U", n-1, -1, -1, -1); // En principio tiene que seguir con "SSYTRD" hasta que se adapte el programa)
+        lapack_int nb = ilaenv_reimpl_half_precision(1, "SSYTRD", "U", n-1, -1, -1, -1); // En principio tiene que seguir con "SSYTRD" hasta que se adapte el programa)
         // Tecnicamente seria posible duplicar este valor si la arquitectura soportase el uso de float de media precisión
         lwkopt = MAX(1, (nb + 2) * n);
         work[0] = hfroundup_lwork(lwkopt);
@@ -50,29 +55,29 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
 
     if (n == 1) {
         w[0] = a[0];
-        work[0] = 2.0F16;
+        work[0] = TWO;
         if (wantz) {
-            a[0] = 1.0F16;
+            a[0] = ONE;
         }
         return;
     }
     
     // Get machine constants.
 
-    _Float16 safmin = hflamch_Float16('S'); 
-    _Float16 eps = hflamch_Float16('E');
-    _Float16 smlnum = safmin / eps;
-    _Float16 bignum = 1.0F16 / smlnum;
-    _Float16 rmin = custom_sqrtf16(smlnum);
-    _Float16 rmax = custom_sqrtf16(bignum);
+    lapack_float safmin = hflamch_half_precision('S'); 
+    lapack_float eps = hflamch_half_precision('E');
+    lapack_float smlnum = safmin / eps;
+    lapack_float bignum = ONE / smlnum;
+    lapack_float rmin = custom_sqrtf_half_precision(smlnum);
+    lapack_float rmax = custom_sqrtf_half_precision(bignum);
 
     // Scale matrix to allowable range, if necessary.
 
-    _Float16 anrm = hflansy('M', uplo, n, a, lda, work);
+    lapack_float anrm = hflansy('M', uplo, n, a, lda, work);
     int iscale = 0;
-    _Float16 sigma = 1.0F16;
+    lapack_float sigma = ONE;
 
-    if (anrm > 0.0F16 && anrm < rmin) {
+    if (anrm > ZERO && anrm < rmin) {
         iscale = 1;
         sigma = rmin / anrm;
     } else if (anrm > rmax) {
@@ -81,8 +86,7 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     }
 
     if (iscale == 1) {
-        //LAPACKE_hflascl(LAPACK_COL_MAJOR, uplo, 0, 0, 1.0F16, sigma, n, n, a, lda);
-        hflascl(uplo, 0, 0, 1.0F16, sigma, n, n, a, lda, info);
+        hflascl(uplo, 0, 0, ONE, sigma, n, n, a, lda, info);
         if (*info != 0) {
             return;
         }
@@ -120,7 +124,7 @@ void hfsyev(char jobz, char uplo, lapack_int n, _Float16* a, lapack_int lda, _Fl
     // ======== Re-escalado de valores propios ========
     if (iscale == 1) {
         lapack_int imax = (*info == 0) ? n - 1 : *info - 1;
-        hfscal(imax, 1.0F16 / sigma, w, 1);
+        hfscal(imax, ONE / sigma, w, 1);
     }
 
     // ======== Devolver tamaño óptimo del workspace ========
