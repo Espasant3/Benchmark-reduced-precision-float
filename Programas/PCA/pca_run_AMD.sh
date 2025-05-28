@@ -24,8 +24,12 @@ seed=""
 
 # Uso: $0 [-f|--force] <tamanho N> [<seed>]
 usage() {
-    echo "Uso: $0 [-f|--force] <tamanho N> [<seed>]"
-    exit 1
+    # Mostrar ayuda de uso del script
+    echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
+    echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
+    echo "  -v                Muestra información adicional durante la ejecución."
+    echo "  -h, --help        Muestra esta ayuda y sale."
+    exit 0
 }
 
 # Procesar argumentos con GNU getopt
@@ -51,12 +55,7 @@ while true; do
             shift
             ;;
         -h|--help)
-            # Mostrar ayuda
-            echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
-            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
-            echo "  -v                Muestra información adicional durante la ejecución."
-            echo "  -h, --help        Muestra esta ayuda y sale."
-            exit 0
+            usage
             ;;    
         --)
             shift

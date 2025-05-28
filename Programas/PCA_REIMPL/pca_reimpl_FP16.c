@@ -31,7 +31,7 @@ Matrix* _create_Matrix(int rows, int cols) {
     matrix->cols = cols;
     matrix->data = malloc(rows * sizeof(_Float16 *));
     for(int i = 0; i < rows; i++) {
-        matrix->data[i] = calloc(cols, sizeof(_Float16));
+        matrix->data[i] = (_Float16 *)calloc(cols, sizeof(_Float16));
     }
     return matrix;
 }
@@ -95,8 +95,8 @@ void _copy_matrix(Matrix* source, Matrix* destination) {
 
 // Función para estandarizar la matriz
 void standarize_matrix(Matrix* matrix) {
-    _Float16 *medias = calloc(matrix->cols, sizeof(_Float16));
-    _Float16 *desviaciones = calloc(matrix->cols, sizeof(_Float16));
+    _Float16 *medias = (_Float16 *)calloc(matrix->cols, sizeof(_Float16));
+    _Float16 *desviaciones = (_Float16 *)calloc(matrix->cols, sizeof(_Float16));
     _calc_means_and_deviations(matrix, medias, desviaciones);
 
     for (int i = 0; i < matrix->rows; i++) {
@@ -180,20 +180,19 @@ void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, _Float16 *eigenv
     int n = covariance->rows;
     int lda = n;
 
-    //int info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors_f, lda, eigenvalues_f);
+    // Usar LAPACKE_hfsyev para calcular valores y vectores propios
     int info = LAPACKE_hfsyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
 
     if (info > 0) {
-        printf("Error: LAPACKE_ssyev failed to converge. Info: %d\n", info);
         free(eigenvectors);
         free(eigenvalues);
         _free_matrix(covariance);
+        printf("Error: LAPACKE_hsyev failed to converge. Info: %d\n", info);
         exit(EXIT_FAILURE);
     }
 
     // Ordenar valores propios y vectores propios
     sort_eigenvalues_and_eigenvectors(n, eigenvalues, eigenvectors);
-
 }
 
 // Función para transformar los datos usando los vectores propios
@@ -262,9 +261,9 @@ void transform_data(Matrix* matrix, _Float16* eigenvectors, Matrix* transformed_
 
     #elif defined(__aarch64__)
     // Sección para aarch64
-    __fp16* matrix_data = (__fp16*)calloc(matrix_size * sizeof(__fp16));
+    __fp16* matrix_data = (__fp16*)calloc(matrix_size, sizeof(__fp16));
     __fp16* transformed_data_data = (__fp16*)calloc(transformed_size, sizeof(__fp16));
-    __fp16* eigenvectors_f = (__fp16*)calloc(matrix->cols * matrix->cols * sizeof(__fp16));
+    __fp16* eigenvectors_f = (__fp16*)calloc(matrix->cols * matrix->cols, sizeof(__fp16));
 
     if (matrix_data == NULL || transformed_data_data == NULL) {
         printf("Error: No se pudo reservar memoria para matrix_data o transformed_data_data.\n");

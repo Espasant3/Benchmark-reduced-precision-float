@@ -8,8 +8,11 @@ additional_flags=""
 
 # Uso: $0 [--force] [opciones adicionales]
 usage() {
+    # Mostrar ayuda de uso del script
     echo "Uso: $0 [-f|--force] [opciones adicionales]"
-    exit 1
+    echo "  -f, --force       Fuerza la compilación cruzada de todos los programas a la arquitectura aarch64."
+    echo "  -h, --help        Muestra esta ayuda y sale."
+    exit 0
 }
 
 # Procesar argumentos manualmente
@@ -20,11 +23,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            # Mostrar ayuda
-            echo "Uso: $0 [-f|--force] [opciones adicionales]"
-            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas a la arquitectura aarch64."
-            echo "  -h, --help        Muestra esta ayuda y sale."
-            exit 0
+            usage
             ;;            
         --)  # Fin de las opciones
             shift
@@ -45,7 +44,7 @@ done
 
 COMMON_FLAGS="-Wall -g"
 
-OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC $additional_flags"
+OPT_FLAGS="-O3 -fomit-frame-pointer -fPIC $additional_flags"
 
 LINK_FLAGS="-lm"
 

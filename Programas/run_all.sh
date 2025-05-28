@@ -9,8 +9,12 @@ seed=""
 
 # Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]
 usage() {
+    # Mostrar ayuda de uso del script
     echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
-    exit 1
+    echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
+    echo "  -v                Muestra información adicional durante la ejecución."
+    echo "  -h, --help        Muestra esta ayuda y sale."
+    exit 0
 }
 
 # Procesar argumentos con GNU getopt
@@ -36,12 +40,7 @@ while true; do
             shift
             ;;
         -h|--help)
-            # Mostrar ayuda
-            echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
-            echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
-            echo "  -v                Muestra información adicional durante la ejecución."
-            echo "  -h, --help        Muestra esta ayuda y sale."
-            exit 0
+            usage
             ;;      
         --)
             shift
@@ -109,7 +108,7 @@ case "$VENDOR" in
 esac
 
 # Directorios a procesar (se puede expandir fácilmente)
-DIRECTORIOS=("AXPY" "DCT" "DWT_1D" "PCA")
+DIRECTORIOS=("AXPY" "DCT" "DWT_1D" "PCA" "PCA_REIMPL")
 
 # Dependiendo de la combinación de arquitectura y proveedor, realizar diferentes acciones
 case "$ARCH" in

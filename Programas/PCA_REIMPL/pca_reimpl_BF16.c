@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <lapacke.h>
+//#include <lapacke.h>
 #include <arm_fp16.h>
 #include <arm_bf16.h>
 #include <armpl.h> // Esta es para usar cblas_hgemm
+
+#include "./functions-adapted/include/pca_reimpl.h"
 
 #define N_SMALL 4
 
@@ -171,40 +173,14 @@ void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, __bf16 *eigenval
     
     int n = covariance->rows;
     int lda = n;
-    int covariance_size = covariance->rows * covariance->cols;
 
-    float* eigenvectors_f = (float*) calloc(covariance_size, sizeof(float));
-    float* eigenvalues_f = (float*) calloc(n, sizeof(float));
-
-    if (eigenvectors_f == NULL || eigenvalues_f == NULL) {
-        printf("Error: No se pudo reservar memoria para eigenvalues o eigenvectors (float).\n");
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < covariance_size; i++) {
-        eigenvectors_f[i] = (float)covariance->data[i / covariance->cols][i % covariance->cols];
-    }
-
-    // Usar LAPACKE_ssyev para calcular valores y vectores propios
-    int info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors_f, lda, eigenvalues_f);
+    // Usar LAPACKE_hsyev para calcular valores y vectores propios
+    int info = LAPACKE_hsyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
 
     if (info > 0) {
-        printf("Error: LAPACKE_ssyev failed to converge. Info: %d\n", info);
+        printf("Error: LAPACKE_hsyev failed to converge. Info: %d\n", info);
         exit(EXIT_FAILURE);
     }
-
-    // Copiar valores de eigenvalues_f a eigenvalues
-    for (int i = 0; i < n; i++) {
-        eigenvalues[i] = (__bf16)eigenvalues_f[i];
-    }
-
-    // Copiar valores de eigenvectors_f a eigenvectors (array plano)
-    for (int i = 0; i < covariance_size; i++) {
-        eigenvectors[i] = (__bf16)eigenvectors_f[i];
-    }
-
-    free(eigenvectors_f);
-    free(eigenvalues_f);
 
     // Ordenar valores propios y vectores propios
     sort_eigenvalues_and_eigenvectors(covariance->rows, eigenvalues, eigenvectors);
@@ -258,7 +234,7 @@ void transform_data(Matrix* matrix, __bf16* eigenvectors, Matrix* transformed_da
     }
 
     for(int i = 0; i < matrix->cols * matrix->cols; i++) {
-        eigenvectors[i] = (__bf16)eigenvectors_f[i];
+        eigenvectors[i] = (_Float16)eigenvectors_f[i];
     }
 
     free(matrix_data);

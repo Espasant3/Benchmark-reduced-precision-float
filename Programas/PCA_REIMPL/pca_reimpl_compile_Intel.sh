@@ -20,6 +20,7 @@ collect_files() {
   done
 }
 
+# Uso: $0 [--force] [opciones adicionales]
 usage() {
     # Mostrar ayuda de uso del script
     echo "Uso: $0 [-f|--force] [opciones adicionales]"
@@ -68,19 +69,22 @@ INCLUDE_DIR="-I./functions-adapted/include"
 DIRECTORIOS=("src" "utils" "fortran_sourced")
 
 
-# Llama a la función antes de usar la variable en la compilación
-collect_files
-
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
 # Cambiar al directorio del script
 cd "$script_dir"
 
+# Llama a la función antes de usar la variable en la compilación
+collect_files
 
 ### COMPILACION DEL PROGRAMA BASE
 
-#gcc-14 $COMMON_FLAGS pca_reimpl_FP32.c -o pca_reimpl_FP32 $OPT_FLAGS $LINK_FLAGS
+gcc-14 $COMMON_FLAGS pca_reimpl_FP32.c -o pca_reimpl_FP32 $OPT_FLAGS $LINK_FLAGS
+
+LINK_FLAGS="${LINK_FLAGS/-llapacke/}"
+LINK_FLAGS="${LINK_FLAGS/-llapack/}" 
+LINK_FLAGS=$(echo $LINK_FLAGS | tr -s ' ' | xargs)
 
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 

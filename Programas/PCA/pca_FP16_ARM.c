@@ -23,7 +23,7 @@ Matrix* _create_Matrix(int rows, int cols) {
     matrix->cols = cols;
     matrix->data = malloc(rows * sizeof(__fp16 *));
     for(int i = 0; i < rows; i++) {
-        matrix->data[i] = calloc(cols, sizeof(__fp16));
+        matrix->data[i] = (__fp16 *)calloc(cols, sizeof(__fp16));
     }
     return matrix;
 }
@@ -87,8 +87,8 @@ void _copy_matrix(Matrix* source, Matrix* destination) {
 
 // Función para estandarizar la matriz
 void standarize_matrix(Matrix* matrix) {
-    __fp16 *medias = malloc(matrix->cols * sizeof(__fp16));
-    __fp16 *desviaciones = malloc(matrix->cols * sizeof(__fp16));
+    __fp16 *medias = (__fp16 *)calloc(matrix->cols, sizeof(__fp16));
+    __fp16 *desviaciones = (__fp16 *)calloc(matrix->cols, sizeof(__fp16));
     _calc_means_and_deviations(matrix, medias, desviaciones);
 
     for (int i = 0; i < matrix->rows; i++) {
@@ -173,7 +173,7 @@ void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, __fp16 *eigenval
     int lda = n;
     int covariance_size = covariance->rows * covariance->cols;
 
-    float* eigenvectors_f = (float*) malloc(covariance_size * sizeof(float));
+    float* eigenvectors_f = (float*) calloc(covariance_size, sizeof(float));
     float* eigenvalues_f = (float*) calloc(n, sizeof(float));
 
     if (eigenvectors_f == NULL || eigenvalues_f == NULL) {
@@ -225,7 +225,7 @@ void transform_data(Matrix* matrix, __fp16* eigenvectors, Matrix* transformed_da
     int transformed_size = transformed_data->rows * transformed_data->cols;
 
     // Asegurarse de que los punteros son válidos y alineados correctamente
-    __fp16* matrix_data = (__fp16*)malloc(matrix_size * sizeof(__fp16));
+    __fp16* matrix_data = (__fp16*)calloc(matrix_size, sizeof(__fp16));
     __fp16* transformed_data_data = (__fp16*)calloc(transformed_size, sizeof(__fp16));
 
     // Inicializar los arrays temporales
@@ -265,8 +265,8 @@ void do_pca(Matrix* matrix) {
     calculate_covariance(matrix, covariance);
 
     // Asignar memoria para eigenvalues y eigenvectors
-    __fp16* eigenvalues = (__fp16*) malloc(covariance->rows * sizeof(__fp16));
-    __fp16* eigenvectors = (__fp16*) malloc(covariance->rows * covariance->cols * sizeof(__fp16));
+    __fp16* eigenvalues = (__fp16*) calloc(covariance->rows, sizeof(__fp16));
+    __fp16* eigenvectors = (__fp16*) calloc(covariance->rows * covariance->cols, sizeof(__fp16));
 
 
     if (eigenvalues == NULL || eigenvectors == NULL) {

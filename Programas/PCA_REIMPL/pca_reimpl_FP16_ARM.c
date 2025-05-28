@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <lapacke.h>
+#include <unistd.h>
+//#include <lapacke.h>
 #include <arm_fp16.h>
-#include <arm_bf16.h>
 #include <armpl.h> // Esta es para usar cblas_hgemm
+
+#include "./functions-adapted/include/pca_reimpl.h"
+
 
 #define N_SMALL 4
 
@@ -13,7 +16,7 @@
 typedef struct {
     int rows;
     int cols;
-    __bf16** data;
+    __fp16** data;
 } Matrix;
 
 // Función para crear una estructura Matrix de tamaño rows x cols
@@ -21,9 +24,9 @@ Matrix* _create_Matrix(int rows, int cols) {
     Matrix* matrix = malloc(sizeof(Matrix));
     matrix->rows = rows;
     matrix->cols = cols;
-    matrix->data = malloc(rows * sizeof(__bf16 *));
+    matrix->data = malloc(rows * sizeof(__fp16 *));
     for(int i = 0; i < rows; i++) {
-        matrix->data[i] = (__bf16 *)calloc(cols, sizeof(__bf16));
+        matrix->data[i] = (__fp16 *)calloc(cols, sizeof(__fp16));
     }
     return matrix;
 }
@@ -61,10 +64,10 @@ void _print_matrix_exp(Matrix* matrix) {
 }
 
 // Función para calcular las medias y desviaciones estándar de cada columna de la matriz
-void _calc_means_and_deviations(Matrix* matrix, __bf16 *medias, __bf16 *desviaciones) {
+void _calc_means_and_deviations(Matrix* matrix, __fp16 *medias, __fp16 *desviaciones) {
     for(int j = 0; j < matrix->cols; j++) {
-        __bf16 suma = 0;
-        __bf16 suma_desviaciones = 0;
+        __fp16 suma = 0;
+        __fp16 suma_desviaciones = 0;
         for(int i = 0; i < matrix->rows; i++) {
             suma += matrix->data[i][j];
         }
@@ -87,8 +90,8 @@ void _copy_matrix(Matrix* source, Matrix* destination) {
 
 // Función para estandarizar la matriz
 void standarize_matrix(Matrix* matrix) {
-    __bf16 *medias = (__bf16 *)calloc(matrix->cols, sizeof(__bf16));
-    __bf16 *desviaciones = (__bf16 *)calloc(matrix->cols, sizeof(__bf16));
+    __fp16 *medias = (__fp16 *)calloc(matrix->cols, sizeof(__fp16));
+    __fp16 *desviaciones = (__fp16 *)calloc(matrix->cols, sizeof(__fp16));
     _calc_means_and_deviations(matrix, medias, desviaciones);
 
     for (int i = 0; i < matrix->rows; i++) {
@@ -120,24 +123,24 @@ void calculate_covariance(Matrix* matrix, Matrix* covariance) {
 }
 
 // Función auxiliar para intercambiar dos elementos en un array
-void swap(__bf16* a, __bf16* b) {
-    __bf16 temp = *a;
+void swap(__fp16* a, __fp16* b) {
+    __fp16 temp = *a;
     *a = *b;
     *b = temp;
 }
 
 // Función auxiliar para intercambiar dos columnas en una matriz
-void swap_columns(__bf16* eigenvectors, int n, int col1, int col2) {
+void swap_columns(__fp16* eigenvectors, int n, int col1, int col2) {
     for (int i = 0; i < n; i++) {
-        __bf16 temp = eigenvectors[i * n + col1];
+        __fp16 temp = eigenvectors[i * n + col1];
         eigenvectors[i * n + col1] = eigenvectors[i * n + col2];
         eigenvectors[i * n + col2] = temp;
     }
 }
 
 // Función auxiliar para particionar el array de valores propios
-int partition(__bf16* eigenvalues, __bf16* eigenvectors, int n, int low, int high) {
-    __bf16 pivot = eigenvalues[high];
+int partition(__fp16* eigenvalues, __fp16* eigenvectors, int n, int low, int high) {
+    __fp16 pivot = eigenvalues[high];
     int i = low - 1;
 
     for (int j = low; j < high; j++) {
@@ -153,7 +156,7 @@ int partition(__bf16* eigenvalues, __bf16* eigenvectors, int n, int low, int hig
 }
 
 // Función auxiliar para aplicar quicksort
-void quicksort(__bf16* eigenvalues, __bf16* eigenvectors, int n, int low, int high) {
+void quicksort(__fp16* eigenvalues, __fp16* eigenvectors, int n, int low, int high) {
     if (low < high) {
         int pi = partition(eigenvalues, eigenvectors, n, low, high);
         quicksort(eigenvalues, eigenvectors, n, low, pi - 1);
@@ -162,56 +165,33 @@ void quicksort(__bf16* eigenvalues, __bf16* eigenvectors, int n, int low, int hi
 }
 
 // Función para ordenar los valores propios y vectores propios en orden descendente
-void sort_eigenvalues_and_eigenvectors(int n, __bf16* eigenvalues, __bf16* eigenvectors) {
+void sort_eigenvalues_and_eigenvectors(int n, __fp16* eigenvalues, __fp16* eigenvectors) {
     quicksort(eigenvalues, eigenvectors, n, 0, n - 1);
 }
 
 // Función para calcular los valores y vectores propios de la matriz de covarianza
-void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, __bf16 *eigenvalues, __bf16 *eigenvectors) {
+void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, __fp16 *eigenvalues, __fp16 *eigenvectors) {
     
     int n = covariance->rows;
     int lda = n;
-    int covariance_size = covariance->rows * covariance->cols;
 
-    float* eigenvectors_f = (float*) calloc(covariance_size, sizeof(float));
-    float* eigenvalues_f = (float*) calloc(n, sizeof(float));
-
-    if (eigenvectors_f == NULL || eigenvalues_f == NULL) {
-        printf("Error: No se pudo reservar memoria para eigenvalues o eigenvectors (float).\n");
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < covariance_size; i++) {
-        eigenvectors_f[i] = (float)covariance->data[i / covariance->cols][i % covariance->cols];
-    }
-
-    // Usar LAPACKE_ssyev para calcular valores y vectores propios
-    int info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors_f, lda, eigenvalues_f);
+    // Usar LAPACKE_hfsyev para calcular valores y vectores propios
+    int info = LAPACKE_hfsyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
 
     if (info > 0) {
+        free(eigenvectors);
+        free(eigenvalues);
+        _free_matrix(covariance);
         printf("Error: LAPACKE_ssyev failed to converge. Info: %d\n", info);
         exit(EXIT_FAILURE);
     }
-
-    // Copiar valores de eigenvalues_f a eigenvalues
-    for (int i = 0; i < n; i++) {
-        eigenvalues[i] = (__bf16)eigenvalues_f[i];
-    }
-
-    // Copiar valores de eigenvectors_f a eigenvectors (array plano)
-    for (int i = 0; i < covariance_size; i++) {
-        eigenvectors[i] = (__bf16)eigenvectors_f[i];
-    }
-
-    free(eigenvectors_f);
-    free(eigenvalues_f);
 
     // Ordenar valores propios y vectores propios
     sort_eigenvalues_and_eigenvectors(covariance->rows, eigenvalues, eigenvectors);
 }
 
 // Función para transformar los datos usando los vectores propios
-void transform_data(Matrix* matrix, __bf16* eigenvectors, Matrix* transformed_data) {
+void transform_data(Matrix* matrix, __fp16* eigenvectors, Matrix* transformed_data) {
 
     if (matrix->rows != transformed_data->rows || matrix->cols != transformed_data->cols) {
         printf("Error: Dimensiones incompatibles entre matrix y transformed_data.\n");
@@ -227,43 +207,25 @@ void transform_data(Matrix* matrix, __bf16* eigenvectors, Matrix* transformed_da
     // Asegurarse de que los punteros son válidos y alineados correctamente
     __fp16* matrix_data = (__fp16*)calloc(matrix_size, sizeof(__fp16));
     __fp16* transformed_data_data = (__fp16*)calloc(transformed_size, sizeof(__fp16));
-    __fp16* eigenvectors_f = (__fp16*)calloc(matrix->cols * matrix->cols, sizeof(__fp16));
-
-    if (matrix_data == NULL || transformed_data_data == NULL) {
-        printf("Error: No se pudo reservar memoria para matrix_data o transformed_data_data.\n");
-        free(matrix_data);
-        free(transformed_data_data);
-        exit(EXIT_FAILURE);
-    }
 
     // Inicializar los arrays temporales
     for (int i = 0; i < matrix_size; i++) {
-        matrix_data[i] = (__fp16)matrix->data[i / matrix->cols][i % matrix->cols];
+        matrix_data[i] = matrix->data[i / matrix->cols][i % matrix->cols];
     }
-
-    for(int i = 0; i < matrix->cols * matrix->cols; i++) {
-        eigenvectors_f[i] = (__fp16)eigenvectors[i];
-    }
-
 
     cblas_hgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
                 matrix->rows, matrix->cols, matrix->cols, 
                 1.0f, matrix_data, matrix->cols, 
-                eigenvectors_f, matrix->cols, 
+                eigenvectors, matrix->cols, 
                 0.0f, transformed_data_data, matrix->cols);
 
     // Copiar los datos de vuelta a transformed_data
     for (int i = 0; i < transformed_size; i++) {
-        transformed_data->data[i / transformed_data->cols][i % transformed_data->cols] = (__bf16)transformed_data_data[i];
-    }
-
-    for(int i = 0; i < matrix->cols * matrix->cols; i++) {
-        eigenvectors[i] = (__bf16)eigenvectors_f[i];
+        transformed_data->data[i / transformed_data->cols][i % transformed_data->cols] = transformed_data_data[i];
     }
 
     free(matrix_data);
     free(transformed_data_data);
-    free(eigenvectors_f);
 }
 
 // Función principal para realizar PCA
@@ -283,8 +245,8 @@ void do_pca(Matrix* matrix) {
     calculate_covariance(matrix, covariance);
 
     // Asignar memoria para eigenvalues y eigenvectors
-    __bf16* eigenvalues = (__bf16*) calloc(covariance->rows, sizeof(__bf16));
-    __bf16* eigenvectors = (__bf16*) calloc(covariance->rows * covariance->cols, sizeof(__bf16));
+    __fp16* eigenvalues = (__fp16*) calloc(covariance->rows, sizeof(__fp16));
+    __fp16* eigenvectors = (__fp16*) calloc(covariance->rows * covariance->cols, sizeof(__fp16));
 
 
     if (eigenvalues == NULL || eigenvectors == NULL) {
@@ -353,7 +315,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < matriz_small->rows; i++) {
         for (int j = 0; j < matriz_small->cols; j++) {
             float temp = (float)rand() / RAND_MAX * 10.0f; // Genera números aleatorios entre 0 y 10
-            matriz_small->data[i][j] = (__bf16)temp;
+            matriz_small->data[i][j] = (__fp16)temp;
         }
     }
     
@@ -378,7 +340,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < matriz->rows; i++) {
         for (int j = 0; j < matriz->cols; j++) {
             float temp = (float)rand() / RAND_MAX * 10.0f; // Genera números aleatorios entre 0 y 10
-            matriz->data[i][j] = (__bf16)temp;
+            matriz->data[i][j] = (__fp16)temp;
         }
     }
 

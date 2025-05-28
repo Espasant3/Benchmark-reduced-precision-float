@@ -1,5 +1,43 @@
 #!/bin/bash
 
+# --- Definición de funciones --- #
+usage() {
+    echo "Uso: $0 [opciones]"
+    echo "Opciones:"
+    echo "  -d, --directories    Lista de directorios a procesar (separados por espacios) relativos a script_dir/../../Programas/"
+    echo "  -h, --help           Muestra esta ayuda y sale"
+    exit 0
+}
+
+# --- Variables por defecto --- #
+user_directories=()
+DIRECTORIOS_DEFAULT=("AXPY" "DWT_1D" "PCA" "PCA_REIMPL" "DCT")
+
+# --- Procesar argumentos --- #
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            usage
+            ;;
+        -d|--directories)
+            shift
+            # Recoger todos los directorios hasta el siguiente flag
+            while [[ $# -gt 0 && ! "$1" =~ ^- ]]; do
+                user_directories+=("$1")
+                shift
+            done
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Argumento no reconocido: $1"
+            exit 1
+            ;;
+    esac
+done
+
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
@@ -18,9 +56,12 @@ echo "Compilación de los programas previa a la ejecucion terminada"
 
 source ../../Tests-Python/entorno_TFG/bin/activate
 
-# Directorios a procesar (se puede expandir fácilmente)
-DIRECTORIOS=("AXPY" "DWT_1D" "PCA" "DCT")
-
+# Determinar directorios a procesar
+if [ ${#user_directories[@]} -gt 0 ]; then
+    DIRECTORIOS=("${user_directories[@]}")
+else
+    DIRECTORIOS=("${DIRECTORIOS_DEFAULT[@]}")
+fi
 EJECUCIONES=13
 
 # FLAGS comunes para los programas

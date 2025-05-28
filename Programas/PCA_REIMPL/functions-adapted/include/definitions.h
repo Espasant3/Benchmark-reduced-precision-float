@@ -15,6 +15,11 @@
 #include <assert.h>
 #include <stddef.h>
 
+#if defined(USE_FP16) && defined(__aarch64__)
+  #include <arm_fp16.h>  // Para __fp16 en ARM
+#elif defined(USE_BF16) && defined(__aarch64__)
+  #include <arm_bf16.h>  // Para __bf16 en ARM
+#endif
 
 /* -------------------------------------------------------------------------- */
 /* Constantes IEEE 754 para _Float16 y __fp16 (binary16/half-precision) */
@@ -152,7 +157,7 @@ typedef lapack_int lapack_logical;
 
 
 /* -------------------------------------------------------------------------- */
-/* Auxiliar functions */
+/*                              Auxiliar functions                            */
 /* -------------------------------------------------------------------------- */
 
 /**

@@ -29,7 +29,7 @@ Matrix* _create_Matrix(int rows, int cols) {
     matrix->cols = cols;
     matrix->data = malloc(rows * sizeof(_Float16 *));
     for(int i = 0; i < rows; i++) {
-        matrix->data[i] = calloc(cols, sizeof(_Float16));
+        matrix->data[i] = (_Float16 *)calloc(cols, sizeof(_Float16));
     }
     return matrix;
 }
@@ -93,8 +93,8 @@ void _copy_matrix(Matrix* source, Matrix* destination) {
 
 // Función para estandarizar la matriz
 void standarize_matrix(Matrix* matrix) {
-    _Float16 *medias = malloc(matrix->cols * sizeof(_Float16));
-    _Float16 *desviaciones = malloc(matrix->cols * sizeof(_Float16));
+    _Float16 *medias = (_Float16 *)calloc(matrix->cols, sizeof(_Float16));
+    _Float16 *desviaciones = (_Float16 *)calloc(matrix->cols, sizeof(_Float16));
     _calc_means_and_deviations(matrix, medias, desviaciones);
 
     for (int i = 0; i < matrix->rows; i++) {
@@ -179,7 +179,7 @@ void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, _Float16 *eigenv
     int lda = n;
     int covariance_size = covariance->rows * covariance->cols;
 
-    float* eigenvectors_f = (float*) malloc(covariance_size * sizeof(float));
+    float* eigenvectors_f = (float*) calloc(covariance_size, sizeof(float));
     float* eigenvalues_f = (float*) calloc(n, sizeof(float));
 
     if (eigenvectors_f == NULL || eigenvalues_f == NULL) {
@@ -236,9 +236,9 @@ void transform_data(Matrix* matrix, _Float16* eigenvectors, Matrix* transformed_
 
     #ifdef __x86_64__
     // Sección para x86_64
-    float* matrix_data = (float*)malloc(matrix_size * sizeof(float));
+    float* matrix_data = (float*)calloc(matrix_size, sizeof(float));
     float* transformed_data_data = (float*)calloc(transformed_size, sizeof(float));
-    float* eigenvectors_f = (float*)malloc(matrix->cols * matrix->cols * sizeof(float));
+    float* eigenvectors_f = (float*)calloc(matrix->cols * matrix->cols, sizeof(float));
 
     if (matrix_data == NULL || transformed_data_data == NULL) {
         printf("Error: No se pudo reservar memoria para matrix_data o transformed_data_data.\n");
@@ -286,9 +286,9 @@ void transform_data(Matrix* matrix, _Float16* eigenvectors, Matrix* transformed_
 
     #elif defined(__aarch64__)
     // Sección para aarch64
-    __fp16* matrix_data = (__fp16*)malloc(matrix_size * sizeof(__fp16));
+    __fp16* matrix_data = (__fp16*)calloc(matrix_size, sizeof(__fp16));
     __fp16* transformed_data_data = (__fp16*)calloc(transformed_size, sizeof(__fp16));
-    __fp16* eigenvectors_f = (__fp16*)malloc(matrix->cols * matrix->cols * sizeof(__fp16));
+    __fp16* eigenvectors_f = (__fp16*)calloc(matrix->cols * matrix->cols, sizeof(__fp16));
 
     if (matrix_data == NULL || transformed_data_data == NULL) {
         printf("Error: No se pudo reservar memoria para matrix_data o transformed_data_data.\n");
@@ -356,8 +356,8 @@ void do_pca(Matrix* matrix) {
     calculate_covariance(matrix, covariance);
 
     // Asignar memoria para eigenvalues y eigenvectors
-    _Float16* eigenvalues = (_Float16*) malloc(covariance->rows * sizeof(_Float16));
-    _Float16* eigenvectors = (_Float16*) malloc(covariance->rows * covariance->cols * sizeof(_Float16));
+    _Float16* eigenvalues = (_Float16*) calloc(covariance->rows,sizeof(_Float16));
+    _Float16* eigenvectors = (_Float16*) calloc(covariance->rows * covariance->cols, sizeof(_Float16));
     
     if (eigenvalues == NULL || eigenvectors == NULL) {
         printf("Error: No se pudo reservar memoria para eigenvalues y eigenvectors.\n");
