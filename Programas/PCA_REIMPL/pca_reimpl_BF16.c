@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
 //#include <lapacke.h>
 #include <arm_fp16.h>
 #include <arm_bf16.h>
@@ -174,11 +175,11 @@ void calculate_eigenvalues_and_eigenvectors(Matrix* covariance, __bf16 *eigenval
     int n = covariance->rows;
     int lda = n;
 
-    // Usar LAPACKE_hsyev para calcular valores y vectores propios
-    int info = LAPACKE_hsyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
+    // Usar LAPACKE_hfsyev para calcular valores y vectores propios
+    int info = LAPACKE_hfsyev(LAPACK_ROW_MAJOR, 'V', 'U', n, eigenvectors, lda, eigenvalues);
 
     if (info > 0) {
-        printf("Error: LAPACKE_hsyev failed to converge. Info: %d\n", info);
+        printf("Error: LAPACKE_hfsyev failed to converge. Info: %d\n", info);
         exit(EXIT_FAILURE);
     }
 
