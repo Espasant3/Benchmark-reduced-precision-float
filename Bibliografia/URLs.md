@@ -36,6 +36,9 @@ Guía de instalación y uso de las bibliotecas de alto rendimiento de ARM (ARMPL
 ### [Advanced Matrix Extensions (AMX)](https://en.wikipedia.org/wiki/Advanced_Matrix_Extensions)
 Información sobre las Advanced Matrix Extensions (AMX), una tecnología de hardware desarrollada por Intel para acelerar operaciones matriciales en procesadores modernos, ampliamente utilizada en aplicaciones de aprendizaje automático y computación de alto rendimiento.
 
+### [Libreria immintrin.h](https://github.com/gcc-mirror/gcc/blob/master/gcc/config/i386/immintrin.h)
+La librería `immintrin.h` permitiría emplear en arquitecturas x86_64 los tipos de datos `__fp16` y `__bf16` (siempre que dispongan de las extensiones AVX512FP16 y AVX512BF16 respectivamente). El compilador clang también lo permite tal y como se ve [aquí](https://clang.llvm.org/doxygen/immintrin_8h_source.html), donde además aclara que esta cabecera solo está pensada para ser empleada en arquitecturas x86.
+
 ### [Half-precision floating-point format](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
 Información sobre los tipos de datos flotantes de media precisión, incluyendo información como el exponente mínimo y máximo posible (en base 10)
 
@@ -69,7 +72,10 @@ Documento que confirma la introducción de las instrucciones AVX-512 y el soport
 Documentación oficial de LoongArch v1.1, detallando las especificaciones y soporte para, entre otras, instrucciones .H que operan con datos de 16 bits, enteros y floats (FP16).
 
 ### [AMD Zen 5 y Zen 6: AVX512-VP2INTERSECT y AVX512-FP16](https://elchapuzasinformatico.com/2024/01/amd-cpu-zen-5-avx512-vp2intersect-zen-6-avx512-fp16/)
-Descripción de las nuevas instrucciones AVX512-VP2INTERSECT y AVX512-FP16 en las arquitecturas AMD Zen 5 y Zen 6, respectivamente.
+Descripción de las nuevas instrucciones AVX512-VP2INTERSECT y AVX512-FP16 en las arquitecturas AMD Zen 5 y Zen 6, respectivamente. También aporta información sobre el soporte de operaciones BF16 en AMD Zen 4 y algunas arquitecturas de Intel.
+
+### [AMD Zen 5 Compiler Support Posted For GCC - Confirms New AVX Features & More](https://www.phoronix.com/news/AMD-Zen-5-Znver-5-GCC)
+Confirmación de que AMD Zen 5 tendrá (tiene) soporte para extensiones AVX512BF16.
 
 ### [Huawei's Ascend 910C: A Bold Challenge to Nvidia in the AI Chip Market](https://www.unite.ai/huaweis-ascend-910c-a-bold-challenge-to-nvidia-in-the-ai-chip-market/)
 Artículo que destaca cómo el procesador Huawei Ascend 910C soporta operaciones de float de 16 bits (FP16) de manera nativa, presentándose como un fuerte competidor en el mercado de chips para inteligencia artificial frente a Nvidia.
