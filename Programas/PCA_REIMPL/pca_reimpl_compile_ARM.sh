@@ -71,16 +71,14 @@ INCLUDE_DIR="-I./functions-adapted/include"
 
 DIRECTORIOS=("src" "utils" "fortran_sourced")
 
-
-# Llama a la función antes de usar la variable en la compilación
-collect_files
-
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"
 
 # Cambiar al directorio del script
 cd "$script_dir"
 
+# Llama a la función antes de usar la variable en la compilación
+collect_files
 
 ### COMPILACION DEL PROGRAMA BASE
 
