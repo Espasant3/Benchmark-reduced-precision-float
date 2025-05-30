@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
 #include <lapacke.h>
 #include <arm_fp16.h>
 #include <arm_bf16.h>
