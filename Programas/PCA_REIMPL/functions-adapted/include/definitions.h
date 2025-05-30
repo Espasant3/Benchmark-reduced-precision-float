@@ -219,8 +219,8 @@ static inline lapack_float ABS_half_precision(lapack_float x) {
  * 
  * \see [IEEE 754-2008 Standard](https://ieeexplore.ieee.org/document/4610935)
  */
-static inline _Float16 custom_sqrtf_half_precision(_Float16 x) {
-    // Verifica NaN usando el estándar C (isnan no soporta _Float16 directamente)
+static inline lapack_float custom_sqrtf_half_precision(lapack_float x) {
+    // Verifica NaN usando el estándar C (isnan no soporta lapack_float directamente)
     if (LAPACK_HFISNAN(x)) return x;         // NaN → NaN
     if (x < (lapack_float)0.0) return (lapack_float)NAN;   // sqrt(negativo) = NaN
     if (x == (lapack_float)0.0) return (lapack_float)0.0;
