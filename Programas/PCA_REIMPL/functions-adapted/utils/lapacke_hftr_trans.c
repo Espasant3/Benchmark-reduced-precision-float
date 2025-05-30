@@ -30,6 +30,17 @@
 * Author: Intel Corporation
 *****************************************************************************/
 
+/*****************************************************************************
+ * Copyright original:
+ *   Copyright (c) 1992-2025 The University of Tennessee [...]  
+ *   Copyright (c) 2000-2025 The University of California Berkeley [...]  
+ *   Copyright (c) 2006-2025 The University of Colorado Denver [...]  
+ * 
+ * Modificaciones (c) 2025 Eloi Barcón Piñeiro
+ * 
+ * Licencia: BSD modificada (ver ../../../../LICENSE_LAPACK)
+ *****************************************************************************/
+
 #include "lapacke_utils_reimpl.h" 
 
 /* Converts input triangular matrix from row-major(C) to column-major(Fortran)

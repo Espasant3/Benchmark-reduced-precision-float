@@ -1,3 +1,16 @@
+/*
+ * Adaptado de LAPACK (netlib.org/lapack) para media precisión
+ * 
+ * Copyright original:
+ *   Copyright (c) 1992-2025 The University of Tennessee and The University
+ *                        of Tennessee Research Foundation. All rights reserved.
+ *   Copyright (c) 2000-2025 The University of California Berkeley. All rights reserved.
+ *   Copyright (c) 2006-2025 The University of Colorado Denver. All rights reserved.
+ * 
+ * Modificaciones (c) 2025 Eloi Barcón Piñeiro
+ * 
+ * Licencia: BSD modificada (ver ../../../../LICENSE_LAPACK)
+ */
 
 #include "lapacke_utils_reimpl.h"
 
@@ -20,20 +33,35 @@ void hflassq(int n, const lapack_float *x, int incx, lapack_float *scale, lapack
                 sumsq_f += ratio * ratio;
             }
             // Saturación intermedia para evitar overflow
+            #ifndef USE_BF16
             if (sumsq_f > FP16_MAX) {
                 sumsq_f = FP16_MAX;
                 scale_f = 1.0f;
                 break;  // Salir del bucle si ya se alcanzó el máximo
             }
+            #else
+            if (sumsq_f > BF16_MAX) {
+                sumsq_f = BF16_MAX;
+                scale_f = 1.0f;
+                break;  // Salir del bucle si ya se alcanzó el máximo
+            }
+            #endif
         }
         ix += incx;
     }
 
     // Saturación final
+    #ifndef USE_BF16
     if (sumsq_f > FP16_MAX) {
         sumsq_f = FP16_MAX;
         scale_f = 1.0f;
     }
+    #else
+    if (sumsq_f > BF16_MAX) {
+        sumsq_f = BF16_MAX;
+        scale_f = 1.0f;
+    }
+    #endif
 
     *scale = (lapack_float)scale_f;
     *sumsq = (lapack_float)sumsq_f;

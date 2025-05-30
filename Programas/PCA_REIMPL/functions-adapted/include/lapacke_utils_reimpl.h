@@ -1,3 +1,11 @@
+/*
+ * Trabajo Fin de Grado - Universidad de Santiago de Compostela
+ * Autor: Eloi Barcón Piñeiro
+ * Año: 2025
+ * 
+ * Licencia MIT (ver ../../../../LICENSE_MIT)
+ */
+
 #ifndef LAPACKE_UTILS_REIMPL_H
 #define LAPACKE_UTILS_REIMPL_H
 

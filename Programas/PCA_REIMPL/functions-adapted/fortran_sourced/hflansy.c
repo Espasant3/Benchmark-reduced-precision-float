@@ -1,4 +1,16 @@
-
+/*
+ * Adaptado de LAPACK (netlib.org/lapack) para media precisión
+ * 
+ * Copyright original:
+ *   Copyright (c) 1992-2025 The University of Tennessee and The University
+ *                        of Tennessee Research Foundation. All rights reserved.
+ *   Copyright (c) 2000-2025 The University of California Berkeley. All rights reserved.
+ *   Copyright (c) 2006-2025 The University of Colorado Denver. All rights reserved.
+ * 
+ * Modificaciones (c) 2025 Eloi Barcón Piñeiro
+ * 
+ * Licencia: BSD modificada (ver ../../../../LICENSE_LAPACK)
+ */
 
 #include "lapacke_utils_reimpl.h"
 

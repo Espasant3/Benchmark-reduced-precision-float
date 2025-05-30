@@ -17,6 +17,7 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
   - [Docker](#docker)
 - [Uso](#uso)
 - [Pruebas Python](#pruebas-python)
+- [Licencias](#licencias)
 - [Contacto](#contacto)
 
 
@@ -244,6 +245,57 @@ Para gestionar el entorno virtual de python se pueden utilizar los siguientes fi
 2. Fichero `requirements.txt`: fichero que tiene todos los paquetes que se emplean en los programas y que son instalados durante la ejecución del script anterior.
 
 **Aviso:** debido a las diferencias de precisión y lógica interna de C y Python los resultados pueden no ser iguales pese a tener la misma semilla y realizar las mismas operaciones.
+
+
+## Licencias
+
+- Este proyecto y los archivos en el directorio `Programas/PCA_REIMPL/functions-adapted/include`: **Licencia MIT**  
+  Ver [LICENSE](LICENSE)  
+  Copyright: © 2025 Eloi Barcón Piñeiro
+
+- Código adaptado de LAPACK (que está en el directorio `Programas/PCA_REIMPL/functions-adapted/`): **Licencia BSD modificada**  
+  Ver [LICENSE_LAPACK](LICENSE_LAPACK)  
+  Copyright original:  
+  © 1992-2025 University of Tennessee, University of California Berkeley,  
+  University of Colorado Denver, y colaboradores.
+
+## Licencias
+
+### **Código original**
+1. **LICENCIA MIT**: 
+  - Archivos: todos los archivos en el directorio `Programas/PCA_REIMPL/functions-adapted/include` y el resto de programas del proyecto.
+  - Copyright: © 2025 Eloi Barcón Piñeiro
+  - Detalles: [LICENSE](LICENSE)  
+
+### **Código derivado de terceros**
+1. **LAPACK (BSD modificada)**:  
+   - Archivos: 
+     - `Programas/PCA_REIMPL/functions-adapted/fortran_sourced/*`
+     - `Programas/PCA_REIMPL/functions-adapted/utils/c_xerbla.c`
+     - `Programas/PCA_REIMPL/functions-adapted/utils/hfroundup_lwork.c`
+     - `Programas/PCA_REIMPL/functions-adapted/utils/ieeck_reimpl_half_precision.c`
+     - `Programas/PCA_REIMPL/functions-adapted/utils/iparmq_reimpl.c`
+     - `Programas/PCA_REIMPL/functions-adapted/utils/lsame_reimpl.c`
+   - Copyright original:  
+     © 1992-2025 University of Tennessee, University of California Berkeley, University of Colorado Denver, y colaboradores. 
+   - Detalles: [LICENSE_LAPACK](LICENSE_LAPACK)
+
+2. **Intel LAPACKE (BSD)**:  
+   - **Archivos con licencia 2010**:  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/lapacke_xerbla.c`  
+     - Copyright: © 2010 Intel Corporation  
+   - **Archivos con licencia 2014**:  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/hfge_trans.c`  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/hfsy_nancheck.c`  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/hfsy_trans.c`  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/hftr_nancheck.c`  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/hftr_trans.c`  
+     - `Programas/PCA_REIMPL/functions-adapted/src/lapacke_hfsyev*.c`  
+     - Copyright: © 2014 Intel Corporation  
+   - **Archivos con licencia 2017**:  
+     - `Programas/PCA_REIMPL/functions-adapted/utils/lapacke_nancheck_reimpl.c`  
+     - Copyright: © 2017 Intel Corporation  
+   - **Detalles**: Los avisos de licencia BSD de Intel están incluidos en cada archivo.
 
 
 ## Contacto

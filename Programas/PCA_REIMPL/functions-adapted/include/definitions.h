@@ -1,3 +1,10 @@
+/*
+ * Autor: Eloi Barcón Piñeiro
+ * Año: 2025
+ * 
+ * Licencia MIT (ver ../../../../LICENSE_MIT)
+ */
+
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
@@ -197,7 +204,7 @@ static inline lapack_float ABS_half_precision(lapack_float x) {
 }
 
 /**
- * \brief Implementación optimizada de raíz cuadrada para números _Float16
+ * \brief Implementación optimizada de raíz cuadrada para números lapack_float (_Float16, __fp16 o __bf16).
  * 
  * Maneja casos especiales según el estándar IEEE 754-2008:
  * - Entrada NaN → Retorna NaN
@@ -205,8 +212,8 @@ static inline lapack_float ABS_half_precision(lapack_float x) {
  * - Cero → Retorna cero (con signo preservado)
  * - Infinito positivo → Retorna infinito positivo
  * 
- * \param x Número de tipo _Float16 para calcular la raíz cuadrada (debe ser ≥ 0)
- * \return _Float16 Resultado de la operación con las siguientes condiciones especiales:
+ * \param x Número de tipo lapack_float para calcular la raíz cuadrada (debe ser ≥ 0)
+ * \return lapack_float Resultado de la operación con las siguientes condiciones especiales:
  *         - NaN si la entrada es negativa
  *         - Infinito positivo si la entrada es infinito positivo
  * 

@@ -1,3 +1,17 @@
+/*
+ * Adaptado de LAPACK (netlib.org/lapack) para media precisión
+ * 
+ * Copyright original:
+ *   Copyright (c) 1992-2025 The University of Tennessee and The University
+ *                        of Tennessee Research Foundation. All rights reserved.
+ *   Copyright (c) 2000-2025 The University of California Berkeley. All rights reserved.
+ *   Copyright (c) 2006-2025 The University of Colorado Denver. All rights reserved.
+ * 
+ * Modificaciones (c) 2025 Eloi Barcón Piñeiro
+ * 
+ * Licencia: BSD modificada (ver ../../../../LICENSE_LAPACK)
+ */
+
 
 #include "lapacke_utils_reimpl.h" 
 
@@ -7,11 +21,20 @@ lapack_float hfnrm2(int n, lapack_float *x, int incx) {
         return (lapack_float) 0.0;
     }
 
+    #ifndef USE_BF16
     const float tsml = powf(FP16_RADIX, ceilf((FP16_MIN_EXP - 1) * 0.5f));
     const float tbig = powf(FP16_RADIX, floorf((FP16_MAX_EXP - FP16_MANT_DIG + 1) * 0.5f));
     const float ssml = powf(FP16_RADIX, -floorf((FP16_MIN_EXP - FP16_MANT_DIG) * 0.5f));
     const float sbig = powf(FP16_RADIX, -ceilf((FP16_MAX_EXP + FP16_MANT_DIG - 1) * 0.5f));
     const float maxN = powf(2, FP16_MAX_EXP) * (1 - powf(2, -FP16_MANT_DIG));
+    #else
+    const float tsml = powf(BF16_RADIX, ceilf((BF16_MIN_EXP - 1) * 0.5f));
+    const float tbig = powf(BF16_RADIX, floorf((BF16_MAX_EXP - BF16_MANT_DIG + 1) * 0.5f));
+    const float ssml = powf(BF16_RADIX, -floorf((BF16_MIN_EXP - BF16_MANT_DIG) * 0.5f));
+    const float sbig = powf(BF16_RADIX, -ceilf((BF16_MAX_EXP + BF16_MANT_DIG - 1) * 0.5f));
+    const float maxN = powf(2, BF16_MAX_EXP) * (1 - powf(2, -BF16_MANT_DIG));
+    #endif
+
 
     float scl = 1.0f;
     float sumsq = 0.0f;

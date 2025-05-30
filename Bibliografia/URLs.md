@@ -85,3 +85,8 @@ Información sobre los procesadores de servidor de HiSilicon y los chips Ascend 
 
 ### [ArchitectureSpecificsMemo](https://wiki.debian.org/ArchitectureSpecificsMemo)
 Página del wiki de Debian que proporciona una referencia rápida de las especificaciones de diferentes arquitecturas, incluyendo los resultados del comando `uname -m` para cada arquitectura.
+
+
+## Otros
+
+### [Source code lapack](https://github.com/Reference-LAPACK/lapack)
