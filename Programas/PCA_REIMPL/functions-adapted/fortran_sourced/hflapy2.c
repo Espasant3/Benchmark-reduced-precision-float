@@ -43,7 +43,7 @@
  * 
  * \warning
  * - Requiere que custom_sqrtf_half_precision maneje entradas en rango [1, 2]
- * - No verifica overflow en custom_sqrtf_half_precision (asume w <= FP16_MAX)
+ * - No verifica overflow en custom_sqrtf_half_precision (asume w <= FP16_MAX || w <= BF16_MAX)
  * 
  * \par Algoritmo:
  * 1. Detección temprana de NaN

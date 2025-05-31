@@ -86,14 +86,14 @@ lapack_float hflamch_half_precision(const char cmach) {
         case 'S': 
             {  // Cálculo seguro al estilo LAPACK
                 const lapack_float tiny = (lapack_float) BF16_TRUE_MIN;
-                const lapack_float huge_val = (lapack_float) FP16_MAX;
+                const lapack_float huge_val = (lapack_float) BF16_MAX;
                 const lapack_float small = (lapack_float) 1.0 / huge_val;
                 return (small >= tiny) ? small * ((lapack_float)1.0 + (lapack_float)BF16_EPSILON) : tiny;
             }
         case 'U': return (lapack_float)BF16_TRUE_MIN;
         case 'O': return (lapack_float)BF16_MAX;
         case 'B': return (lapack_float)BF16_RADIX;
-        case 'P': return (lapack_float)BF16_EPSILON * (lapack_float)FP16_RADIX;
+        case 'P': return (lapack_float)BF16_EPSILON * (lapack_float)BF16_RADIX;
         case 'N': return (lapack_float)BF16_MANT_DIG;
         case 'R': return (lapack_float)1.0;  // Round to nearest (TIE_EVEN)
         case 'M': return (lapack_float)BF16_MIN_EXP;
