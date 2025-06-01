@@ -196,6 +196,29 @@ def medir_tiempos(programa, valores_n, seed, num_ejecuciones=11):
     
     return tiempos_por_n, num_tiempos
 
+def get_cpu_vendor():
+    """Detecta el fabricante del CPU específicamente para sistemas Linux"""
+    try:
+        with open('/proc/cpuinfo', 'r') as f:
+            for line in f:
+                if line.startswith('vendor_id'):
+                    vendor_str = line.split(':', 1)[1].strip()  # Normalizado a minúsculas
+                    
+                    # Detección mejorada usando múltiples patrones
+                    if any(keyword in vendor_str.lower() for keyword in ['intel', 'genuineintel']):
+                        return "Intel"
+
+                    if any(keyword in vendor_str.lower() for keyword in ['amd', 'authenticamd']):
+                        return "AMD"
+                    
+                    # Si no coincide con Intel/AMD, devolver el valor original
+                    return vendor_str  # Devuelve el valor original si no es Intel ni AMD
+
+    except FileNotFoundError:
+        return "Unknown (File not found)"
+    
+    return "Unknown"
+
 def guardar_datos_csv(nombre_archivo, valores_n, tiempos_por_n, num_tiempos):
     """
     Guarda los datos en un archivo CSV en la carpeta correspondiente según la arquitectura.
@@ -208,8 +231,14 @@ def guardar_datos_csv(nombre_archivo, valores_n, tiempos_por_n, num_tiempos):
     arquitectura = platform.machine()
 
     # Definir la carpeta de destino según la arquitectura
-    if arquitectura == "x86_64":
-        carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / "x86_64"
+    if arquitectura in ["x86_64", "amd64", "AMD64"]:
+        vendor = get_cpu_vendor()
+        if vendor != "Unknown" and vendor != "Unknown (File not found)":
+            carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / vendor
+        else:
+            # Si no se puede determinar el fabricante, usar x86_64 por defecto porque es la architectura detectada
+            print(f"Advertencia: No se pudo determinar el fabricante del CPU ({vendor}). Usando directorio x86_64 por defecto.")
+            carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / "x86_64" 
     elif arquitectura == "aarch64":
         carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / "ARM"
     else:
