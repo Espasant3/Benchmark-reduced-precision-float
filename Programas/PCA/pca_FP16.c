@@ -453,6 +453,10 @@ int main(int argc, char *argv[]) {
         }
     }
     
+    if(verbose){
+        printf("Datos ejecucion: \n");
+        _print_matrix_exp(matriz);
+    }
 
     //Para medir el tiempo de ejecución
     

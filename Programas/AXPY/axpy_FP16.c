@@ -99,6 +99,15 @@ int main(int argc, char *argv[]) {
     }
 
 
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", (float)x[i]);
+        }
+        printf("\n"); 
+    }
+
+
     //Para medir el tiempo de ejecución
     
     clock_t start, end;

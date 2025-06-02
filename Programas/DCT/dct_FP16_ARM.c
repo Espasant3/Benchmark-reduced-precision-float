@@ -111,6 +111,14 @@ int main(int argc, char *argv[]) {
         input[i] = (__fp16)input_temp;
     }
 
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", (float)input[i]);
+        }
+        printf("\n");
+    }
+
     //Para medir el tiempo de ejecución
     
     clock_t start, end;

@@ -91,6 +91,13 @@ int main(int argc, char *argv[]) {
         y[i] = ((float)rand() / (float)(RAND_MAX)) * 10.0;
     }
 
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", x[i]);
+        }
+        printf("\n"); 
+    }
 
     //Para medir el tiempo de ejecución
     

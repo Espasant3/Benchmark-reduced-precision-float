@@ -198,6 +198,13 @@ int main(int argc, char *argv[]) {
 
     printf("Convolving large vector with LeGall 5/3 Wavelet\n");
 
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", (float)input_vector[i]);
+        }
+        printf("\n");
+    }
 
     //Para medir el tiempo de ejecución
 
@@ -240,6 +247,14 @@ int main(int argc, char *argv[]) {
     initialize_kernels(&kernels, CDF_97_WAVELET);
 
     printf("Convolving large vector with CDF 9/7 Wavelet (lossy)\n");
+
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", (float)input_vector[i]);
+        }
+        printf("\n");
+    }
 
     //Para medir el tiempo de ejecución
 

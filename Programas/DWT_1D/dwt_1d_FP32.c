@@ -71,14 +71,14 @@ void convolve1d_generic(float* input_vector, int vector_size, WaveletKernels ker
 }
 
 /**
- * @brief Initializes the wavelet kernels based on the specified kernel type.
+ * \brief Initializes the wavelet kernels based on the specified kernel type.
  *
  * This function sets up the wavelet kernels structure with the appropriate
  * coefficients for the given kernel type. The kernels are used in the 
  * discrete wavelet transform (DWT) process.
  *
- * @param kernels Pointer to the WaveletKernels structure to be initialized.
- * @param kernel_type Integer representing the type of wavelet kernel to use.
+ * \param kernels Pointer to the WaveletKernels structure to be initialized.
+ * \param kernel_type Integer representing the type of wavelet kernel to use.
  *                    Acceptable values are:
  *                    - LEGALL_53_WAVELET (1)
  *                    - CDF_97_WAVELET (2)
@@ -231,6 +231,13 @@ int main(int argc, char *argv[]) {
 
     printf("Convolving large vector with LeGall 5/3 Wavelet\n");
 
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", input_vector[i]);
+        }
+        printf("\n");
+    }
 
     //Para medir el tiempo de ejecución
 
@@ -273,6 +280,14 @@ int main(int argc, char *argv[]) {
     initialize_kernels(&kernels, CDF_97_WAVELET);
 
     printf("Convolving large vector with CDF 9/7 Wavelet (lossy)\n");
+
+    if(verbose){
+        printf("Datos ejecucion: ");
+        for(int i = 0; i < n; i++){
+            printf("%.10e ", input_vector[i]);
+        }
+        printf("\n");
+    }
 
     //Para medir el tiempo de ejecución
 
