@@ -7,18 +7,18 @@ verbose_flag=""
 tamanhoN=""
 seed=""
 
-# Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]
+# Uso: $0 [-f|--force] [-v|--verbose] <tamanho N> [<seed>]
 usage() {
     # Mostrar ayuda de uso del script
-    echo "Uso: $0 [-f|--force] [-v] <tamanho N> [<seed>]"
+    echo "Uso: $0 <tamanho N> [<seed>] [-f|--force] [-v|--verbose]"
     echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
-    echo "  -v                Muestra información adicional durante la ejecución."
+    echo "  -v, --verbose     Muestra información adicional durante la ejecución."
     echo "  -h, --help        Muestra esta ayuda y sale."
     exit 0
 }
 
 # Procesar argumentos con GNU getopt
-TEMP=$(getopt -o fvh --long force,help -n "$0" -- "$@")
+TEMP=$(getopt -o fvh --long force,verbose,help -n "$0" -- "$@")
 
 # Verificar si hubo error en getopt
 if [ $? != 0 ]; then
@@ -35,7 +35,7 @@ while true; do
             force_flag="-f"
             shift
             ;;
-        -v)
+        -v|--verbose)
             verbose_flag="-v"
             shift
             ;;

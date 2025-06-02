@@ -9,6 +9,8 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
   - [Extensión de los ejecutables](#extensión-de-los-ejecutables)
   - [Nombres de los archivos](#nombres-de-los-archivos)
     - [Parámetros de los scripts](#parámetros-de-los-scripts)
+      - [Script de compilación](#script-de-compilación)
+      - [Script de ejecución](#script-de-ejecución)
   - [Arquitecturas y Vendors contemplados en los scripts compile_all.sh y run_all.sh](#arquitecturas-y-vendors-contemplados-en-los-scripts-compile_allsh-y-run_allsh)
 - [Preparación del entorno](#preparación-del-entorno)
   - [Requisitos Previos](#requisitos-previos)
@@ -76,30 +78,38 @@ Los programas tienen el siguiente formato de nombres, donde `<nombre>` correspon
 
 #### Parámetros de los scripts
 
-Los scripts de compilación y ejecución aceptan los siguientes parámetros y flags:
+#### Script de compilación
+Los scripts de compilación aceptan los siguientes parámetros y flags:
+
+- **Parámetros**:
+  - `[flags]`: (Opcional) Flags para modificar el comportamiento del script. Estos flags se añadirán al comando de compilación.
+
+- **Flags**:
+  - `-f` o `--force`: Permite la compilación cruzada de programas para una arquitecturas diferente a la actual. Este flag solo permite la cross-compilación de Intel/AMD a ARM (genera programas con extensión `.out`), por lo que en la compilación en ARM no tendrá efecto. 
+
+- **Scripts de compilación**:
+  - `<nombre>_compile_<arch>.sh`: Compila los programas `<nombre>` para la arquitectura `<arch>`.
+    - Uso: `./<nombre>_compile_<arch>.sh [-f|--force] [flags]`
+  - `compile_all.sh`: Script general que compila todos los programas, seleccionando los scripts de compilación adecuados para la arquitectura.
+    - Uso: `./compile_all.sh [-f|--force] [flags]`
+
+
+#### Script de ejecución
+Los scripts de ejecución aceptan los siguientes parámetros y flags:
 
 - **Parámetros**:
   - `<tamanho N>`: Tamaño del vector a emplear. Debe ser un número positivo mayor que 0.
   - `[<seed>]`: (Opcional) Semilla para la generación de números aleatorios. Debe ser un número positivo mayor que 0 si se proporciona.
 
 - **Flags**:
-  - `--force`: Permite la compilación cruzada y la ejecución de programas para una arquitecturas diferente a la actual (empleando Intel SDE y QEMU). En la compilación, este flag permite la cross-compilación de Intel/AMD a ARM. En la ejecución en Intel/AMD utiliza QEMU para ejecutar códigos ARM y en ARM emplea Intel SDE para ejecutar códigos Intel/AMD.
-
-- **Scripts de compilación**:
-  - `<nombre>_compile_<arch>.sh`: Compila los programas `<nombre>` para la arquitectura `<arch>`.
-    - Uso: `./<nombre>_compile_<arch>.sh [--force]`
+  - `-f` o `--force`: Permite la ejecución de programas para una arquitecturas diferente a la actual (empleando Intel SDE y QEMU). Durante la ejecución en Intel/AMD utiliza QEMU para ejecutar códigos ARM (programas con extensión `.out`) y en ARM emplea Intel SDE para ejecutar códigos Intel/AMD (programas sin extensión).
+  - `-v` o `--verbose`: Muestra información detallada durante la ejecución del programa, que comprende los datos iniciales de ejecución completos y los resultados de la ejecución completos.
 
 - **Scripts de ejecución**:
   - `<nombre>_run_<arch>.sh`: Ejecuta todos los programas compilados en el directorio actual para la arquitectura `<arch>`.
-    - Uso: `./<nombre>_run_<arch>.sh <tamanho N> [<seed>] [--force]`
-
-- **Scripts generales**:
-  - `compile_all.sh`: Compila todos los programas, seleccionando los scripts de compilación adecuados para la arquitectura.
-    - Uso: `./compile_all.sh [--force]`
-  - `run_all.sh`: Ejecuta todos los programas, seleccionando los scripts de ejecución adecuados para la arquitectura.
-    - Uso: `./run_all.sh <tamanho N> [<seed>] [--force]`
-
-**Nota**: El flag `--force` en los scripts de compilación (excepto el de ARM) y ejecución fuerza la compilación cruzada y la ejecución de programas para arquitecturas ARM utilizando QEMU e Intel SDE.
+    - Uso: `./<nombre>_run_<arch>.sh <tamanho N> [<seed>] [-f|--force] [-v|--verbose]`
+  - `run_all.sh`: Script general que ejecuta todos los programas, seleccionando los scripts de ejecución adecuados para la arquitectura.
+    - Uso: `./run_all.sh <tamanho N> [<seed>] [-f|--force] [-v|--verbose]`
 
 
 ### Arquitecturas y Vendors contemplados en los scripts `compile_all.sh` y `run_all.sh`
