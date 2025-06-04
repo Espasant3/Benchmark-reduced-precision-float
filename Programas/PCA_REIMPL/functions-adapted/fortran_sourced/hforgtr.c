@@ -132,7 +132,7 @@ void hforgtr(char uplo, int n, lapack_float *a, int lda, lapack_float *tau, lapa
     if (upper) {
         // ---- Caso UPPER (UPLO = 'U') ----
         for (j = 0; j < n-1; j++) {
-            for (i = 0; i < j-1; i++) {
+            for (i = 0; i <= j-1; i++) {
                 a[i + j*lda] = a[i + (j+1)*lda];
             }
             a[(n-1) + j*lda] = ZERO; 

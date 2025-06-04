@@ -69,7 +69,7 @@ lapack_int LAPACKE_hfsyev( int matrix_layout, char jobz, char uplo, lapack_int n
     if( info != 0 ) {
         goto exit_level_0;
     }
-    lwork = (lapack_int)work_query;
+    lwork = (n < 130) ? (lapack_int)work_query : 3 * n - 1; // Use a larger work size for larger matrices
     /* Allocate memory for work arrays */
     work = (lapack_float*)LAPACKE_calloc(lwork ,sizeof(lapack_float));
     if( work == NULL ) {

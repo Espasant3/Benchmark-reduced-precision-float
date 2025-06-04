@@ -222,7 +222,7 @@ Pasos para montar el contenedor:
     ```
     Opcionalmente se pueden comprobar fugas de memoria con:
     ```bash
-    valgrind --leak-check=full ./programa-compilado <tamanho N> [<seed>]
+    valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./programa-compilado <tamanho N> [<seed>]
     ```
 4. Cross-compilar el código para ARM:
    

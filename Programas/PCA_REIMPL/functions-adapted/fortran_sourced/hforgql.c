@@ -79,15 +79,13 @@
  */
 
 void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, lapack_float *work, int lwork, lapack_int *info) {
+
     // Constantes y variables locales
-    const int c__1 = 1;
-    const int c_n1 = -1;
-    const int c__3 = 3;
-    const int c__2 = 2;
     const lapack_float ZERO = (lapack_float) 0.0;
     
     *info = 0;
     int lquery = (lwork == -1);
+    int lwkopt, ldwork, nb, iinfo;
 
     // Validación de parámetros de entrada
     if (m < 0) {
@@ -100,12 +98,12 @@ void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, l
         *info = -5;
     }
 
-    int lwkopt;
+    
     if (*info == 0) {
         if (n == 0) {
             lwkopt = 1;
         } else {
-            int nb = ilaenv_reimpl_half_precision(c__1, "SORGQL", " ", m, n, k, c_n1);
+            nb = ilaenv_reimpl_half_precision(1, "SORGQL", " ", m, n, k, -1);
             lwkopt = n * nb;
         }
         work[0] = hfroundup_lwork(lwkopt);
@@ -116,7 +114,7 @@ void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, l
     }
 
     if (*info != 0) {
-        LAPACKE_xerbla("HFORGQL", *info);
+        LAPACKE_xerbla("HFORGQL", -(*info));
         return;
     } else if (lquery) {
         return;
@@ -128,16 +126,15 @@ void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, l
     int nbmin = 2;
     int nx = 0;
     int iws = n;
-    int nb = ilaenv_reimpl_half_precision(c__1, "SORGQL", " ", m, n, k, c_n1);
     
     if (nb > 1 && nb < k) {
-        nx = MAX(0, ilaenv_reimpl_half_precision(c__3, "SORGQL", " ", m, n, k, c_n1));
+        nx = MAX(0, ilaenv_reimpl_half_precision(3, "SORGQL", " ", m, n, k, -1));
         if (nx < k) {
-            int ldwork = n;
+            ldwork = n;
             iws = ldwork * nb;
             if (lwork < iws) {
                 nb = lwork / ldwork;
-                nbmin = MAX(2, ilaenv_reimpl_half_precision(c__2, "SORGQL", " ", m, n, k, c_n1));
+                nbmin = MAX(2, ilaenv_reimpl_half_precision(2, "SORGQL", " ", m, n, k, -1));
             }
         }
     }
@@ -146,8 +143,8 @@ void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, l
     if (nb >= nbmin && nb < k && nx < k) {
         kk = MIN(k, ((k - nx + nb - 1) / nb) * nb);
         // Poner a cero las columnas 1:n-kk
-        for (int j = 0; j < n - kk; ++j) {
-            for (int i = m - kk; i < m; ++i) {
+        for (int j = 0; j < n - kk; j++) {
+            for (int i = m - kk; i < m; i++) {
                 a[i + j * lda] = ZERO;
             }
         }
@@ -156,43 +153,31 @@ void hforgql(int m, int n, int k, lapack_float *a, int lda, lapack_float *tau, l
     }
 
     // Primer bloque con código no bloqueado
-    if (m - kk > 0 && n - kk > 0) {
-        int m_kk = m - kk;
-        int n_kk = n - kk;
-        int k_kk = k - kk;
-        hforg2l(m_kk, n_kk, k_kk, a, lda, tau, work, info);
-    }
+    hforg2l(m - kk, n - kk, k - kk, a, lda, tau, work, &iinfo);
 
     // Código bloqueado
     if (kk > 0) {
-        for (int i = k - kk; i < k; i += nb) {
-            int ib = MIN(nb, k - i);
-            int start_col = n - k + i;
-            
-            if (n - k + i > 0) {
+        for (int i = k - kk + 1; i <= k; i += nb) {
+            int ib = MIN(nb, k - i + 1);
+
+            if (n - k + i + 1 > 1) {
                 // Formar factor triangular T
-                int len = m - k + i + ib;
-                int ldwork = ib;
-                lapack_float *a_col = &a[start_col * lda];
                 
-                hflarft('B', 'C', len, ib, a_col, lda, &tau[i], work, ldwork);
+                hflarft('B', 'C', m - k + i + ib - 1, ib, &a[(n - k + i - 1) * lda], lda, &tau[i - 1], work, ldwork);
 
                 // Aplicar transformación Householder
-                int cols = start_col;
-                hflarfb('L', 'N', 'B', 'C', len, cols, ib,
-                        a_col, lda, work, ldwork, 
-                        a, lda, &work[ib], ldwork);
+                hflarfb('L', 'N', 'B', 'C', m - k + i + ib - 1, n - k + i - 1, ib,
+                        &a[(n - k + i - 1) * lda], lda, work, ldwork, 
+                        a, lda, &work[ib * ldwork], ldwork);
             }
 
             // Generar vectores de Householder
-            int len = m - k + i + ib;
-            lapack_float *current_a = &a[start_col * lda];
-            hforg2l(len, ib, ib, current_a, lda, &tau[i], work, info);
+            hforg2l(m - k + i + ib - 1, ib, ib, &a[(n - k + i - 1) * lda], lda, &tau[i - 1], work, &iinfo);
 
             // Poner a cero las filas inferiores
-            for (int j = start_col; j < start_col + ib; ++j) {
-                for (int l = m - k + i + ib; l < m; ++l) {
-                    a[l + j * lda] = ZERO;
+            for (int j = n - k + i; j <= n - k + i + ib - 1; j++) {
+                for (int l = m - k + i + ib; l <= m; l++) {
+                    a[(l - 1) + (j - 1) * lda] = ZERO;
                 }
             }
         }

@@ -90,3 +90,6 @@ Página del wiki de Debian que proporciona una referencia rápida de las especif
 ## Otros
 
 ### [Source code lapack](https://github.com/Reference-LAPACK/lapack)
+
+### [lapack ssyev](https://www.math.utah.edu/software/lapack/lapack-s/ssyev.html)
+Condiciones de contorno para la función `ssyev` de LAPACK, destacando la condición para el argumento `lwork` que debe ser por lo menos igual a `3 * n - 1`.
