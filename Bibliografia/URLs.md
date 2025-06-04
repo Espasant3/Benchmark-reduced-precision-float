@@ -93,3 +93,6 @@ Página del wiki de Debian que proporciona una referencia rápida de las especif
 
 ### [lapack ssyev](https://www.math.utah.edu/software/lapack/lapack-s/ssyev.html)
 Condiciones de contorno para la función `ssyev` de LAPACK, destacando la condición para el argumento `lwork` que debe ser por lo menos igual a `3 * n - 1`.
+
+### [Arithmetic Types in C](https://en.cppreference.com/w/c/language/arithmetic_types.html)
+Definición de los tipos aritméticos incluidos en la definición de C, incluyendo los tipos de punto flotante y sus especificaciones.
