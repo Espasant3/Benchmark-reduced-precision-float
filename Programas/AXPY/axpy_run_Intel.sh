@@ -19,21 +19,23 @@ build_message() {
 # Inicializar variables
 force_run=false
 verbose_flag=""
+run_option=""
 tamanhoN=""
 seed=""
 
-# Uso: $0 [-f|--force] [-v|--verbose] <tamanho N> [<seed>]
+# Uso: $0 [-f|--force] [-v|--verbose] [-m|--memcheck] <tamanho N> [<seed>]
 usage() {
     # Mostrar ayuda de uso del script
-    echo "Uso: $0 <tamanho N> [<seed>] [-f|--force] [-v|--verbose]"
+    echo "Uso: $0 <tamanho N> [<seed>] [-f|--force] [-v|--verbose] [-m|--memcheck]"
     echo "  -f, --force       Fuerza la compilación cruzada de todos los programas."
     echo "  -v, --verbose     Muestra información adicional durante la ejecución."
+    echo "  -m, --memcheck    Activa la comprobación de memoria con Valgrind (solo en ejecución normal, no para emulación)."
     echo "  -h, --help        Muestra esta ayuda y sale."
     exit 0
 }
 
 # Procesar argumentos con GNU getopt
-TEMP=$(getopt -o fvh --long force,verbose,help -n "$0" -- "$@")
+TEMP=$(getopt -o fvmh --long force,verbose,memcheck,help -n "$0" -- "$@")
 
 # Verificar si hubo error en getopt
 if [ $? != 0 ]; then
@@ -52,6 +54,11 @@ while true; do
             ;;
         -v|--verbose)
             verbose_flag="-v"
+            shift
+            ;;
+        -m|--memcheck) 
+            # Establecer run_option para ejecutar con Valgrind
+            run_option="valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes -s" 
             shift
             ;;
         -h|--help)
@@ -101,7 +108,7 @@ cd "$script_dir"
 for file in *; do
     if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.sh ]] && [[ "$file" != *.out ]] && [[ "$file" != *.o ]]; then
         echo "$(build_message "$file" "$tamanhoN" "$seed")"
-        ./"$file" "$tamanhoN" "$seed" "$verbose_flag" 
+        $run_option ./"$file" "$tamanhoN" "$seed" "$verbose_flag"
         echo ""
     fi
 done

@@ -44,7 +44,7 @@ done
 
 COMMON_FLAGS="-Wall"
 
-OPT_FLAGS="-O3 -march=armv8.2-a+fp16+fp16fml+simd -ftree-vectorize -fomit-frame-pointer -fPIC $additional_flags"
+OPT_FLAGS="-O3 -march=armv8.2-a+fp16+fp16fml+simd -ftree-vectorize -fomit-frame-pointer $additional_flags"
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"

@@ -44,7 +44,7 @@ done
 
 COMMON_FLAGS="-Wall -g"
 
-OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer -fPIC $additional_flags"
+OPT_FLAGS="-march=icelake-client -mtune=icelake-client -O3 -fomit-frame-pointer $additional_flags"
 
 LINK_FLAGS="-lm"
 
