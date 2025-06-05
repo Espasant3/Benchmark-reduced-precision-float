@@ -356,8 +356,9 @@ def plot_grafica(valores_n, tiempos_por_n, num_tiempos, tipo_dato, nombre_progra
     ax.legend()
     return fig, ax  # Devolver la figura y el eje
 
-def main():
-    # Argumentos de línea de comandos
+
+def parse_arguments():
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Benchmark de algoritmos")
     parser.add_argument("programa", help="Ruta al ejecutable a probar")
     parser.add_argument("--seed", type=int, default=1234)
@@ -368,9 +369,13 @@ def main():
                         help="Guardar la gráfica en PNG (predeterminado: False)")
     parser.add_argument("--show_plot", type=lambda x: x.lower() == 'true', default=False, 
                         help="Mostrar la gráfica en pantalla (predeterminado: False)")
-    parser.add_argument("--n_extended", type=lambda x: x.lower() == 'true', default=False, 
+    parser.add_argument("--n_extended",  default=False, action='store_true', 
                         help="Usar valores extendidos de n (predeterminado: False)")
-    args = parser.parse_args()
+    return parser.parse_args()
+
+def main():
+    # Argumentos de línea de comandos
+    args = parse_arguments()
 
     # Extraer el nombre base del programa (sin ruta ni extensión)
     nombre_programa = args.programa.split('/')[-1].split('.')[0]
@@ -385,16 +390,14 @@ def main():
     n_float = [
         4096, 6144, 8192, 12288, 16384, 32768, 65536, 98304, 
         131072, 163840, 196608, 262144, 327680, 524288, 786432, 
-        917504, 1048576, 1310720, 1742848 #, 1802240, 1911728
-        #2097152, 3145728, 4194304, 8388608, 12582912, 
-        #16777216, 20971520, 33554432, 67108864, 134217728
+        917504, 1048576, 1310720, 1742848
     ]
 
     n_float_matrices = [
         2, 10, 55, 100, 200,  # Rango inicial (crecimiento no crítico)
         291, 400, 500, 600, 700, 800, 900, 933,  # Transición a crecimiento cúbico
-        1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000 #, 2100, 2200  # Zona de interés
-    ]   
+        1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000  # Zona de interés
+    ]
 
     if args.n_extended:
         n_float = [
@@ -406,9 +409,9 @@ def main():
         ]
 
         n_float_matrices = [
-            2, 10, 55, 100, 200,  # Rango inicial (crecimiento no crítico)
+            2, 10, 32, 55, 77, 100, 200,  # Rango inicial (crecimiento no crítico)
             291, 400, 500, 600, 700, 800, 900, 933,  # Transición a crecimiento cúbico
-            1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000, 2100, 2200  # Zona de interés
+            1100, 1200, 1300, 1400, 1550, 1700, 1850, 2000, 2100, 2200, 2300, 2400, 2500, 2750, 3000  # Zona de interés
         ]
 
     # Selección de valores

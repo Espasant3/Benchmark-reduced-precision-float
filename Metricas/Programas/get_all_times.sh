@@ -5,6 +5,7 @@ usage() {
     echo "Uso: $0 [opciones]"
     echo "Opciones:"
     echo "  -d, --directories    Lista de directorios a procesar (separados por espacios) relativos a script_dir/../../Programas/"
+    echo "  -e, --extended       Emplea la lista extendida de valores de n"
     echo "  -h, --help           Muestra esta ayuda y sale"
     exit 0
 }
@@ -12,6 +13,9 @@ usage() {
 # --- Variables por defecto --- #
 user_directories=()
 DIRECTORIOS_DEFAULT=("AXPY" "DWT_1D" "PCA" "PCA_REIMPL" "DCT")
+
+# FLAGS comunes para los programas
+FLAGS="--show_plot false --save_plot false --save_data true"
 
 # --- Procesar argumentos --- #
 while [[ $# -gt 0 ]]; do
@@ -26,6 +30,11 @@ while [[ $# -gt 0 ]]; do
                 user_directories+=("$1")
                 shift
             done
+            ;;
+        -e|--extended)
+            # Emplear la lista extendida de valores de n
+            FLAGS="$FLAGS --n_extended"
+            shift
             ;;
         --)
             shift
@@ -62,10 +71,6 @@ if [ ${#user_directories[@]} -gt 0 ]; then
 else
     DIRECTORIOS=("${DIRECTORIOS_DEFAULT[@]}")
 fi
-EJECUCIONES=13
-
-# FLAGS comunes para los programas
-FLAGS="--show_plot false --save_plot false --save_data true"
 
 case "$ARCH" in
     x86_64|amd64|x64)
@@ -78,7 +83,7 @@ case "$ARCH" in
             if [ "$DIR" == "DCT" ]; then
                 NUM_EJECUCIONES=7
             else
-                NUM_EJECUCIONES=$EJECUCIONES
+                NUM_EJECUCIONES=13
             fi
             
             FLAGS_WITH_NUM="--num_ejecuciones $NUM_EJECUCIONES $FLAGS"
@@ -87,7 +92,7 @@ case "$ARCH" in
                 # Validar que sea un archivo ejecutable (no sh, out ni o)
                 if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.sh ]] && [[ "$file" != *.out ]] && [[ "$file" != *.o ]]; then
                     echo "Procesando archivo: $file"
-                    python3 tiempo_ejecucion_cache_limits_dynamic.py "$file" $FLAGS_WITH_NUM > /dev/null
+                    python3 tiempo_ejecucion_cache_limits_dynamic.py "$file" $FLAGS_WITH_NUM #> /dev/null
                     echo "$file done"
                 fi
             done
@@ -105,7 +110,7 @@ case "$ARCH" in
             if [ "$DIR" == "DCT" ]; then
                 NUM_EJECUCIONES=7
             else
-                NUM_EJECUCIONES=$EJECUCIONES
+                NUM_EJECUCIONES=13
             fi
             
             FLAGS_WITH_NUM="--num_ejecuciones $NUM_EJECUCIONES $FLAGS"
