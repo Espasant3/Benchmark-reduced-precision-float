@@ -96,3 +96,5 @@ Condiciones de contorno para la función `ssyev` de LAPACK, destacando la condic
 
 ### [Arithmetic Types in C](https://en.cppreference.com/w/c/language/arithmetic_types.html)
 Definición de los tipos aritméticos incluidos en la definición de C, incluyendo los tipos de punto flotante y sus especificaciones.
+
+### [ARMv8.2-A](https://es.wikipedia.org/wiki/AArch64#ARMv8.2-A)
