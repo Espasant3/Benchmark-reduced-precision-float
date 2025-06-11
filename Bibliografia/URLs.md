@@ -39,6 +39,9 @@ Información sobre las Advanced Matrix Extensions (AMX), una tecnología de hard
 ### [Libreria immintrin.h](https://github.com/gcc-mirror/gcc/blob/master/gcc/config/i386/immintrin.h)
 La librería `immintrin.h` permitiría emplear en arquitecturas x86_64 los tipos de datos `__fp16` y `__bf16` (siempre que dispongan de las extensiones AVX512FP16 y AVX512BF16 respectivamente). El compilador clang también lo permite tal y como se ve [aquí](https://clang.llvm.org/doxygen/immintrin_8h_source.html), donde además aclara que esta cabecera solo está pensada para ser empleada en arquitecturas x86.
 
+### [Intel Intrinsics Guide BF16 Instructions](https://www.intel.com/content/www/us/en/docs/cpp-compiler/developer-guide-reference/2021-8/intrinsics-for-avx-512-bf16-instructions.html)
+Guía de intrínsecos de Intel para instrucciones BF16, que proporciona una referencia rápida para el uso de estas instrucciones en código C/C++.
+
 ### [Half-precision floating-point format](https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
 Información sobre los tipos de datos flotantes de media precisión, incluyendo información como el exponente mínimo y máximo posible (en base 10)
 
@@ -69,7 +72,7 @@ Documentación sobre el soporte de diferentes tipos de precisión en la platafor
 Documento que confirma la introducción de las instrucciones AVX-512 y el soporte para BFLOAT16 en la cuarta generación de procesadores AMD EPYC que implementan la arquitectura Zen 4.
 
 ### [LoongArch Documentation](https://github.com/loongson/LoongArch-Documentation/releases/latest/download/LoongArch-Vol1-v1.10-EN.pdf)
-Documentación oficial de LoongArch v1.1, detallando las especificaciones y soporte para, entre otras, instrucciones .H que operan con datos de 16 bits, enteros y floats (FP16).
+Documentación oficial de LoongArch v1.1, detallando las especificaciones y soporte para, entre otras, instrucciones .H que operan con datos de 16 bits, enteros y floats (FP16). "If operand is a floating-point number, the suffixes of the instruction name are .H (half precision)" 
 
 ### [AMD Zen 5 y Zen 6: AVX512-VP2INTERSECT y AVX512-FP16](https://elchapuzasinformatico.com/2024/01/amd-cpu-zen-5-avx512-vp2intersect-zen-6-avx512-fp16/)
 Descripción de las nuevas instrucciones AVX512-VP2INTERSECT y AVX512-FP16 en las arquitecturas AMD Zen 5 y Zen 6, respectivamente. También aporta información sobre el soporte de operaciones BF16 en AMD Zen 4 y algunas arquitecturas de Intel.
@@ -86,6 +89,14 @@ Información sobre los procesadores de servidor de HiSilicon y los chips Ascend 
 ### [ArchitectureSpecificsMemo](https://wiki.debian.org/ArchitectureSpecificsMemo)
 Página del wiki de Debian que proporciona una referencia rápida de las especificaciones de diferentes arquitecturas, incluyendo los resultados del comando `uname -m` para cada arquitectura.
 
+### [RISC-V ISA Manual - zfh](https://www.five-embeddev.com/riscv-user-isa-manual/latest-adoc/zfh.html)
+Información sobre el soporte de instrucciones para operaciones de punto flotante de 16 bits (FP16) en la arquitectura RISC-V a través de la extensión zfh.
+
+### [RISC-V BF16 Extensions](https://mirror.iscas.ac.cn/riscv-toolchains/release/riscv/riscv-bfloat16/LatestRelease/riscv-bfloat16.pdf)
+Documento que detalla las extensiones BF16 para RISC-V.
+
+### [LLVM Clang Support for AVX512FP16](https://www.phoronix.com/news/LLVM-Clang-AVX512FP16)
+Confirmación de que LLVM Clang tiene soporte para la extensión AVX512FP16, permitiendo operaciones de punto flotante de 16 bits en arquitecturas compatibles desde la versión 14.0.
 
 ## Otros
 
