@@ -44,7 +44,7 @@ done
 
 COMMON_FLAGS="-Wall -g"
 
-OPT_FLAGS="-O3 -fomit-frame-pointer $additional_flags"
+OPT_FLAGS="-mf16c -O3 -fomit-frame-pointer $additional_flags"
 
 # Obtener el directorio donde está ubicado el script
 script_dir="$(dirname "$0")"

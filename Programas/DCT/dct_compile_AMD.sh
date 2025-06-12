@@ -44,7 +44,7 @@ done
 
 COMMON_FLAGS="-Wall -g"
 
-OPT_FLAGS="-O3 -fomit-frame-pointer $additional_flags"
+OPT_FLAGS="-mf16c -O3 -fomit-frame-pointer $additional_flags"
 
 LINK_FLAGS="-lm"
 
