@@ -81,7 +81,7 @@
 #define BF16_TRUE_MIN    __BFLT16_DENORM_MIN__    // 9.1835496e-41F16 (2^-133)
 
 /** \brief Máximo valor representable finito (3.3895314e+38) */
-#define BF16_MAX         __BFLT16_MAX__           // 3.3895314e+38F16 (2^127*(2-2^-7))
+#define BF16_MAX         __BFLT16_MAX__           // 3.4028235e+38F16 (2^127*(2-2^-7))
 
 /** \brief Base del sistema de numeración (binario) */
 #define BF16_RADIX       2            
