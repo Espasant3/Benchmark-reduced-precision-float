@@ -34,6 +34,7 @@ while [[ $# -gt 0 ]]; do
         -e|--extended)
             # Emplear la lista extendida de valores de n
             FLAGS="$FLAGS --n_extended"
+            echo "Empleando lista extendida de valores de n"
             shift
             ;;
         --)
