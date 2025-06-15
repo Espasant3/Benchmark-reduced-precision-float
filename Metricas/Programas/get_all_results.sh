@@ -6,12 +6,14 @@ usage() {
     echo "Opciones:"
     echo "  -d, --directories    Lista de directorios a procesar (separados por espacios) relativos a script_dir/../../Programas/"
     echo "  -h, --help           Muestra esta ayuda y sale"
+    echo "  -q, --qemu           Emplea QEMU para emulación de programas"
     exit 0
 }
 
 # --- Variables por defecto --- #
 user_directories=()
 DIRECTORIOS_DEFAULT=("AXPY" "DWT_1D" "PCA" "PCA_REIMPL" "DCT")
+emulate_qemu=false
 
 # --- Procesar argumentos --- #
 while [[ $# -gt 0 ]]; do
@@ -26,6 +28,15 @@ while [[ $# -gt 0 ]]; do
                 user_directories+=("$1")
                 shift
             done
+            ;;
+        -q|--qemu)
+            # Emplear QEMU para emulación de programas
+            emulate_qemu=true
+            if [ "$(uname -m)" != "x86_64" ]; then
+                echo "Advertencia: QEMU solo es necesario para arquitecturas no x86_64."
+            fi
+            echo "Empleando QEMU para emulación de programas"
+            shift
             ;;
         --)
             shift
@@ -51,7 +62,11 @@ ARCH=$(uname -m)
 if [ "$ARCH" == "aarch64" ] || [ "$ARCH" == "arm64" ]; then
     ./../../Programas/compile_all.sh > /dev/null
 else
-    ./../../Programas/compile_all.sh -f > /dev/null
+    if [ "$emulate_qemu" = true ]; then
+        ./../../Programas/compile_all.sh -f > /dev/null
+    else
+        ./../../Programas/compile_all.sh > /dev/null
+    fi
 fi
 
 echo "Compilación de los programas previa a la ejecucion terminada"
@@ -94,29 +109,30 @@ case "$ARCH" in
             echo "$DIR done"
         done
 
-        echo "Procesando mediante emulación (QEMU) directorios para archivos .out"
+        if [ "$emulate_qemu" = true ]; then
+            # Procesar mediante emulación QEMU
+            echo -e "\nProcesando mediante emulación (QEMU) directorios para archivos .out"
+            for DIR in "${DIRECTORIOS[@]}"; do
+                echo "=========== Procesando $DIR (QEMU) ==========="
 
-        for DIR in "${DIRECTORIOS[@]}"; do
-            echo "=========== Procesando $DIR (QEMU) ==========="
-
-            if [ "$DIR" == "PCA" ] || [ "$DIR" == "PCA_REIMPL" ]; then
-                # Modificar el número de ejecuciones para PCA y PCA_REIMPL
-                FLAGS="-n 1000 $SEED_FLAGS -m -o -q"
-            else
-                FLAGS="-n 15000 $SEED_FLAGS -o -q"
-            fi
-
-            for file in ../../Programas/$DIR/*.out; do
-                # Validar que sea un archivo ejecutable
-                if [ -f "$file" ] && [ -x "$file" ]; then
-                    echo "Procesando archivo (QEMU): $file"
-                    python3 resultado_ejecucion.py -p "$file" $FLAGS > /dev/null
-                    echo "$file done"
+                if [ "$DIR" == "PCA" ] || [ "$DIR" == "PCA_REIMPL" ]; then
+                    # Modificar el número de ejecuciones para PCA y PCA_REIMPL
+                    FLAGS="-n 1000 $SEED_FLAGS -m -o -q"
+                else
+                    FLAGS="-n 15000 $SEED_FLAGS -o -q"
                 fi
-            done
-            echo "$DIR (QEMU) done"
-        done
 
+                for file in ../../Programas/$DIR/*.out; do
+                    # Validar que sea un archivo ejecutable
+                    if [ -f "$file" ] && [ -x "$file" ]; then
+                        echo "Procesando archivo (QEMU): $file"
+                        python3 resultado_ejecucion.py -p "$file" $FLAGS > /dev/null
+                        echo "$file done"
+                    fi
+                done
+                echo "$DIR (QEMU) done"
+            done
+        fi
         ;;
 
     aarch64|arm64)
