@@ -86,10 +86,11 @@ LINK_FLAGS="${LINK_FLAGS/-llapacke/}"
 LINK_FLAGS="${LINK_FLAGS/-llapack/}" 
 LINK_FLAGS=$(echo $LINK_FLAGS | tr -s ' ' | xargs)
 
-### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
 if grep -q "sse2" /proc/cpuinfo; then
-    echo "SSE2 support detected. Compiling programs with _Float16 data."
+    echo "SSE2 support detected. Compiling programs with reduced precision (float) data type."
+
+    ### COMPILACION DEL PROGRAMA CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
     gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_FP16.c "${FILES[@]}" -o pca_reimpl_FP16 -DUSE_Float16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
 
@@ -114,8 +115,33 @@ if grep -q "sse2" /proc/cpuinfo; then
         echo "AVX512FP16 not supported on this system. Skipping compilation with -mavx512fp16."
     fi
 
+    ### COMPILACION DEL PROGRAMA CON BFLOAT16 (EMPLEA EL TIPO DE DATO __bf16)
+
+    gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_BF16.c "${FILES[@]}" -o pca_reimpl_BF16 -DUSE_BF16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
+
+
+    if grep -q "avx512bf16" /proc/cpuinfo; then
+        echo "AVX512BF16 support detected. Compiling with -mavx512bf16."
+        COMMON_FLAGS+=" -mavx512bf16"
+
+        # Compilar el programa optimizado con AVX512 (nativo)
+        gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_BF16.c "${FILES[@]}" -o pca_reimpl_BF16_native-base -DUSE_BF16 $OPT_FLAGS $LINK_FLAGS
+
+        # Compilar el programa optimizado con AVX512 y precisión de 16 bits
+        gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_BF16.c "${FILES[@]}" -o pca_reimpl_BF16_avx512_precision -DUSE_BF16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
+        # Compilar el programa con máxima optimización
+        gcc-14 $COMMON_FLAGS $INCLUDE_DIR pca_reimpl_BF16.c "${FILES[@]}" -o pca_reimpl_BF16_max_performance -DUSE_BF16 -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS $LINK_FLAGS
+
+        # Eliminar los flags específicos de esta sección
+        COMMON_FLAGS="${COMMON_FLAGS/-mavx512bf16/}" 
+        COMMON_FLAGS=$(echo $COMMON_FLAGS | tr -s ' ' | xargs)
+
+    else
+        echo "AVX512BF16 not supported on this system. Skipping compilation with -mavx512bf16."
+    fi
+
 else
-    echo "SSE2 not supported on this system. Skipping compilation for programs with _Float16."
+    echo "SSE2 not supported on this system. Skipping compilation for programs with reduced precision (float) data type."
 fi
 
 # Compilación cruzada para ARM de 64 bits

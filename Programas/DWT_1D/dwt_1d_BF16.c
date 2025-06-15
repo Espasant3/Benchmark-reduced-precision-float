@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+
+#ifdef __aarch64__
 #include <arm_bf16.h>
+#endif
 
 #define LEGALL_53_WAVELET 1
 #define CDF_97_WAVELET 2

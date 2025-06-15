@@ -63,7 +63,7 @@ gcc-14 $COMMON_FLAGS dct_FP32.c -o dct_FP32 $OPT_FLAGS $LINK_FLAGS
 ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
 if grep -q "sse2" /proc/cpuinfo; then
-    echo "SSE2 support detected. Compiling programs with _Float16 data."
+    echo "SSE2 support detected. Compiling programs with reduced precision (float) data type."
 
     gcc-14 $COMMON_FLAGS dct_FP16.c -o dct_FP16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
 
@@ -87,8 +87,31 @@ if grep -q "sse2" /proc/cpuinfo; then
         echo "AVX512FP16 not supported on this system. Skipping compilation with -mavx512fp16."
     fi
 
+    ### COMPILACION DEL PROGRAMA CON BFLOAT16 (EMPLEA EL TIPO DE DATO __bf16)
+
+    gcc-14 $COMMON_FLAGS dct_BF16.c -o dct_BF16 -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
+
+    if grep -q "avx512bf16" /proc/cpuinfo; then
+        echo "AVX512BF16 support detected. Compiling with -mavx512bf16."
+        COMMON_FLAGS+=" -mavx512bf16"
+
+        # Compilar el programa optimizado con AVX512 (nativo)
+        gcc-14 $COMMON_FLAGS dct_BF16.c -o dct_BF16_native-base $OPT_FLAGS $LINK_FLAGS
+        # Compilar el programa optimizado con AVX512 y precisión de 16 bits
+        gcc-14 $COMMON_FLAGS dct_BF16.c -o dct_BF16_avx512_precision -fexcess-precision=16 $OPT_FLAGS $LINK_FLAGS
+        # Compilar el programa con máxima optimización
+        gcc-14 $COMMON_FLAGS dct_BF16.c -o dct_BF16_max_performance -fexcess-precision=16 -mfpmath=sse $OPT_FLAGS $LINK_FLAGS
+
+        # Eliminar los flags específicos de esta sección
+        COMMON_FLAGS="${COMMON_FLAGS/-mavx512bf16/}" 
+        COMMON_FLAGS=$(echo $COMMON_FLAGS | tr -s ' ' | xargs)
+
+    else
+        echo "AVX512BF16 not supported on this system. Skipping compilation with -mavx512bf16."
+    fi
+
 else
-    echo "SSE2 not supported on this system. Skipping compilation for programs with _Float16."
+    echo "SSE2 not supported on this system. Skipping compilation for programs with reduced precision (float) data type."
 fi
 
 # Compilación cruzada para ARM de 64 bits

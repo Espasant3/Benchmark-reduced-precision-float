@@ -4,9 +4,14 @@
 #include <time.h>
 #include <unistd.h>
 #include <lapacke.h>
+
+#ifdef __aarch64__
 #include <arm_fp16.h>
 #include <arm_bf16.h>
 #include <armpl.h> // Esta es para usar cblas_hgemm
+#else
+#include <cblas.h>
+#endif
 
 #define N_SMALL 4
 
@@ -225,6 +230,8 @@ void transform_data(Matrix* matrix, __bf16* eigenvectors, Matrix* transformed_da
     int matrix_size = matrix->rows * matrix->cols;
     int transformed_size = transformed_data->rows * transformed_data->cols;
 
+    #ifdef __aarch64__
+
     // Asegurarse de que los punteros son válidos y alineados correctamente
     __fp16* matrix_data = (__fp16*)calloc(matrix_size, sizeof(__fp16));
     __fp16* transformed_data_data = (__fp16*)calloc(transformed_size, sizeof(__fp16));
@@ -265,6 +272,60 @@ void transform_data(Matrix* matrix, __bf16* eigenvectors, Matrix* transformed_da
     free(matrix_data);
     free(transformed_data_data);
     free(eigenvectors_f);
+
+    #else
+
+    // Sección para x86_64
+    float* matrix_data = (float*)calloc(matrix_size, sizeof(float));
+    float* transformed_data_data = (float*)calloc(transformed_size, sizeof(float));
+    float* eigenvectors_f = (float*)calloc(matrix->cols * matrix->cols, sizeof(float));
+
+    if (matrix_data == NULL || transformed_data_data == NULL) {
+        printf("Error: No se pudo reservar memoria para matrix_data o transformed_data_data.\n");
+        free(matrix_data);
+        free(transformed_data_data);
+        exit(EXIT_FAILURE);
+    }
+
+    // Inicializar los arrays temporales
+    for (int i = 0; i < matrix_size; i++) {
+        matrix_data[i] = (float)matrix->data[i / matrix->cols][i % matrix->cols];
+    }
+
+    for(int i = 0; i < matrix->cols * matrix->cols; i++) {
+        eigenvectors_f[i] = (float)eigenvectors[i];
+    }
+
+    // Verificar que las dimensiones son compatibles con cblas_sgemm
+    if (matrix->rows <= 0 || transformed_data->cols <= 0 || matrix->cols <= 0) {
+        printf("Error: Dimensiones no válidas para la multiplicación de matrices.\n");
+        free(matrix_data);
+        free(transformed_data_data);
+        exit(EXIT_FAILURE);
+    }
+
+    // Realizar la multiplicación de matrices utilizando BLAS
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                matrix->rows, transformed_data->cols, matrix->cols,
+                1.0f, matrix_data, matrix->cols,
+                eigenvectors_f, matrix->cols,
+                0.0f, transformed_data_data, transformed_data->cols);
+
+    // Copiar los datos de vuelta a transformed_data
+    for (int i = 0; i < transformed_size; i++) {
+        transformed_data->data[i / transformed_data->cols][i % transformed_data->cols] = (__bf16)transformed_data_data[i];
+    }
+    
+    for(int i = 0; i < matrix->cols * matrix->cols; i++) {
+        eigenvectors[i] = (__bf16)eigenvectors_f[i];
+    }
+
+    free(matrix_data);
+    free(transformed_data_data);
+    free(eigenvectors_f);
+
+    #endif
+
 }
 
 // Función principal para realizar PCA
