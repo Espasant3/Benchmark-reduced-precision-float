@@ -122,22 +122,22 @@ if $force_run; then
     ### COMPILACION DEL PROGRAMA BASE
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall axpy_FP32.c -o axpy_FP32.out
+    aarch64-linux-gnu-gcc-14 -Wall axpy_FP32.c -o axpy_FP32.out
 
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS QUE EMPLEA EL TIPO DE DATO _Float16
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall -fexcess-precision=16 axpy_FP16.c -o axpy_FP16.out
+    aarch64-linux-gnu-gcc-14 -Wall -fexcess-precision=16 axpy_FP16.c -o axpy_FP16.out
 
     ### COMPILACION DEL PROGRAMA DE CON FLOAT DE 16 BITS PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __fp16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall axpy_FP16_ARM.c -o axpy_FP16_ARM.out
+    aarch64-linux-gnu-gcc-14 -Wall axpy_FP16_ARM.c -o axpy_FP16_ARM.out
 
     ### COMPILACION DEL PROGRAMA DE CON BFLOAT16 PARA ARQUITECTURA ARM (EMPLEA EL TIPO DE DATO __bf16)
 
     # Compila para ARM de 64 bits, como distintivo el archivo tiene la extension .out
-    aarch64-linux-gnu-gcc -Wall axpy_BF16.c -o axpy_BF16.out
+    aarch64-linux-gnu-gcc-14 -Wall axpy_BF16.c -o axpy_BF16.out
 
 fi
 

@@ -28,8 +28,8 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 && \
 RUN if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ]; then \
         apt-get update && \
         apt-get install -y --no-install-recommends \
-        gcc-aarch64-linux-gnu \
-        g++-aarch64-linux-gnu && \
+        gcc-14-aarch64-linux-gnu \
+        g++-14-aarch64-linux-gnu && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*; \
     else \
