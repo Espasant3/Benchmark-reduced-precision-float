@@ -8,7 +8,6 @@ RUN apt-get update && \
     gcc-14 \
     g++-14 \
     valgrind \
-    qemu-user \
     python3 \
     python3-pip \
     python3-venv \
@@ -25,11 +24,12 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
 
 # Install ARM toolchain conditionally based on architecture
-RUN if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ]; then \
+RUN if [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ] || [ "$(uname -m)" = "x64" ]; then \
         apt-get update && \
         apt-get install -y --no-install-recommends \
         gcc-14-aarch64-linux-gnu \
         g++-14-aarch64-linux-gnu && \
+        qemu-user && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*; \
     else \
