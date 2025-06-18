@@ -14,28 +14,6 @@ typedef struct {
     int high_pass_size;
 } WaveletKernels;
 
-void convolve1d(float* input_vector, int vector_size, double* kernel, int kernel_size) {
-    float* temp_vector = (float*) malloc(vector_size * sizeof(float));
-
-    for (int i = 0; i < vector_size; i++) {
-        temp_vector[i] = 0.0f;
-    }
-
-    for (int i = 0; i < vector_size; i++) {
-        for (int j = 0; j < kernel_size; j++) {
-            if (i + j < vector_size) {
-                temp_vector[i] += input_vector[i + j] * (float)kernel[j];
-            }
-        }
-    }
-
-    for (int i = 0; i < vector_size; i++) {
-        input_vector[i] = temp_vector[i];
-    }
-
-    free(temp_vector);
-}
-
 void convolve1d_generic(float* input_vector, int vector_size, WaveletKernels kernels) {
     float* low_pass_result = (float*) malloc(vector_size * sizeof(float));
     float* high_pass_result = (float*) malloc(vector_size * sizeof(float));
