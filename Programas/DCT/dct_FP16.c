@@ -64,7 +64,14 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }   
 
-    int n = atoi(argv[optind]);
+    int n = -1;
+
+    n = atoi(argv[optind]);
+
+    if (n <= 0) {
+        fprintf(stderr, "El tamaño del vector debe ser un número entero positivo.\n");
+        return EXIT_FAILURE;
+    }
 
     _Float16 *input_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));
     _Float16 *output_small = (_Float16 *)malloc(N_SMALL * sizeof(_Float16));

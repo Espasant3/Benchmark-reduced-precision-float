@@ -35,7 +35,15 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }   
 
-    int n = atoi(argv[optind]);
+    int n = -1;
+
+    n = atoi(argv[optind]);
+
+    if (n <= 0) {
+        fprintf(stderr, "El tamaño del vector debe ser un número entero positivo.\n");
+        return EXIT_FAILURE;
+    }
+
     float a = 2.3752f;
     float *x_small = (float *)malloc(N_SMALL * sizeof(float));
     float *y_small = (float *)malloc(N_SMALL * sizeof(float));
