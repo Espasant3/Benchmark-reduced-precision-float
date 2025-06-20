@@ -93,7 +93,7 @@ case "$ARCH" in
                 # Validar que sea un archivo ejecutable (no sh, out ni o)
                 if [ -f "$file" ] && [ -x "$file" ] && [[ "$file" != *.sh ]] && [[ "$file" != *.out ]] && [[ "$file" != *.o ]]; then
                     echo "Procesando archivo: $file"
-                    python3 tiempo_ejecucion_cache_limits_dynamic.py "$file" $FLAGS_WITH_NUM > /dev/null
+                    python3 tiempo_ejecucion.py "$file" $FLAGS_WITH_NUM > /dev/null
                     echo "$file done"
                 fi
             done
@@ -120,7 +120,7 @@ case "$ARCH" in
                 # Validar que sea un archivo ejecutable
                 if [ -f "$file" ] && [ -x "$file" ]; then
                     echo "Procesando archivo: $file"
-                    python3 tiempo_ejecucion_cache_limits_dynamic.py "$file" $FLAGS_WITH_NUM > /dev/null
+                    python3 tiempo_ejecucion.py "$file" $FLAGS_WITH_NUM > /dev/null
                     echo "$file done"
                 fi
             done
