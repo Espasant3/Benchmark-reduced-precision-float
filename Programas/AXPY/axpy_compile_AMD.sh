@@ -54,7 +54,7 @@ cd "$script_dir"
 
 ### COMPILACION DEL PROGRAMA BASE
 
-gcc-14 $COMMON_FLAGS axpy_FP32.c -o axpy_FP32
+gcc-14 $COMMON_FLAGS axpy_FP32.c -o axpy_FP32 $OPT_FLAGS
 
 
 if grep -q "sse2" /proc/cpuinfo; then
