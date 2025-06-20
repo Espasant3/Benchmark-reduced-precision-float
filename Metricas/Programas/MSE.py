@@ -1,3 +1,4 @@
+# Error Cuadrático Medio (MSE) para comparar resultados de ejecuciones
 import numpy as np
 import csv
 import argparse
