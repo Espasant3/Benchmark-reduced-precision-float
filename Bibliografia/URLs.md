@@ -36,9 +36,6 @@ Guía de instalación y uso de las bibliotecas de alto rendimiento de ARM (ARMPL
 ### [Advanced Matrix Extensions (AMX)](https://en.wikipedia.org/wiki/Advanced_Matrix_Extensions)
 Información sobre las Advanced Matrix Extensions (AMX), una tecnología de hardware desarrollada por Intel para acelerar operaciones matriciales en procesadores modernos, ampliamente utilizada en aplicaciones de aprendizaje automático y computación de alto rendimiento.
 
-### [Libreria immintrin.h](https://github.com/gcc-mirror/gcc/blob/master/gcc/config/i386/immintrin.h)
-La librería `immintrin.h` permitiría emplear en arquitecturas x86_64 los tipos de datos `__fp16` y `__bf16` (siempre que dispongan de las extensiones AVX512FP16 y AVX512BF16 respectivamente). El compilador clang también lo permite tal y como se ve [aquí](https://clang.llvm.org/doxygen/immintrin_8h_source.html), donde además aclara que esta cabecera solo está pensada para ser empleada en arquitecturas x86.
-
 ### [Intel Intrinsics Guide BF16 Instructions](https://www.intel.com/content/www/us/en/docs/cpp-compiler/developer-guide-reference/2021-8/intrinsics-for-avx-512-bf16-instructions.html)
 Guía de intrínsecos de Intel para instrucciones BF16, que proporciona una referencia rápida para el uso de estas instrucciones en código C/C++.
 

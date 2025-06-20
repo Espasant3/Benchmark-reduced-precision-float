@@ -36,12 +36,11 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 - **Compilador**: [GCC 14.2 ](https://gcc.gnu.org/onlinedocs/14.2.0/)
 - **Librerías**: 
   - `<time.h>`: [Documentación](https://www.cplusplus.com/reference/ctime/)
-  - `<gsl/gsl_eigen.h>`: [Documentación](https://www.gnu.org/software/gsl/doc/html/eigen.html)
   - `<math.h>`: [Documentación](https://www.cplusplus.com/reference/cmath/)
   - `<cblas.h>`:  [Documentación](https://www.gnu.org/software/gsl/doc/html/cblas.html)
   - `<lapacke.h>`: [Documentación](https://netlib.org/lapack/lapacke.html)
   - `<arm_fp16.h>`: (para soporte del tipo de dato `__fp16`, float16, específico de ARM)
-  - `<arm_bf16.h>`: (para soporte del tipo de dato `__bf16`, bfloat, específico de ARM)
+  - `<arm_bf16.h>`: (para soporte del tipo de dato `__bf16`, bfloat16, cuando se compila para ARM)
   - `<armpl.h>`: [Documentación](https://developer.arm.com/documentation/101004/2410/General-information/Arm-Performance-Libraries)
 
 
@@ -68,13 +67,13 @@ Los programas tienen el siguiente formato de nombres, donde `<nombre>` correspon
 | `<nombre>_FP16.c`      | Versión del programa que utiliza el tipo de dato `_Float16`.                                                            |
 | `<nombre>_FP16_ARM.c`  | Versión del programa que utiliza el tipo de dato `__fp16` específico de ARM.                                            |
 | `<nombre>_BF16.c`      | Versión del programa que utiliza el tipo de dato `__bf16` específico de ARM.                                            |
-| `<nombre>_compile_<arch>.sh`  | Script para compilar los programas `<nombre>` en el mismo directorio, para la arquitectura `<arch>`.             |
-| `<nombre>_run_<arch>.sh`      | Script para ejecutar todos los programas compilados en el directorio actual, para la arquitectura `<arch>`.      |
+| `<nombre>_compile_<target>.sh`  | Script para compilar los programas `<nombre>` en el mismo directorio, para la arquitectura `<target>`.             |
+| `<nombre>_run_<target>.sh`      | Script para ejecutar todos los programas compilados en el directorio actual, para la arquitectura `<target>`.      |
 | `compile_all.sh`       | Script general para compilar todos los programas, escogiendo los scripts de compilación adecuados para la arquitectura. |
 | `run_all.sh`           | Script general para ejecutar todos los programas, escogiendo los scripts de compilación adecuados para la arquitectura. |
 
 
-**Nota**: `<arch>` no se refiere solo a la arquitectura sino que es una combinación de la arquitectura, obtenida mediante el comando `uname -m`, y el proveedor de la CPU, obtenido mediante el comando `grep -m 1 'vendor_id' /proc/cpuinfo | awk '{print $3}'`.
+**Nota**: `<target>` no se refiere solo a la arquitectura sino que es una combinación de la arquitectura, obtenida mediante el comando `uname -m`, y el proveedor de la CPU, obtenido mediante el comando `grep -m 1 'vendor_id' /proc/cpuinfo | awk '{print $3}'`.
 
 #### Parámetros de los scripts
 
@@ -88,8 +87,8 @@ Los scripts de compilación aceptan los siguientes parámetros y flags:
   - `-f` o `--force`: Permite la compilación cruzada de programas para una arquitecturas diferente a la actual. Este flag solo permite la cross-compilación de Intel/AMD a ARM (genera programas con extensión `.out`), por lo que en la compilación en ARM no tendrá efecto. 
 
 - **Scripts de compilación**:
-  - `<nombre>_compile_<arch>.sh`: Compila los programas `<nombre>` para la arquitectura `<arch>`.
-    - Uso: `./<nombre>_compile_<arch>.sh [-f|--force] [flags]`
+  - `<nombre>_compile_<target>.sh`: Compila los programas `<nombre>` para la arquitectura `<target>`.
+    - Uso: `./<nombre>_compile_<target>.sh [-f|--force] [flags]`
   - `compile_all.sh`: Script general que compila todos los programas, seleccionando los scripts de compilación adecuados para la arquitectura.
     - Uso: `./compile_all.sh [-f|--force] [flags]`
 
@@ -106,8 +105,8 @@ Los scripts de ejecución aceptan los siguientes parámetros y flags:
   - `-v` o `--verbose`: Muestra información detallada durante la ejecución del programa, que comprende los datos iniciales de ejecución completos y los resultados de la ejecución completos.
 
 - **Scripts de ejecución**:
-  - `<nombre>_run_<arch>.sh`: Ejecuta todos los programas compilados en el directorio actual para la arquitectura `<arch>`.
-    - Uso: `./<nombre>_run_<arch>.sh <tamanho N> [<seed>] [-f|--force] [-v|--verbose]`
+  - `<nombre>_run_<target>.sh`: Ejecuta todos los programas compilados en el directorio actual para la arquitectura `<target>`.
+    - Uso: `./<nombre>_run_<target>.sh <tamanho N> [<seed>] [-f|--force] [-v|--verbose]`
   - `run_all.sh`: Script general que ejecuta todos los programas, seleccionando los scripts de ejecución adecuados para la arquitectura.
     - Uso: `./run_all.sh <tamanho N> [<seed>] [-f|--force] [-v|--verbose]`
 
@@ -118,25 +117,25 @@ Los scripts de ejecución aceptan los siguientes parámetros y flags:
 - **Arquitectura**: x86_64
 - **Vendors**:
   - **GenuineIntel**: Procesadores Intel de 64 bits.
-    - `<arch>`: Intel 
+    - `<target>`: Intel 
   - **AuthenticAMD**: Procesadores AMD de 64 bits.
-      - `<arch>`: AMD 
+      - `<target>`: AMD 
 
 #### ARM aarch64 (genérica)
 - **Arquitectura**: aarch64
 - **Vendor**: Procesadores ARM de 64 bits genéricos, excluyendo aquellos fabricados por Nvidia y HiSilicon (Huawei).
-    - `<arch>`: ARM 
+    - `<target>`: ARM 
 
 #### Huawei aarch64
 - **Arquitectura**: aarch64
 - **Vendor**: HiSilicon (identificado como "huawei" en el script)
   - **Huawei Ascend**: Procesadores orientados a IA de Huawei.
   - **HiSilicon Kunpeng**: Procesadores ARM de servidor de Huawei.
-- **Nota**: Por el momento no hay soporte oficial para Huawei (tanto Huawei Ascend como HiSilicon Kunpeng).
+- **Nota**: Finalmente fue descartado pero está considerado en los scripts globales (tanto Huawei Ascend como HiSilicon Kunpeng).
 
 **Nota**: Para más información sobre los valores de `uname -m`, consultar la [Documentación del proyecto](./Bibliografia/URLs.md#architecturespecificsmemo)
 
-**Nota**: Los archivos ejecutados por los scripts `<nombre>_run_<arch>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables) para poder ser ejecutados en los scripts.
+**Nota**: Los archivos ejecutados por los scripts `<nombre>_run_<target>.sh` deben cumplir con los criterios especificados en la sección [Extensión de los ejecutables](#extensión-de-los-ejecutables) para poder ser ejecutados en los scripts.
 
 
 ## Preparación del entorno para Intel x86
@@ -148,7 +147,7 @@ Antes de comenzar, asegúrate de tener instalados los siguientes paquetes en tu 
 - **GCC** (GNU Compiler Collection) versión 14 o superior
 - **Compiladores cruzados para ARM** (para compilar programas para ARM)
 - **QEMU** para emulación de ARM (para emular la arquitectura ARM)
-- **Intel SDE** (opcional, para emular instrucciones AVX512FP16)
+- **Intel SDE** (opcional, para emular instrucciones AVX512FP16 y AVX512BF16 en Intel/AMD)
 
 Puedes instalar estos paquetes en sistemas basados en Debian/Ubuntu con el siguiente comando:
 
