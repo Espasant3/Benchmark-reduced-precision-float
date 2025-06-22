@@ -229,18 +229,18 @@ def guardar_datos_csv(nombre_archivo, valores_n, tiempos_por_n, num_tiempos):
 
     # Obtener la arquitectura del sistema
     arquitectura = platform.machine()
-
+    base_dir = directorio_script / ".." / "Datos" / "Tiempos-ejecucion"
+    
     # Definir la carpeta de destino según la arquitectura
     if arquitectura in ["x86_64", "amd64", "AMD64"]:
         vendor = get_cpu_vendor()
-        if vendor != "Unknown" and vendor != "Unknown (File not found)":
-            carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / vendor
-        else:
-            # Si no se puede determinar el fabricante, usar x86_64 por defecto porque es la architectura detectada
-            print(f"Advertencia: No se pudo determinar el fabricante del CPU ({vendor}). Usando directorio x86_64 por defecto.")
-            carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / "x86_64" 
+
+        carpeta_destino = base_dir / vendor if vendor not in ["Unknown", "Unknown (File not found)"] else base_dir / "x86_64"
+        carpeta_destino = carpeta_destino / "All-data"  # Subcarpeta para todos los datos
+
     elif arquitectura == "aarch64":
-        carpeta_destino = directorio_script / ".." / "Datos" / "Tiempos-ejecucion" / "ARM"
+        carpeta_destino = base_dir / "ARM"
+        carpeta_destino = carpeta_destino / "All-data"  # Subcarpeta para todos los datos
     else:
         # Si la arquitectura no es soportada, guardar en el directorio actual
         print(f"Advertencia: Arquitectura no soportada ({arquitectura}). Los archivos se guardarán en el directorio actual.")
