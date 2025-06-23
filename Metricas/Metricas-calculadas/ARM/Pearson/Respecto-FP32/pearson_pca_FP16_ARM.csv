@@ -1,0 +1,5 @@
+# Resultados PCA
+# Referencia: pca_FP32_n1000_seed1234
+# Procesado: pca_FP16_ARM_n1000_seed1234
+Comparación,Pearson
+pca_FP16_ARM_n1000_seed1234,0.44967213

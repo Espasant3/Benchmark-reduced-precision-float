@@ -1,0 +1,5 @@
+# Resultados AXPY
+# Referencia: axpy_FP32_n15000_seed1234
+# Procesado: axpy_FP16_n15000_seed1234
+Comparación,Pearson
+axpy_FP16_n15000_seed1234,0.99999979

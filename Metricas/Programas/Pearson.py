@@ -64,6 +64,10 @@ def pearson_correlation(y_true, y_pred):
     
     return numerator / denominator
 
+def is_dwt_1d(filename):
+    """Detecta si 'dwt_1d' está en cualquier parte del nombre del archivo."""
+    return 'dwt_1d' in Path(filename).stem.lower()
+
 def get_operation_name(filename):
     """Extrae el nombre de la operación del nombre del archivo"""
     stem = Path(filename).stem
@@ -72,12 +76,12 @@ def get_operation_name(filename):
             return prefix.upper()
     return "OPERACION"
 
-def save_results_to_csv(output_name, operation, source_name, postop_name, result):
-    """Guarda los resultados en un archivo CSV."""
+def save_results_to_csv(output_name, operation, source_name, postop_name, result, is_dwt):
+    """Guarda los resultados en un archivo CSV con formato adaptado para DWT."""
     output_file = Path(__file__).parent / f"{output_name}.csv"
 
     # Determinar si hay solo una ejecución
-    single_execution = len(result['pearson']) == 1
+    single_execution = len(result) == 1
 
     with open(output_file, 'w') as f:
         # Escribir metadatos como comentarios
@@ -85,18 +89,32 @@ def save_results_to_csv(output_name, operation, source_name, postop_name, result
         f.write(f"# Referencia: {source_name}\n")
         f.write(f"# Procesado: {postop_name}\n")
 
-        # Escribir encabezado según el número de ejecuciones
-        if single_execution:
-            f.write("Comparación,Pearson\n")
+        # Escribir encabezado según el tipo de dato
+        if is_dwt:
+            if single_execution:
+                f.write("Comparación,Pearson_aprox,Pearson_detail\n")
+            else:
+                f.write("Comparación,Ejecución,Pearson_aprox,Pearson_detail\n")
         else:
-            f.write("Comparación,Ejecución,Pearson\n")
+            if single_execution:
+                f.write("Comparación,Pearson\n")
+            else:
+                f.write("Comparación,Ejecución,Pearson\n")
 
         # Escribir los resultados
-        for i, pearson in enumerate(result['pearson'], 1):
-            if single_execution:
-                f.write(f"{postop_name},{pearson:.8f}\n")
+        for i, val in enumerate(result, 1):
+            if is_dwt:
+                pearson_aprox, pearson_detail = val
+                if single_execution:
+                    f.write(f"{postop_name},{pearson_aprox:.8f},{pearson_detail:.8f}\n")
+                else:
+                    f.write(f"{postop_name},{i},{pearson_aprox:.8f},{pearson_detail:.8f}\n")
             else:
-                f.write(f"{postop_name},{i},{pearson:.8f}\n")
+                pearson = val
+                if single_execution:
+                    f.write(f"{postop_name},{pearson:.8f}\n")
+                else:
+                    f.write(f"{postop_name},{i},{pearson:.8f}\n")
 
     print(f"\nResultados guardados en {output_file}")
     print(f"Referencia utilizada: {source_name}")
@@ -118,6 +136,7 @@ def main():
     operation = get_operation_name(args.post_operations)
     source_name = Path(args.source).stem
     postop_name = Path(args.post_operations).stem
+    is_dwt = is_dwt_1d(args.post_operations)
     
     # Cargar datos de referencia
     if args.type == 'vector':
@@ -143,23 +162,43 @@ def main():
     # Calcular Pearson para cada ejecución
     pearson_values = []
     for y_true, y_pred in zip(source_data, postop_data):
-        pearson = pearson_correlation(y_true, y_pred)
-        pearson_values.append(pearson)
-    
-    result = {
-        'pearson': pearson_values
-    }
+        if args.type == 'matrix':
+            y_true_flat = y_true.flatten()
+            y_pred_flat = y_pred.flatten()
+        else:
+            y_true_flat = y_true
+            y_pred_flat = y_pred
+
+        if is_dwt:
+            if len(y_true_flat) % 2 != 0:
+                raise ValueError("La longitud de los datos debe ser par para DWT_1D")
+            half = len(y_true_flat) // 2
+            true_aprox = y_true_flat[:half]
+            true_detail = y_true_flat[half:]
+            pred_aprox = y_pred_flat[:half]
+            pred_detail = y_pred_flat[half:]
+
+            pearson_aprox = pearson_correlation(true_aprox, pred_aprox)
+            pearson_detail = pearson_correlation(true_detail, pred_detail)
+            pearson_values.append( (pearson_aprox, pearson_detail) )
+        else:
+            pearson = pearson_correlation(y_true_flat, y_pred_flat)
+            pearson_values.append( pearson )
     
     # Mostrar resultados
     print(f"\nResultados {operation}:")
     print(f"Referencia: {source_name}")
     print(f"Procesado: {postop_name}")
-    for i, pearson in enumerate(result['pearson'], 1):
-        print(f"Ejecución {i}: {pearson:.8f}")
+    for i, val in enumerate(pearson_values, 1):
+        if is_dwt:
+            pearson_aprox, pearson_detail = val
+            print(f"Ejecución {i}: Pearson_aprox = {pearson_aprox:.8f}, Pearson_detail = {pearson_detail:.8f}")
+        else:
+            print(f"Ejecución {i}: Pearson = {val:.8f}")
     
     # Guardar resultados si se especifica un archivo de salida
     if args.output:
-        save_results_to_csv(args.output, operation, source_name, postop_name, result)
+        save_results_to_csv(args.output, operation, source_name, postop_name, pearson_values, is_dwt)
 
 if __name__ == '__main__':
     main()
