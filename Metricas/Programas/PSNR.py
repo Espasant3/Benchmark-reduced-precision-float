@@ -1,4 +1,4 @@
-# Relación Señal-Ruido de Pico (PSNR)
+# Proporción Máxima de Señal a Ruido o Peak Signal-to-Noise Ratio (PSNR)
 import numpy as np
 import argparse
 import csv

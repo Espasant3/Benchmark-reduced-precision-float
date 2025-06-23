@@ -1,4 +1,0 @@
-# Resultados PCA
-# Referencia: pca_FP32_n1000_seed1234
-Comparación,Execución,MSE
-pca_FP16_n1000_seed1234 vs pca_FP32_n1000_seed1234,1,1.11783390

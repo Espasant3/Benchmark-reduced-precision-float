@@ -1,0 +1,6 @@
+# Resultados DCT
+# Referencia: dct_FP32_n15000_seed1234
+Configuración,NRMSE
+dct_FP16_n15000_seed1234,0.00457225
+dct_FP16_ARM_n15000_seed1234,0.00457225
+dct_BF16_n15000_seed1234,0.00765478

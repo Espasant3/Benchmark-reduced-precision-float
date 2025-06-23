@@ -1,0 +1,5 @@
+# Resultados AXPY
+# Referencia: source_axpy_BF16_n15000_seed1234
+# Procesado: axpy_BF16_n15000_seed1234
+Comparación,Pearson
+axpy_BF16_n15000_seed1234,0.92133227

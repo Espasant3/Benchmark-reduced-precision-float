@@ -1,0 +1,6 @@
+# Resultados OPERACION
+# Referencia: source_pca_FP32_n1000_seed1234
+Configuración,NRMSE
+source_pca_FP16_n1000_seed1234,0.00012635
+source_pca_FP16_ARM_n1000_seed1234,0.00012635
+source_pca_BF16_n1000_seed1234,0.00101061

@@ -1,4 +1,4 @@
-# Error Cuadrático Medio (MSE) para comparar resultados de ejecuciones
+# Error Absoluto Medio (MAE) para comparar resultados de ejecuciones
 import numpy as np
 import csv
 import argparse
@@ -43,8 +43,9 @@ def load_matrix_data(filepath):
     
     return matrices
 
-def mean_squared_error(y_true, y_pred):
-    return np.mean((y_true - y_pred) ** 2)
+def mean_absolute_error(y_true, y_pred):
+    """Calcula el Error Absoluto Medio (MAE)"""
+    return np.mean(np.abs(y_true - y_pred))
 
 def get_operation_name(filename):
     """Extrae el nombre de la operación del nombre del archivo"""
@@ -59,7 +60,7 @@ def save_results_to_csv(output_name, operation, ref_name, results):
     output_file = Path(__file__).parent / f"{output_name}.csv"
 
     # Determinar si hay solo una ejecución en todos los resultados
-    single_execution = all(len(result['mse']) == 1 for result in results)
+    single_execution = all(len(result['mae']) == 1 for result in results)
 
     with open(output_file, 'w') as f:
         # Escribir metadatos como comentarios
@@ -68,23 +69,23 @@ def save_results_to_csv(output_name, operation, ref_name, results):
 
         # Escribir encabezado según el número de ejecuciones
         if single_execution:
-            f.write("Configuración,MSE\n")
+            f.write("Configuración,MAE\n")
         else:
-            f.write("Configuración,Execución,MSE\n")
+            f.write("Configuración,Ejecución,MAE\n")
 
         # Escribir los resultados
         for result in results:
-            for i, mse in enumerate(result['mse'], 1):
+            for i, mae in enumerate(result['mae'], 1):
                 if single_execution:
-                    f.write(f"{result['name']},{mse:.8f}\n")
+                    f.write(f"{result['name']},{mae:.8f}\n")
                 else:
-                    f.write(f"{result['name']},{i},{mse:.8f}\n")
+                    f.write(f"{result['name']},{i},{mae:.8f}\n")
 
     print(f"\nResultados guardados en {output_file}")
     print(f"Referencia utilizada: {ref_name}")
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Calcula el Error Cuadrático Medio.')
+    parser = argparse.ArgumentParser(description='Calcula el Error Absoluto Medio.')
     parser.add_argument('true_file', help='Archivo CSV de referencia (FP32)')
     parser.add_argument('pred_files', nargs='+', help='Archivos CSV a comparar')
     parser.add_argument('-t', '--type', choices=['vector', 'matrix'], required=True,
@@ -123,17 +124,17 @@ def main():
             print(f"Error en {Path(pred_file).name}: Ejecuciones diferentes ({len(true_data)} vs {len(pred_data)})")
             continue
         
-        # Calcular MSE para cada ejecución
-        mse_values = []
+        # Calcular MAE para cada ejecución
+        mae_values = []
         for y_true, y_pred in zip(true_data, pred_data):
-            mse = mean_squared_error(y_true, y_pred)
-            mse_values.append(mse)
+            mae = mean_absolute_error(y_true, y_pred)
+            mae_values.append(mae)
         
-        # Guardar resultados con prefijo completo
+        # Guardar resultados
         results.append({
             'name': Path(pred_file).stem,
-            'mse': mse_values,
-            'executions': len(mse_values)
+            'mae': mae_values,
+            'executions': len(mae_values)
         })
     
     # Mostrar resultados
@@ -141,13 +142,12 @@ def main():
     print(f"Referencia: {ref_name}")
     for result in results:
         print(f"\n{result['name']} vs {ref_name}:")
-        for i, mse in enumerate(result['mse'], 1):
-            print(f"Ejecución {i}: {mse:.8f}")
+        for i, mae in enumerate(result['mae'], 1):
+            print(f"Ejecución {i}: {mae:.8f}")
     
     # Guardar resultados si se especifica un archivo de salida
     if args.output:
         save_results_to_csv(args.output, operation, ref_name, results)
-
 
 if __name__ == '__main__':
     main()

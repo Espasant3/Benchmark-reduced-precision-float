@@ -1,24 +1,39 @@
-# Coeficiente de Correlación Estructural (SSIM)
+# Índice de Similitud Estructural (SSIM)
 import numpy as np
 import argparse
 import csv
 from PIL import Image
 import sys
 from skimage.metrics import structural_similarity as ssim
+from collections import defaultdict
+from pathlib import Path
+
 
 def cargar_datos_csv(ruta_archivo):
-    """Carga datos desde CSV y reconstruye matriz."""
-    datos = []
+    """Carga datos desde CSV y reconstruye matrices por ejecución."""
+    datos_por_ejecucion = defaultdict(list)
+    
     with open(ruta_archivo, 'r') as f:
         reader = csv.DictReader(f)
         for fila in reader:
-            datos.append([float(fila['Fila']), float(fila['Columna']), float(fila['Valor'])])
-    filas = int(max(d[0] for d in datos)) + 1
-    cols = int(max(d[1] for d in datos)) + 1
-    matriz = np.zeros((filas, cols))
-    for d in datos:
-        matriz[int(d[0]), int(d[1])] = d[2]
-    return matriz
+            ejecucion = int(fila['Ejecucion'])
+            fila_idx = int(fila['Fila'])
+            columna_idx = int(fila['Columna'])
+            valor = float(fila['Valor'])
+            datos_por_ejecucion[ejecucion].append((fila_idx, columna_idx, valor))
+    
+    # Reconstruir matrices por ejecución
+    matrices = []
+    for ejecucion in sorted(datos_por_ejecucion.keys()):
+        # Determinar dimensiones máximas
+        filas = max(d[0] for d in datos_por_ejecucion[ejecucion]) + 1
+        columnas = max(d[1] for d in datos_por_ejecucion[ejecucion]) + 1
+        matriz = np.zeros((filas, columnas))
+        for f, c, v in datos_por_ejecucion[ejecucion]:
+            matriz[f, c] = v
+        matrices.append(matriz)
+    
+    return matrices
 
 def calcular_ssim(original, comprimida):
     """Calcula SSIM entre dos matrices/arrays."""
@@ -26,14 +41,31 @@ def calcular_ssim(original, comprimida):
         raise ValueError("Las dimensiones de los datos no coinciden")
     return ssim(original, comprimida, data_range=max(original.max(), comprimida.max()))
 
-def guardar_resultado_csv(nombre_archivo, ssim_score, modo):
-    """Guarda el resultado SSIM en un CSV."""
+def guardar_resultado_csv(nombre_archivo, resultados, modo):
+    """Guarda los resultados SSIM en un CSV, omitiendo 'Ejecución' si solo hay una."""
     nombre_completo = f"{nombre_archivo}.csv"
+
+    # Determinar si hay solo una ejecución
+    single_execution = all(ejec == 1 for ejec, _ in resultados)
+
     with open(nombre_completo, 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(["Modo", "SSIM"])
-        writer.writerow([modo, f"{ssim_score:.6f}"])
-    print(f"Resultado guardado en '{nombre_completo}'")
+        # Escribir metadatos como comentarios
+        f.write(f"# Resultados {modo}\n")
+
+        # Escribir encabezado según el número de ejecuciones
+        if single_execution:
+            f.write("Configuración,SSIM\n")
+        else:
+            f.write("Configuración,Ejecución,SSIM\n")
+
+        # Escribir los resultados
+        for ejec, score in resultados:
+            if single_execution:
+                f.write(f"{Path(nombre_archivo).stem},{score:.8f}\n")
+            else:
+                f.write(f"{Path(nombre_archivo).stem},{ejec},{score:.8f}\n")
+
+    print(f"Resultados guardados en '{nombre_completo}'")
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Calcular SSIM')
@@ -48,24 +80,35 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    # Carga de datos
     try:
         if args.csv:
-            original = cargar_datos_csv(args.source)
-            compressed = cargar_datos_csv(args.compressed)
+            original_matrices = cargar_datos_csv(args.source)
+            compressed_matrices = cargar_datos_csv(args.compressed)
             modo = "CSV"
         elif args.image:
-            original = np.array(Image.open(args.source))
-            compressed = np.array(Image.open(args.compressed))
+            original_matrices = [np.array(Image.open(args.source))]
+            compressed_matrices = [np.array(Image.open(args.compressed))]
             modo = "Imagen"
 
-        # Cálculo de SSIM
-        ssim_score = calcular_ssim(original, compressed)
-        print(f'SSIM: {ssim_score:.6f}')
+        # Validar número de ejecuciones
+        if len(original_matrices) != len(compressed_matrices):
+            raise ValueError("Número de ejecuciones no coincide")
 
-        # Guardar resultado si se especificó -o
+        # Calcular SSIM por ejecución
+        resultados = []
+        for i, (orig, comp) in enumerate(zip(original_matrices, compressed_matrices), 1):
+            if orig.shape != comp.shape:
+                raise ValueError(f"Ejecución {i}: Dimensiones no coinciden")
+            ssim_score = calcular_ssim(orig, comp)
+            resultados.append((i, ssim_score))
+
+        print("Resultados SSIM:")
+        for idx, score in resultados:
+            print(f"Ejecución {idx}: SSIM = {score:.6f}")
+
+        # Guardar resultados si se especificó -o
         if args.output:
-            guardar_resultado_csv(args.output, ssim_score, modo)
+            guardar_resultado_csv(args.output, resultados, modo)
 
     except ValueError as e:
         print(f"Error: {e}")

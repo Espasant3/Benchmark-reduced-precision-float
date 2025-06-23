@@ -1,0 +1,6 @@
+# Resultados PCA
+# Referencia: pca_FP32_n1000_seed1234
+Configuración,MAE
+pca_FP16_n1000_seed1234,0.54743636
+pca_FP16_ARM_n1000_seed1234,0.49282420
+pca_BF16_n1000_seed1234,0.95895306

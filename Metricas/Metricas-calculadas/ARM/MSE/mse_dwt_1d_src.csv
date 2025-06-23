@@ -1,0 +1,9 @@
+# Resultados OPERACION
+# Referencia: source_dwt_1d_FP32_n15000_seed1234
+Configuración,Execución,MSE
+source_dwt_1d_FP16_n15000_seed1234,1,0.00000160
+source_dwt_1d_FP16_n15000_seed1234,2,0.00000160
+source_dwt_1d_FP16_ARM_n15000_seed1234,1,0.00000160
+source_dwt_1d_FP16_ARM_n15000_seed1234,2,0.00000160
+source_dwt_1d_BF16_n15000_seed1234,1,0.00010177
+source_dwt_1d_BF16_n15000_seed1234,2,0.00010177

@@ -1,0 +1,6 @@
+# Resultados AXPY
+# Referencia: axpy_FP32_n15000_seed1234
+Configuración,NRMSE
+axpy_FP16_n15000_seed1234,0.00014888
+axpy_FP16_ARM_n15000_seed1234,0.00014888
+axpy_BF16_n15000_seed1234,0.00140447

@@ -1,0 +1,9 @@
+# Resultados DWT_1D
+# Referencia: dwt_1d_FP32_n15000_seed1234
+Configuración,Ejecución,MAE
+dwt_1d_FP16_n15000_seed1234,1,0.00160183
+dwt_1d_FP16_n15000_seed1234,2,0.00199024
+dwt_1d_FP16_ARM_n15000_seed1234,1,0.00160183
+dwt_1d_FP16_ARM_n15000_seed1234,2,0.00199024
+dwt_1d_BF16_n15000_seed1234,1,0.01329425
+dwt_1d_BF16_n15000_seed1234,2,0.02278251

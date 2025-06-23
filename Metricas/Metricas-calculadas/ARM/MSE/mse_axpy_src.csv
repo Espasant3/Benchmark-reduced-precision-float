@@ -1,0 +1,6 @@
+# Resultados OPERACION
+# Referencia: source_axpy_FP32_n15000_seed1234
+Configuración,MSE
+source_axpy_FP16_n15000_seed1234,0.00000157
+source_axpy_FP16_ARM_n15000_seed1234,0.00000157
+source_axpy_BF16_n15000_seed1234,0.00010209

@@ -1,0 +1,6 @@
+# Resultados DCT
+# Referencia: dct_FP32_n15000_seed1234
+Configuración,MAE
+dct_FP16_n15000_seed1234,0.06348021
+dct_FP16_ARM_n15000_seed1234,0.06348021
+dct_BF16_n15000_seed1234,0.33723608

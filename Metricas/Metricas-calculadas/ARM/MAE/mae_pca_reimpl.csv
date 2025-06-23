@@ -1,0 +1,6 @@
+# Resultados PCA
+# Referencia: pca_reimpl_FP32_n1000_seed1234
+Configuración,MAE
+pca_reimpl_FP16_n1000_seed1234,1.13263199
+pca_reimpl_FP16_ARM_n1000_seed1234,1.13265033
+pca_reimpl_BF16_n1000_seed1234,1.19020325

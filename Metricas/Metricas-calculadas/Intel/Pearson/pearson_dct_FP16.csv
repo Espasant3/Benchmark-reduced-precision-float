@@ -1,0 +1,5 @@
+# Resultados DCT
+# Referencia: source_dct_FP16_n15000_seed1234
+# Procesado: dct_FP16_n15000_seed1234
+Comparación,Pearson
+dct_FP16_n15000_seed1234,0.00753994

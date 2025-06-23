@@ -1,0 +1,5 @@
+# Resultados OPERACION
+# Referencia: source_dct_FP32_n15000_seed1234
+Configuración,NRMSE
+source_dct_FP16_n15000_seed1234,0.00012664
+source_dct_BF16_n15000_seed1234,0.00100902
