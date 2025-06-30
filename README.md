@@ -158,14 +158,14 @@ sudo apt install gcc-14 qemu-user gcc-14-aarch64-linux-gnu -y
 
 ### Instalación de Intel SDE
 
-1. Descarga la versión más reciente de Intel SDE (9.44) desde el [sitio oficial de Intel](https://www.intel.com/content/www/us/en/developer/articles/tool/software-development-emulator.html). 
+1. Descarga la versión más reciente de Intel SDE (9.53 en este momento) desde el [sitio oficial de Intel](https://www.intel.com/content/www/us/en/download/684897/intel-software-development-emulator.html). 
 2. Extrae el archivo descargado:
     ```bash
-    tar -xzf sde-9.44.tar.gz
+    tar -xzf sde-9.53.tar.gz
     ```
 3. Navega al directorio extraído
     ```bash
-    cd sde-9.44
+    cd sde-9.53
     ```
 4. (Opcional) Puedes mover el ejecutable `sde` a un directorio en tu `PATH` para facilitar su uso: 
     ```bash
