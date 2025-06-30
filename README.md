@@ -153,7 +153,7 @@ Puedes instalar estos paquetes en sistemas basados en Debian/Ubuntu con el sigui
 
 ```bash
 sudo apt update
-sudo apt install gcc-14 qemu-user gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu -y
+sudo apt install gcc-14 qemu-user gcc-14-aarch64-linux-gnu -y
 ```
 
 ### Instalación de Intel SDE
