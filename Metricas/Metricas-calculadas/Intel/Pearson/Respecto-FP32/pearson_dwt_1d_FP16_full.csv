@@ -1,0 +1,6 @@
+# Resultados DWT_1D
+# Referencia: dwt_1d_FP32_n15000_seed1234
+# Procesado: dwt_1d_FP16_n15000_seed1234
+Comparación,Ejecución,Pearson
+dwt_1d_FP16_n15000_seed1234,1,0.99999983
+dwt_1d_FP16_n15000_seed1234,2,0.99999973
