@@ -186,7 +186,7 @@ Opcionalmente se dispone de un fichero Dockerfile en el directorio raíz del pro
 Pasos para montar el contenedor:
 1. Clonar el repositorio:
     ```bash
-    git clone git@github.com:Espasant3/TFG.git
+    git clone git@github.com:Espasant3/Benchmark-reduced-precision-float.git
     ```
 2. Navegar al directorio raíz del proyecto:
     ```bash
@@ -207,7 +207,7 @@ Pasos para montar el contenedor:
 
 1. Clonar el repositorio:
     ```bash
-    git clone git@github.com:Espasant3/TFG.git
+    git clone git@github.com:Espasant3/Benchmark-reduced-precision-float.git
     ```
 2. Compilar el código:
     ```bash
