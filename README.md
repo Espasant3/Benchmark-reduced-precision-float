@@ -3,7 +3,7 @@
 Este repositorio contiene los programas desarrollados como parte de mi Trabajo de Fin de Grado (TFG) sobre operaciones con números de punto flotante de 16 bits, en él se encuentran distintos programas en código C con varios algoritmos. Los programas cuentan con una versión que emplea el tipo de dato float de 32 bits y otras versiones que emplean distintos tipos de datos que son tratados como float de 16 bits.
 
 ## Tabla de contenidos
-- [Contenido](#contenido)
+
 - [Requisitos](#requisitos)
 - [Información relevante](#información-relevante)
   - [Extensión de los ejecutables](#extensión-de-los-ejecutables)
@@ -23,13 +23,6 @@ Este repositorio contiene los programas desarrollados como parte de mi Trabajo d
 - [Contacto](#contacto)
 
 
-
-## Contenido
-
-- **Introducción**: Descripción del proyecto y su relevancia.
-- **Implementación**: Explicación detallada del código y las técnicas utilizadas.
-- **Pruebas**: Métodos de prueba y resultados obtenidos.
-- **Conclusiones**: Resumen de los hallazgos y posibles futuras mejoras.
 
 ## Requisitos
 
@@ -258,18 +251,6 @@ Para gestionar el entorno virtual de python se pueden utilizar los siguientes fi
 
 ## Licencias
 
-- Este proyecto y los archivos en el directorio `Programas/PCA_REIMPL/functions-adapted/include`: **Licencia MIT**  
-  Ver [LICENSE](LICENSE)  
-  Copyright: © 2025 Eloi Barcón Piñeiro
-
-- Código adaptado de LAPACK (que está en el directorio `Programas/PCA_REIMPL/functions-adapted/`): **Licencia BSD modificada**  
-  Ver [LICENSE_LAPACK](LICENSE_LAPACK)  
-  Copyright original:  
-  © 1992-2025 University of Tennessee, University of California Berkeley,  
-  University of Colorado Denver, y colaboradores.
-
-## Licencias
-
 ### **Código original**
 1. **LICENCIA MIT**: 
   - Archivos: todos los archivos en el directorio `Programas/PCA_REIMPL/functions-adapted/include` y el resto de programas del proyecto.
@@ -309,7 +290,7 @@ Para gestionar el entorno virtual de python se pueden utilizar los siguientes fi
 
 ## Contacto
 
-Para cualquier duda o sugerencia, por favor contacta conmigo a través de [eloi.barcon@rai.usc.es](mailto:eloi.barcon@rai.usc.es).
+Para cualquier duda o sugerencia, por favor contacta conmigo a través de [eloi.b.pineiro@gmail.com](mailto:eloi.b.pineiro@gmail.com).
 
 ---
 
